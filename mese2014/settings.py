@@ -1,5 +1,25 @@
 # Django settings for mese2014 project.
 
+from os import environ
+
+debug = not environ.get("APP_NAME", "") 
+if debug:
+    MYSQL_DB = 'app_mese2014' 
+    MYSQL_USER = 'root' 
+    MYSQL_PASS = '12345' 
+    MYSQL_HOST_M = '127.0.0.1' 
+    MYSQL_HOST_S = '127.0.0.1' 
+    MYSQL_PORT = '3306' 
+else: 
+#SAE
+    import sae.const 
+    MYSQL_DB = sae.const.MYSQL_DB 
+    MYSQL_USER = sae.const.MYSQL_USER 
+    MYSQL_PASS = sae.const.MYSQL_PASS 
+    MYSQL_HOST_M = sae.const.MYSQL_HOST 
+    MYSQL_HOST_S = sae.const.MYSQL_HOST_S 
+    MYSQL_PORT = sae.const.MYSQL_PORT
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -12,12 +32,12 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'NAME': MYSQL_DB,                      # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
+        'USER': MYSQL_USER,
+        'PASSWORD': MYSQL_PASS,
+        'HOST': MYSQL_HOST_M,                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': MYSQL_PORT,                      # Set to empty string for default.
     }
 }
 
@@ -69,9 +89,6 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
     "./static/",
 )
 
@@ -109,9 +126,6 @@ ROOT_URLCONF = 'mese2014.urls'
 WSGI_APPLICATION = 'mese2014.wsgi.application'
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
     "./templates/",
 )
 
@@ -119,13 +133,10 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
