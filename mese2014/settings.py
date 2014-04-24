@@ -24,7 +24,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('hfercc', 'hfercc@gmail.com'),
+    ('hfercc', 'hfercc@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -137,6 +137,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
+	'accounts',
+	'webboard',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
