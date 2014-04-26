@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<script src="http://www.lib.sinaapp.com/js/jquery/1.10/jquery-1.10.0.js"></script>
+	<script src="/static/uploadify/jquery.uploadify.js"></script>
+	<script src="/static/uploadify/swfobject.js"></script>
+	<script>
+	$(function() {
+		$("#file").uploadify({
+			'formData': {'type': 'private'},
+			'swf': '/static/uploadify/uploadify.swf',
+			'uploader': '/file/upload/?type=public',
+			'cancelImg': '/static/uploadify/uploadify-cancel.png',
+			'auto': true,
+			'queueID': 'fileQueue',
+			'onUploadSuccess': function(file, data, response) {
+				console.log(data);
+			}
+		});
+	});
+	</script>
+</head>
+
+<body>
+	<div id="fileQueue"> </div>
+	<input type="file" name="file" id="file" />
+</body>
+</html>

@@ -1,4 +1,4 @@
-name: wboard
+name: mese2014
 version: 1
 libraries:
 - name: "django"
