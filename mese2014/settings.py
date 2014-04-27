@@ -137,11 +137,18 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-	'accounts',
-	'webboard',
+		'accounts',
+		'webboard',
+		'file_upload',
+		'file_publicity',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
+
+SAE_DEFAULT_STORAGE_DOMAIN_NAME = 'mese2014storage'
+SAE_FILE_STORAGE_DOMAIN_NAME = 'mese2014file'
+
+DEFAULT_FILE_STORAGE = 'common.storage.SAEStorage'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -171,3 +178,5 @@ LOGGING = {
         },
     }
 }
+
+PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
