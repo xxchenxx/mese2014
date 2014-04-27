@@ -4,76 +4,131 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from common.storage import SAEStorage
+
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
+
+from common import fields
 from file_upload.models import PrivateFile, PublicFile
 from annoying.fields import AutoOneToOneField
-
-class AccountBase(object):
 	
-	display_name = ''
+class UserProfile(models.Model):
 	
-class Admin(AccountBase):
-
-	display_name = u'管理员'	
-		
-class Account(AccountBase, models.Model):
+	user = AutoOneToOneField(User, unique = True, related_name = 'profile')
 	
+	info_type = models.ForeignKey(ContentType, null = True, blank = True)
+	info_object_id = models.PositiveIntegerField(null = True, blank = True)
+	info_object = generic.GenericForeignKey('info_type', 'info_object_id')
+	
+	@property
+	def info(self):
+		if self.user.is_staff:
+			if not hasattr(self, '_info'):
+				self._info = Admin()
+				
+			return self._info
+		else:
+			return self.info_object
+			
+	@info.setter
+	def info(self, obj):
+		if self.user.is_staff:
+			return
+		self.info_object = obj
+	
+class Account(models.Model):
+	
+	profile_object = generic.GenericRelation(
+			'UserProfile',
+			content_type_field = 'info_type',
+			object_id_field = 'info_object_id'
+	)
 	display_name = models.CharField(max_length = 255)
+	assets = fields.DecimalField()
+	
+	@property
+	def profile(self):
+		if not hasattr(self, '_profile'):
+			try:
+				self._profile = self.profile_object.all()[0]
+			except:
+				self._profile = None
+		
+		return self._profile
 	
 	class Meta:
 		abstract = True
 		ordering = ['display_name']
 		
+class Admin(object):
+
+	display_name = u'管理员'			
+		
 class Person(Account):
 
-	profile = models.OneToOneField('UserProfile', unique = True, related_name = 'person_info')
-	cash = models.DecimalField(max_digits = 4, decimal_places = 2, default = 0)
 	fixed_assets = models.DecimalField(max_digits = 4, decimal_places = 2, default = 0)
-	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt')
+	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
 	
-	class Meta:
+	class Meta(Account.Meta):
 		pass
 	
-class Company(Account):
+class Enterprise(Account):
 	
-	profile = models.OneToOneField('UserProfile', unique = True, related_name = 'company_info')
 	description = models.TextField(null = True, blank = True)
 	members = models.TextField(null = True, blank = True)
 	phone_number = models.CharField(null = True, blank = True, max_length = 11)
+	
+	stock_object = generic.GenericRelation(
+			content_type_field = 'enterprise_type',
+			object_id_field = 'enterprise_object_id',
+	)
+
+	class Meta(Account.Meta):
+		pass
+	
+class Company(Enterprise):
+	
 	financial_reports = models.ManyToManyField(PrivateFile, related_name = 'company_owned_reports')
 	
-	class Meta:
+	class Meta(Enterprise.Meta):
 		pass
 		
-class UserProfile(models.Model):
+class FinancialInstitution(Enterprise):
 	
-	COMPANY = 'CY'
-	PERSON  = 'PN'
-	ADMIN   = 'AN'
+	BANK = 'BK'
+	FUND_COMPANY = 'FC'
 	
-	USER_TYPE_CHOICES = (
-			(COMPANY, 'company'),
-			(PERSON,  'person'),
-			(ADMIN,   'admin'),
+	INSTITUTION_TYPE_CHOICES = (
+			(BANK, 'bank'),
+			(FUND_COMPANY, 'fund_company'),
 	)
 	
-	user = AutoOneToOneField(User, unique = True, related_name = 'profile')
-	user_type = models.CharField(max_length = 2, choices = USER_TYPE_CHOICES, default = PERSON)
+	type = models.CharField(max_length = 2, default = BANK, choices = INSTITUTION_TYPE_CHOICES)
 	
-	@property
-	def info(self):
-		if not hasattr(self, '_info'):
-			try:
-				if self.user_type == self.PERSON:
-					self._info = self.person_info
-				elif self.user_type == self.COMPANY:
-					self._info = self.company_info
-				else:
-					self._info = Admin()
-			except ObjectDoesNotExist:
-				if self.user_type == self.PERSON:
-					self._info = Person.objects.create(profile = self)
-				elif self.user_type == self.COMPANY:
-					self._info = Company.objects.create(profile = self)
-		return self._info
+	class Meta(Enterprise.Meta):
+		pass
+
+class BankManager(models.Manager):
+
+	def get_query_set(self):
+		super(BankManager, self).get_query_set().filter(type = self.BANK)
+		
+class Bank(FinancialInstitution):
+
+	objects = BankManager()
+
+	class Meta(FinancialInstitution.Meta):
+		proxy = True
+		
+class FundCompanyManager(models.Manager):
 	
+	def get_query_set(self):
+		super(FundCompanyManager, self).get_query_set().filter(type = self.FUND_COMPANY)
+		
+class FundCompany(FinancialInstitution):
+
+	objects = FundCompanyManager()
+	
+	class Meta(FinancialInstitution.Meta):
+		proxy = True
