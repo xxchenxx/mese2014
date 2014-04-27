@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class Passage(models.Model):
 	
-	title = models.CharField(max_length = 1000, unique = True)
+	title = models.CharField(max_length = 255, unique = True)
 	created_time = models.DateTimeField(auto_now_add = True)
 	author = models.ForeignKey(User, related_name = 'passages')
 	content = models.TextField()
