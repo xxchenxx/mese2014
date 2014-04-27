@@ -106,10 +106,6 @@ li {
   .mese-header .nav > li > a {
     padding:10px 5px!important;
   }
-  .navbar-brand {
-    border-bottom:1px solid #ccc;
-    border-right:1px solid #ccc;
-  }
   .navbar-brand:hover,
   .navbar-brand:active: {
     background-color:#F7F7F7;
