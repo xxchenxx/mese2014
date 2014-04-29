@@ -84,14 +84,15 @@ class Person(Account, HasReportModel):
 	fixed_assets = models.DecimalField(max_digits = 4, decimal_places = 2, default = 0)
 	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
-	
+
+	company = models.ForeignKey('Enterprise', related_name = 'members')
+		
 	class Meta(Account.Meta):
 		pass
 	
 class Enterprise(Account):
 	
 	description = models.TextField(null = True, blank = True)
-	members = models.TextField(null = True, blank = True)
 	phone_number = models.CharField(null = True, blank = True, max_length = 11)
 	
 	stock_object = generic.GenericRelation(
