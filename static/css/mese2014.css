@@ -1,3 +1,4 @@
+/* Start .mese-header */
 .mese-header {
   position:static;
   right:0;
@@ -5,6 +6,74 @@
   overflow:visible;
   margin-bottom:0;
 }
+
+.mese-header .nav {
+  position:relative;
+  left:0;
+  display:block;
+  float:right;
+  margin:0;
+}
+.mese-header .nav > li {
+  float:left;
+}
+li {
+  line-height:20px;
+}
+.mese-header .navbar-header .navbar-brand,
+.mese-header .nav > li > a {
+  color:#563D7C;
+}
+
+.mese-header .nav > li > a {
+  float:none;
+  padding: 20px 15px;
+  text-decoration:none;
+  letter-spacing:.05em;
+  font-weight:500;
+  font-size:13px;
+  line-height:20px;
+  text-transform:uppercase;
+}
+.mese-header .navbar-collapse {
+  border-color: #e7e7e7;
+}
+@media (max-width: 767px) {
+  
+  .mese-header .nav {
+    float:none!important;
+    width:100%!important;
+  }
+  .mese-header .nav > li {
+    float:none!important;
+  }
+  .mese-header .nav > li > a {
+    padding:10px 5px!important;
+  }
+}
+@media (min-width: 768px) {
+  .mese-header .container {
+    width: 750px;
+  }
+  .mese-header .nav > li > a:focus,
+  .mese-header .nav > li > a:hover {
+    background-color: #F7F7F7;
+    color:#563D7C;
+   }
+  .mese-header {
+     border-bottom:1px solid #cccccc;}
+}
+@media (min-width: 992px) {
+  .mese-header .container {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .mese-header .container {
+    width: 1170px;
+  }
+}
+/* End .mese-header */
 .navbar-toggle {
   position: relative;
   float: right;
@@ -62,80 +131,16 @@
   text-align:center;
   text-shadow:1px 1px #ccc;
 }
-
-.mese-header .nav {
-  position:relative;
-  left:0;
-  display:block;
-  float:right;
-  margin:0;
-}
-.mese-header .nav > li {
-  float:left;
-}
-li {
-  line-height:20px;
-}
-.mese-header .navbar-header .navbar-brand,
-.mese-header .nav > li > a {
-  color:#563D7C;
-}
-
-.mese-header .nav > li > a {
-  float:none;
-  padding: 20px 15px;
-  text-decoration:none;
-  letter-spacing:.05em;
-  font-weight:500;
-  font-size:13px;
-  line-height:20px;
-  text-transform:uppercase;
-}
-.mese-header .navbar-collapse {
-  border-color: #e7e7e7;
-}
-@media (max-width: 767px) {
-  
-  .mese-header .nav {
-    float:none!important;
-    width:100%!important;
-  }
-  .mese-header .nav > li {
-    float:none!important;
-  }
-  .mese-header .nav > li > a {
-    padding:10px 5px!important;
-  }
+@media (max-width: 767px){
   .navbar-brand:hover,
   .navbar-brand:active: {
     background-color:#F7F7F7;
   }
 }
-@media (min-width: 768px) {
-  .mese-header .container {
-    width: 750px;
-  }
-  .mese-header .nav > li > a:focus,
-  .mese-header .nav > li > a:hover {
-    background-color: #F7F7F7;
-    color:#563D7C;
-   }
-  .mese-header {
-     border-bottom:1px solid #cccccc;}
-}
-
 @media (min-width: 992px) {
-  .mese-header .container {
-    width: 970px;
-  }
   .nav-collapse .collapse {
     overflow:visible!important;
     height:auto!important;
   }
 }
 
-@media (min-width: 1200px) {
-  .mese-header .container {
-    width: 1170px;
-  }
-}
