@@ -1,11 +1,12 @@
-import importlib
 from django.shortcuts import render_to_response
 from django import forms
 from django import VERSION as DJANGO_VERSION
 from django.template import RequestContext
 from django.db.models import signals as signalmodule
 from django.http import HttpResponse
-from django.conf import settings
+import exceptions
+import jsonobj
+import ajax_response
 # Try to be compatible with Django 1.5+.
 try:
     import json
@@ -204,22 +205,32 @@ def ajax_request(func):
             format_type = 'application/json'
         response = func(request, *args, **kwargs)
         if not isinstance(response, HttpResponse):
-            if hasattr(settings, 'FORMAT_TYPES'):
-                format_type_handler = settings.FORMAT_TYPES[format_type]
-                if hasattr(format_type_handler, '__call__'):
-                    data = format_type_handler(response)
-                elif isinstance(format_type_handler, basestring):
-                    mod_name, func_name = format_type_handler.rsplit('.', 1)
-                    module = __import__(mod_name, fromlist=[func_name])
-                    function = getattr(module, func_name)
-                    data = function(response)
-            else:
-                data = FORMAT_TYPES[format_type](response)
+            response = jsonobj.serialize_models(response, request)
+            if isinstance(response, dict):
+                response.update(ajax_response.STATUS_SUCCESS)
+            data = FORMAT_TYPES[format_type](response)
             response = HttpResponse(data, content_type=format_type)
             response['content-length'] = len(data)
         return response
     return wrapper
 
+#What a fuck decorator!		
+		
+def ajax_by_method(template=None, content_type=None, minetype=None):
+
+	def renderer(function):
+		
+		@wraps(function)
+		def wrapper(request, *args, **kw_args):
+			if request.method == 'GET':
+				return render_to(template, content_type, minetype)(function)(request, *args, **kw_args)
+			elif request.method == 'POST':
+				return ajax_request(function)(request, *args, **kw_args)
+			else:
+				raise exceptions.MethodError
+		
+		return wrapper
+	return renderer
 
 def autostrip(cls):
     """
@@ -243,3 +254,13 @@ def autostrip(cls):
         clean_func = get_clean_func(getattr(field_object, 'clean'))
         setattr(field_object, 'clean', clean_func)
     return cls
+
+def method(method_name):
+	def renderer(function):
+		@wraps(function)
+		def wrapper(request, *args, **kw_args):
+			if method_name.upper() != request.method:
+				raise exceptions.MethodError, 'This method(%s) should not be used in this view.' % request.method
+			return function(request, *args, **kw_args)
+		return wrapper
+	return renderer

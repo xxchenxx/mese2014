@@ -12,6 +12,19 @@ from common import fields
 from file_upload.models import PrivateFile, PublicFile
 from annoying.fields import AutoOneToOneField
 	
+import managers
+	
+class HasReportModel(object):
+	
+	def upload_reports(self, file_ids):
+		objects = PrivateFile.objects.only('pk')
+		if isinstance(file_ids, (list, tuple)):
+			files = objects.filter(pk__in = file_ids)
+		else:
+			files = objects.filter(pk = int(file_ids)
+			
+		getattr(self, self.report_field).add(files)
+	
 class UserProfile(models.Model):
 	
 	user = AutoOneToOneField(User, unique = True, related_name = 'profile')
@@ -64,7 +77,9 @@ class Admin(object):
 
 	display_name = u'管理员'			
 		
-class Person(Account):
+class Person(Account, HasReportModel):
+
+	report_field = 'consumption_reports'
 
 	fixed_assets = models.DecimalField(max_digits = 4, decimal_places = 2, default = 0)
 	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
@@ -87,7 +102,9 @@ class Enterprise(Account):
 	class Meta(Account.Meta):
 		pass
 	
-class Company(Enterprise):
+class Company(Enterprise, HasReportModel):
+	
+	report_field = 'financial_reports'
 	
 	financial_reports = models.ManyToManyField(PrivateFile, related_name = 'company_owned_reports')
 	
@@ -108,27 +125,17 @@ class FinancialInstitution(Enterprise):
 	
 	class Meta(Enterprise.Meta):
 		pass
-
-class BankManager(models.Manager):
-
-	def get_query_set(self):
-		super(BankManager, self).get_query_set().filter(type = self.BANK)
 		
 class Bank(FinancialInstitution):
 
-	objects = BankManager()
+	objects = managers.BankManager()
 
 	class Meta(FinancialInstitution.Meta):
 		proxy = True
 		
-class FundCompanyManager(models.Manager):
-	
-	def get_query_set(self):
-		super(FundCompanyManager, self).get_query_set().filter(type = self.FUND_COMPANY)
-		
 class FundCompany(FinancialInstitution):
 
-	objects = FundCompanyManager()
+	objects = managers.FundCompanyManager()
 	
 	class Meta(FinancialInstitution.Meta):
 		proxy = True
