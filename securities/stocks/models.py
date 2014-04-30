@@ -8,7 +8,7 @@ from securities.models import Fond
 class Stock(Fond):
 	
 	enterprise_object_id = models.PositiveIntegerField()
-	enterprise_type = models.ForeignKey()
+	enterprise_type = models.ForeignKey(ContentType)
 	enterprise = generic.GenericForeignKey('enterprise_type', 'enterprise_object_id')
 	
 	market_cap = fields.DecimalField()
@@ -19,11 +19,11 @@ class Stock(Fond):
 		return '%.6d' % self.id
 		
 	class Meta(Fond.Meta):
-		pass
+		abstract = False
 		
 class StockShare(models.Model):
 	
-	owner = models.ForeignKey('accounts.Person')
+	owner = models.ForeignKey('accounts.Person', related_name = 'stock_shares')
 	stock = models.ForeignKey(Stock)
 	shares = models.IntegerField()
 	

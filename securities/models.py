@@ -1,6 +1,6 @@
 from django.db import models
 
-class Bond(models.Model):
+class Fond(models.Model):
 
 	display_name = models.CharField(unique = True, max_length = 20)
 	

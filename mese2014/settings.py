@@ -141,6 +141,7 @@ INSTALLED_APPS = (
 		'webboard',
 		'file_upload',
 		'file_publicity',
+		'securities',
 		'securities.funds',
 		'securities.stocks',
 		'securities.futures',

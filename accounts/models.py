@@ -21,7 +21,7 @@ class HasReportModel(object):
 		if isinstance(file_ids, (list, tuple)):
 			files = objects.filter(pk__in = file_ids)
 		else:
-			files = objects.filter(pk = int(file_ids)
+			files = objects.filter(pk = int(file_ids))
 			
 		getattr(self, self.report_field).add(files)
 	
@@ -96,6 +96,7 @@ class Enterprise(Account):
 	phone_number = models.CharField(null = True, blank = True, max_length = 11)
 	
 	stock_object = generic.GenericRelation(
+			'stocks.Stock',
 			content_type_field = 'enterprise_type',
 			object_id_field = 'enterprise_object_id',
 	)
