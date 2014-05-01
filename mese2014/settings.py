@@ -1,5 +1,5 @@
 # Django settings for mese2014 project.
-
+import os
 from os import environ
 
 debug = not environ.get("APP_NAME", "") 
@@ -141,6 +141,11 @@ INSTALLED_APPS = (
 		'webboard',
 		'file_upload',
 		'file_publicity',
+		'securities',
+		'securities.funds',
+		'securities.stocks',
+		'securities.futures',
+		'timeline',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

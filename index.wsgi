@@ -9,5 +9,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'common'))
 import sae
 from mese2014 import wsgi
 application = sae.create_wsgi_app(wsgi.application)
-#import pylibmc
-#sys.modules['memcache'] = pylibmc
+try:
+	import pylibmc
+	sys.modules['memcache'] = pylibmc
+except ImportError:
+	pass

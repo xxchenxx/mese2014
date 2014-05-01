@@ -84,8 +84,13 @@ goto menu
 set /p choice="manage> "
 if /i "%choice%"=="exit" goto menu
 if /i "%choice%"=="cls" goto cls
+if /i "%choice%"=="cleardb" goto cleardb
 python manage.py %choice%
 echo.
+goto 4
+:cleardb
+set /p name="Enter app name: "
+mysql -uroot -p --execute="drop database app_%name%;create database app_%name%;"
 goto 4
 :cls
 cls
