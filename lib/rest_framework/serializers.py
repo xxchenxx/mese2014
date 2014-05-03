@@ -16,7 +16,6 @@ import datetime
 import inspect
 import types
 from decimal import Decimal
-from django.contrib.contenttypes.generic import GenericForeignKey
 from django.core.paginator import Page
 from django.db import models
 from django.forms import widgets
@@ -439,6 +438,16 @@ class BaseSerializer(WritableField):
                     raise ValidationError(self.error_messages['required'])
                 return
 
+        # Set the serializer object if it exists
+        obj = get_component(self.parent.object, self.source or field_name) if self.parent.object else None
+
+        # If we have a model manager or similar object then we need
+        # to iterate through each instance.
+        if (self.many and
+            not hasattr(obj, '__iter__') and
+            is_simple_callable(getattr(obj, 'all', None))):
+            obj = obj.all()
+
         if self.source == '*':
             if value:
                 reverted_data = self.restore_fields(value, {})
@@ -448,16 +457,6 @@ class BaseSerializer(WritableField):
             if value in (None, ''):
                 into[(self.source or field_name)] = None
             else:
-                # Set the serializer object if it exists
-                obj = get_component(self.parent.object, self.source or field_name) if self.parent.object else None
-
-                # If we have a model manager or similar object then we need
-                # to iterate through each instance.
-                if (self.many and
-                    not hasattr(obj, '__iter__') and
-                    is_simple_callable(getattr(obj, 'all', None))):
-                    obj = obj.all()
-
                 kwargs = {
                     'instance': obj,
                     'data': value,
@@ -758,9 +757,6 @@ class ModelSerializer(Serializer):
                     field.read_only = True
 
                 ret[accessor_name] = field
-        
-        # Ensure that 'read_only_fields' is an iterable
-        assert isinstance(self.opts.read_only_fields, (list, tuple)), '`read_only_fields` must be a list or tuple' 
 
         # Add the `read_only` flag to any fields that have been specified
         # in the `read_only_fields` option
@@ -775,10 +771,7 @@ class ModelSerializer(Serializer):
                 "on serializer '%s'." %
                 (field_name, self.__class__.__name__))
             ret[field_name].read_only = True
-        
-        # Ensure that 'write_only_fields' is an iterable
-        assert isinstance(self.opts.write_only_fields, (list, tuple)), '`write_only_fields` must be a list or tuple' 
-        
+
         for field_name in self.opts.write_only_fields:
             assert field_name not in self.base_fields.keys(), (
                 "field '%s' on serializer '%s' specified in "
@@ -828,10 +821,6 @@ class ModelSerializer(Serializer):
 
         if model_field:
             kwargs['required'] = not(model_field.null or model_field.blank)
-            if model_field.help_text is not None:
-                kwargs['help_text'] = model_field.help_text
-            if model_field.verbose_name is not None:
-                kwargs['label'] = model_field.verbose_name
 
         return PrimaryKeyRelatedField(**kwargs)
 
@@ -892,7 +881,7 @@ class ModelSerializer(Serializer):
         except KeyError:
             return ModelField(model_field=model_field, **kwargs)
 
-    def get_validation_exclusions(self, instance=None):
+    def get_validation_exclusions(self):
         """
         Return a list of field names to exclude from model validation.
         """
@@ -904,7 +893,7 @@ class ModelSerializer(Serializer):
             field_name = field.source or field_name
             if field_name in exclusions \
                 and not field.read_only \
-                and (field.required or hasattr(instance, field_name)) \
+                and field.required \
                 and not isinstance(field, Serializer):
                 exclusions.remove(field_name)
         return exclusions
@@ -919,7 +908,7 @@ class ModelSerializer(Serializer):
         the full_clean validation checking.
         """
         try:
-            instance.full_clean(exclude=self.get_validation_exclusions(instance))
+            instance.full_clean(exclude=self.get_validation_exclusions())
         except ValidationError as err:
             self._errors = err.message_dict
             return None
@@ -948,8 +937,6 @@ class ModelSerializer(Serializer):
 
         # Forward m2m relations
         for field in meta.many_to_many + meta.virtual_fields:
-            if isinstance(field, GenericForeignKey):
-                continue
             if field.name in attrs:
                 m2m_data[field.name] = attrs.pop(field.name)
 
@@ -959,15 +946,17 @@ class ModelSerializer(Serializer):
             if isinstance(self.fields.get(field_name, None), Serializer):
                 nested_forward_relations[field_name] = attrs[field_name]
 
-        # Create an empty instance of the model
-        if instance is None:
-            instance = self.opts.model()
+        # Update an existing instance...
+        if instance is not None:
+            for key, val in attrs.items():
+                try:
+                    setattr(instance, key, val)
+                except ValueError:
+                    self._errors[key] = self.error_messages['required']
 
-        for key, val in attrs.items():
-            try:
-                setattr(instance, key, val)
-            except ValueError:
-                self._errors[key] = self.error_messages['required']
+        # ...or create a new instance
+        else:
+            instance = self.opts.model(**attrs)
 
         # Any relations that cannot be set until we've
         # saved the model get hidden away on these
@@ -1092,10 +1081,6 @@ class HyperlinkedModelSerializer(ModelSerializer):
 
         if model_field:
             kwargs['required'] = not(model_field.null or model_field.blank)
-            if model_field.help_text is not None:
-                kwargs['help_text'] = model_field.help_text
-            if model_field.verbose_name is not None:
-                kwargs['label'] = model_field.verbose_name
 
         if self.opts.lookup_field:
             kwargs['lookup_field'] = self.opts.lookup_field

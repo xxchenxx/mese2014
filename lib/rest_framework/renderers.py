@@ -193,7 +193,6 @@ class YAMLRenderer(BaseRenderer):
     format = 'yaml'
     encoder = encoders.SafeDumper
     charset = 'utf-8'
-    ensure_ascii = True
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """
@@ -204,15 +203,7 @@ class YAMLRenderer(BaseRenderer):
         if data is None:
             return ''
 
-        return yaml.dump(data, stream=None, encoding=self.charset, Dumper=self.encoder, allow_unicode=not self.ensure_ascii)
-
-
-class UnicodeYAMLRenderer(YAMLRenderer):
-    """
-    Renderer which serializes to YAML.
-    Does *not* apply character escaping for non-ascii characters.
-    """
-    ensure_ascii = False
+        return yaml.dump(data, stream=None, encoding=self.charset, Dumper=self.encoder)
 
 
 class TemplateHTMLRenderer(BaseRenderer):

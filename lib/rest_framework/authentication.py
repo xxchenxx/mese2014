@@ -6,7 +6,6 @@ import base64
 
 from django.contrib.auth import authenticate
 from django.core.exceptions import ImproperlyConfigured
-from django.conf import settings
 from rest_framework import exceptions, HTTP_HEADER_ENCODING
 from rest_framework.compat import CsrfViewMiddleware
 from rest_framework.compat import oauth, oauth_provider, oauth_provider_store
@@ -292,7 +291,6 @@ class OAuth2Authentication(BaseAuthentication):
     OAuth 2 authentication backend using `django-oauth2-provider`
     """
     www_authenticate_realm = 'api'
-    allow_query_params_token = settings.DEBUG
 
     def __init__(self, *args, **kwargs):
         super(OAuth2Authentication, self).__init__(*args, **kwargs)
@@ -310,13 +308,7 @@ class OAuth2Authentication(BaseAuthentication):
 
         auth = get_authorization_header(request).split()
 
-        if auth and auth[0].lower() == b'bearer':
-            access_token = auth[1]
-        elif 'access_token' in request.POST:
-            access_token = request.POST['access_token']
-        elif 'access_token' in request.GET and self.allow_query_params_token:
-            access_token = request.GET['access_token']
-        else:
+        if not auth or auth[0].lower() != b'bearer':
             return None
 
         if len(auth) == 1:
@@ -326,7 +318,7 @@ class OAuth2Authentication(BaseAuthentication):
             msg = 'Invalid bearer header. Token string should not contain spaces.'
             raise exceptions.AuthenticationFailed(msg)
 
-        return self.authenticate_credentials(request, access_token)
+        return self.authenticate_credentials(request, auth[1])
 
     def authenticate_credentials(self, request, access_token):
         """
@@ -334,11 +326,11 @@ class OAuth2Authentication(BaseAuthentication):
         """
 
         try:
-            token = oauth2_provider.oauth2.models.AccessToken.objects.select_related('user')
+            token = oauth2_provider.models.AccessToken.objects.select_related('user')
             # provider_now switches to timezone aware datetime when
             # the oauth2_provider version supports to it.
             token = token.get(token=access_token, expires__gt=provider_now())
-        except oauth2_provider.oauth2.models.AccessToken.DoesNotExist:
+        except oauth2_provider.models.AccessToken.DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid token')
 
         user = token.user

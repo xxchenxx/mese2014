@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from rest_framework.compat import django_filters, six, guardian, get_model_name
-from rest_framework.settings import api_settings
 from functools import reduce
 import operator
 
@@ -70,8 +69,7 @@ class DjangoFilterBackend(BaseFilterBackend):
 
 
 class SearchFilter(BaseFilterBackend):
-    # The URL query parameter used for the search.
-    search_param = api_settings.SEARCH_PARAM
+    search_param = 'search'  # The URL query parameter used for the search.
 
     def get_search_terms(self, request):
         """
@@ -109,8 +107,7 @@ class SearchFilter(BaseFilterBackend):
 
 
 class OrderingFilter(BaseFilterBackend):
-    # The URL query parameter used for the ordering.
-    ordering_param = api_settings.ORDERING_PARAM
+    ordering_param = 'ordering'  # The URL query parameter used for the ordering.
     ordering_fields = None
 
     def get_ordering(self, request):

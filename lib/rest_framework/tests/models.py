@@ -103,7 +103,7 @@ class BlogPostComment(RESTFrameworkModel):
 
 class Album(RESTFrameworkModel):
     title = models.CharField(max_length=100, unique=True)
-    ref = models.CharField(max_length=10, unique=True, null=True, blank=True)
+
 
 class Photo(RESTFrameworkModel):
     description = models.TextField()
@@ -143,8 +143,7 @@ class ForeignKeyTarget(RESTFrameworkModel):
 
 class ForeignKeySource(RESTFrameworkModel):
     name = models.CharField(max_length=100)
-    target = models.ForeignKey(ForeignKeyTarget, related_name='sources',
-                               help_text='Target', verbose_name='Target')
+    target = models.ForeignKey(ForeignKeyTarget, related_name='sources')
 
 
 # Nullable ForeignKey
