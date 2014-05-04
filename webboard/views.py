@@ -1,7 +1,7 @@
-from djangorestframework.views import View
-import models
+from rest_framework import generics
+import models, serializers
 
-class PassageView(View):
+class PassageView(generics.ListAPIView):
 
-	def get(self, request, id):
-		return models.Passage.objects.get(pk = id)
+	queryset = models.Passage.objects.all()
+	serializer_class = serializers.PassageSerializer
