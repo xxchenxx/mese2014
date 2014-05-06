@@ -145,6 +145,7 @@ INSTALLED_APPS = (
 		'securities.funds',
 		'securities.stocks',
 		'securities.futures',
+		'securities.bonds',
 		'timeline',
 		'rest_framework',
 )
@@ -190,6 +191,7 @@ PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
+	'PAGINATE_BY': 10, 
     'DEFAULT_MODEL_SERIALIZER_CLASS':
         'rest_framework.serializers.HyperlinkedModelSerializer',
 
