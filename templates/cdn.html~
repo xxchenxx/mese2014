@@ -1,6 +1,5 @@
-<!--script src="http://www.lib.sinaapp.com/js/jquery/1.10/jquery-1.10.0.js"></script>
-<link href="http://www.lib.sinaapp.com/js/bootstrap/latest/css/bootstrap.css" rel="stylesheet"></link>
-<script src="http://www.lib.sinaapp.com/js/bootstrap/latest/js/bootstrap.js"></script-->
-<script src="/static/js/juery.js"></script>
-<link href="/static/css/bootstrap.css" rel="stylesheet"></link>
-<script src="/static/js/bootstrap.min.js"></script>
+<script src="http://www.lib.sinaapp.com/js/jquery/1.10/jquery-1.10.0.js"></script>
+<link type="text/javascript" href="http://www.lib.sinaapp.com/js/bootstrap/latest/css/bootstrap.css" rel="stylesheet"></link>
+<script src="http://www.lib.sinaapp.com/js/bootstrap/latest/js/bootstrap.js"></script>
+<link href="/static/css/mese2014.css" rel="stylesheet" />
+<script src="/static/js/login.js"></script>
