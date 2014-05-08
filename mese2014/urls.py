@@ -9,5 +9,6 @@ urlpatterns = patterns('',
 	url(r'^webboard/', include('webboard.urls')),
 	url(r'^file/', include('file_upload.urls')),
 	url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+	url(r'^api/', include('api.urls')),
 	url(r'^admin/', include(admin.site.urls)),
 )

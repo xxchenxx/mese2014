@@ -6,7 +6,7 @@ import accounts.serializers
 
 class PassageSerializer(serializers.ModelSerializer):
 
-	author = accounts.serializers.UserSerializer()
+	author = accounts.serializers.UserSerializer(required = False)
 	
 	class Meta:
 		model = models.Passage
@@ -14,7 +14,7 @@ class PassageSerializer(serializers.ModelSerializer):
 		
 class CommentSerializer(serializers.ModelSerializer):
 	
-	author = accounts.serializers.UserSerializer()
+	author = accounts.serializers.UserSerializer(required = False)
 	
 	class Meta:
 		model = models.Comment

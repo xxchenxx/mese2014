@@ -7,11 +7,11 @@ from rest_framework import views, generics, mixins, viewsets, permissions, respo
 from rest_framework.decorators import action, link
 import models, serializers
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserAPIViewSet(viewsets.ModelViewSet):
 	
 	serializer_class = serializers.UserSerializer
 	model = auth.models.User
-
+	
 @ajax_by_method('accounts/login.html')
 @csrf_exempt
 def login(request):

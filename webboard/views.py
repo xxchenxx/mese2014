@@ -27,15 +27,14 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 		response.template_name = 'webboard/passages/detail.html'
 		return response
 	
-class PassageUpdateViewSet(BasePassageViewSet, mixins.UpdateModelMixin):
+class PassageAPIViewSet(BasePassageViewSet, mixins.UpdateModelMixin):
+	pass
 	
-	@decorators.link()
-	def comments(self, request, pk = None, *args, **kwargs):
-		comments = models.Comment.objects.filter(passage__pk = pk)
-		serializer = serializers.PaginatedCommentSerializer(comments, many = True)
-		return response.Response(serializer.data)
-	
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentAPIViewSet(viewsets.ModelViewSet):
 
 	model = models.Comment
-	serializer = serializers.CommentSerializer
+	serializer_class = serializers.CommentSerializer
+	
+	def get_queryset(self):
+		passage_pk = int(self.kwargs['passage_pk'])
+		return models.Passage.objects.get(pk = passage_pk).comments.all()

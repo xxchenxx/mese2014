@@ -79,6 +79,7 @@ class BaseRouter(object):
 class SimpleRouter(BaseRouter):
     routes = [
         # List route.
+		Route(
         Route(
             url=r'^{prefix}{trailing_slash}$',
             mapping={
