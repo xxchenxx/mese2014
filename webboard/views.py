@@ -19,15 +19,15 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 	
 	def list(self, *args, **kwargs):
 		response = super(PassageRetrieveViewSet, self).list(*args, **kwargs)
-		response.template_name = 'webboard/passages/list.html'
+		response.template_name = 'webboard/passages.html'
 		return response
 		
-	def retrieve(self, *args, **kwargs):
-		response = super(PassageRetrieveViewSet, self).retrieve(*args, **kwargs)
-		response.template_name = 'webboard/passages/detail.html'
-		return response
+	# def retrieve(self, *args, **kwargs):
+		# response = super(PassageRetrieveViewSet, self).retrieve(*args, **kwargs)
+		# response.template_name = 'webboard/passages/detail.html'
+		# return response
 	
-class PassageAPIViewSet(BasePassageViewSet, mixins.UpdateModelMixin):
+class PassageAPIViewSet(BasePassageViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
 	pass
 	
 class CommentAPIViewSet(viewsets.ModelViewSet):

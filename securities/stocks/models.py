@@ -10,13 +10,6 @@ class Stock(Fond):
 	enterprise_object_id = models.PositiveIntegerField()
 	enterprise_type = models.ForeignKey(ContentType)
 	enterprise = generic.GenericForeignKey('enterprise_type', 'enterprise_object_id')
-	
-	market_cap = fields.DecimalField()
-	total_shares = models.IntegerField()
-	
-	@property
-	def code_name(self):
-		return '%.6d' % self.id
 		
 	class Meta(Fond.Meta):
 		abstract = False
@@ -31,12 +24,14 @@ class StockLog(models.Model):
 
 	stock = models.ForeignKey(Stock, related_name = 'logs')
 
+	beginning_price = fields.DecimalField()
+	last_final_price = fields.DecimalField()
 	highest_price = fields.DecimalField()
 	lowest_price = fields.DecimalField()
 	final_price = fields.DecimalField()
 	
-	transcation_volume = models.IntegerField()
-	transcation_turnover = models.IntegerField()
+	transcation_quantity = models.IntegerField()
+	transcation_money = fields.DecimalField()
 	
 	loged_time = models.DateField()
 	

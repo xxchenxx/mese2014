@@ -50,3 +50,6 @@ class UserSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = User
 		fields = ('is_admin', 'username', 'profile', 'id')
+		
+def get_serializer_by_object(obj):
+	return globals()['%sSerializer' % obj.__class__.__name__]

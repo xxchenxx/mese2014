@@ -11,3 +11,13 @@ class Fund(Fond):
 	
 	class Meta(Fond.Meta):
 		pass
+		
+class FundShare(models.Model):
+	
+	user = models.ForeignKey('auth.User', related_name = 'fund_shares')
+	fund = models.ForeignKey(Fund, related_name = 'shares')
+	quantity = models.IntegerField(default = 0, blank = True, read_only = True)
+	
+class FundLog(models.Model):
+	
+	fund = models.ForeignKey(Fund, related_name = 'logs')
