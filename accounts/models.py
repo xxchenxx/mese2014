@@ -56,8 +56,12 @@ class Account(models.Model):
 			content_type_field = 'info_type',
 			object_id_field = 'info_object_id'
 	)
-	display_name = models.CharField(max_length = 255)
+	display_name = models.CharField(max_length = 255, default = '')
 	assets = fields.DecimalField()
+	
+	@property
+	def account_type(self):
+		return self.__class__.__name__.lower()
 	
 	@property
 	def profile(self):
@@ -75,13 +79,14 @@ class Account(models.Model):
 		
 class Admin(object):
 
-	display_name = u'管理员'			
+	display_name = u'管理员'
+	account_type = u'admin'
 		
 class Person(Account, HasReportModel):
 
 	report_field = 'consumption_reports'
 
-	fixed_assets = models.DecimalField(max_digits = 4, decimal_places = 2, default = 0)
+	fixed_assets = fields.DecimalField()
 	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
 
@@ -92,8 +97,8 @@ class Person(Account, HasReportModel):
 	
 class Enterprise(Account):
 	
-	description = models.TextField(null = True, blank = True)
-	phone_number = models.CharField(null = True, blank = True, max_length = 11)
+	description = models.TextField(null = True, blank = True, default = '')
+	phone_number = models.CharField(null = True, blank = True, max_length = 11, default = '')
 	
 	stock_object = generic.GenericRelation(
 			'stocks.Stock',

@@ -3,7 +3,15 @@ from django.shortcuts import render_to_response
 from annoying.decorators import ajax_by_method
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import views, generics, mixins, viewsets, permissions, response, status, renderers
+from rest_framework.decorators import action, link
+import models, serializers
 
+class UserAPIViewSet(viewsets.ModelViewSet):
+	
+	serializer_class = serializers.UserSerializer
+	model = auth.models.User
+	
 @ajax_by_method('accounts/login.html')
 @csrf_exempt
 def login(request):
