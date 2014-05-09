@@ -57,7 +57,7 @@ li {
   }
   .mese-header .nav > li > a:focus,
   .mese-header .nav > li > a:hover {
-  	 background-color:fff;
+  	 background-color:#fff;
     color:#563D7C;
    }
   .mese-header {
@@ -158,6 +158,9 @@ li {
 .login label {
 	font-weight:500;
 	margin-bottom:12px;
+}
+.login .popover {
+  border-radius:0px;
 }
 .btn-login {
 	margin-top: 22px;

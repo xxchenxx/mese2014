@@ -5,11 +5,13 @@
   <form id="login-form">
   <div class="form-group" id="ufg">
     <label for="inputUsername">用户名：</label>
-    <input type="email" class="form-control form-login" id="inputUsername" placeholder="请输入用户名">
+    <input onFocus="clean_error()" type="text" class="form-control form-login" id="inputUsername" placeholder="请输入用户名"\
+    data-container="main.login" data-trigger="manual" data-content="用户名不能为空" data-placement="right">
   </div>
   <div class="form-group" id="pfg">
     <label for="inputPassword">密码：</label>
-    <input type="password" class="form-control form-login" id="inputPassword" placeholder="请输入密码">
+    <input onFocus="clean_error()" type="password" class="form-control form-login" id="inputPassword" placeholder="请输入密码" \
+    data-container="main.login" data-trigger="manual" data-content="密码不能为空" data-placement="right">
   </div>
   <div class="form-group">
     <button type="submit" class="btn btn-login" onClick="validate_form()">登录</button>

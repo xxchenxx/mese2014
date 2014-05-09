@@ -1,5 +1,6 @@
 from sae import kvdb
 from datetime import datetime
+import signals
 
 MIN_TIMELINE = 10800
 
@@ -28,3 +29,4 @@ def set_timeline(year):
 		raise TimelineNotExpiredError
 	_KVClient.set('year', year)
 	_KVClient.set('set_time', datetime.now())
+	signals.timeline_changed.send(sender = year, year = year)

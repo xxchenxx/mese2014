@@ -1,4 +1,10 @@
 from django.conf.urls import patterns, include, url
+import views
+from rest_framework.routers import DefaultRouter
 
-urlpatterns = patterns('',
+router = DefaultRouter()
+router.register(r'passages', views.PassageRetrieveViewSet)
+
+urlpatterns = patterns('webboard.views',
+	url(r'^', include(router.urls)),
 )
