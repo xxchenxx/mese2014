@@ -9,11 +9,14 @@ def init():
 		global _KVClient
 		_KVClient = kvdb.KVClient(debug = 1)
 
-def get_timeline():
+def get_timeline(create_on_none = True):
 	init()
 	year = _KVClient.get('year')
 	if not year:
-		return None
+		if not create_on_none:
+			return None
+		else:
+			set_timeline(datetime.now().year)
 	return {
 			'year': year,
 			'time_delta': datetime.now()-_KVClient.get('set_time')

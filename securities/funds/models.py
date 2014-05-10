@@ -1,23 +1,30 @@
 from django.db import models
 from securities.models import Fond
-from common import fields
+import securities.models
+from common.fields import DecimalField
+from timeline.fields import FinancialYearField
 
 class Fund(Fond):
 
-	unit_net_worth = fields.DecimalField()
-	total_net_worth = fields.DecimalField()
+	unit_net_worth = DecimalField()
+	total_net_worth = DecimalField()
 	
 	issued_by = models.ForeignKey('accounts.FundCompany', related_name = 'issued_funds')
 	
-	class Meta(Fond.Meta):
+	class Meta:
 		pass
 		
-class FundShare(models.Model):
+class Share(securities.models.Share):
 	
-	user = models.ForeignKey('auth.User', related_name = 'fund_shares')
-	fund = models.ForeignKey(Fund, related_name = 'shares')
-	quantity = models.IntegerField(default = 0, blank = True, read_only = True)
+	fond = models.ForeignKey(Fund, related_name = 'shares')
 	
-class FundLog(models.Model):
+class Log(models.Model):
 	
 	fund = models.ForeignKey(Fund, related_name = 'logs')
+	increasement = DecimalField(editable = False)
+	increased_rate = DecimalField(editable = False)
+	year = FinancialYearField()
+	
+	class Meta:
+		ordering = ['-year']
+	

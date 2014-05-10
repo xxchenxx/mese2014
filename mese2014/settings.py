@@ -144,7 +144,7 @@ INSTALLED_APPS = (
 		'securities',
 		'securities.funds',
 		'securities.stocks',
-		'futures',
+		'securities.futures',
 		'securities.logs',
 		'securities.bonds',
 		'timeline',

@@ -85,7 +85,7 @@ set /p choice="manage> "
 if /i "%choice%"=="exit" goto menu
 if /i "%choice%"=="cls" goto cls
 if /i "%choice%"=="cleardb" goto cleardb
-python manage.py %choice%
+python manage.py %choice% --traceback
 echo.
 goto 4
 :cleardb

@@ -37,7 +37,7 @@ class UserProfile(models.Model):
 	def info(self):
 		if self.user.is_staff:
 			if not hasattr(self, '_info'):
-				self._info = Admin()
+				self._info = Admin(self)
 				
 			return self._info
 		else:
@@ -56,7 +56,7 @@ class Account(models.Model):
 			content_type_field = 'info_type',
 			object_id_field = 'info_object_id'
 	)
-	display_name = models.CharField(max_length = 255, default = '')
+	display_name = models.CharField(max_length = 255, default = '', blank = True)
 	assets = fields.DecimalField()
 	
 	@property
@@ -81,6 +81,15 @@ class Admin(object):
 
 	display_name = u'管理员'
 	account_type = u'admin'
+	
+	def __init__(self, profile):
+		self.profile = profile
+		
+	def update(self, *args, **kwargs):
+		return
+		
+	def save(self, *args, **kwargs):
+		return
 		
 class Person(Account, HasReportModel):
 
@@ -90,24 +99,26 @@ class Person(Account, HasReportModel):
 	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
 
-	company = models.ForeignKey('Enterprise', related_name = 'members')
+	company_type = models.ForeignKey(ContentType, null = True, blank = True)
+	company_object_id = models.PositiveIntegerField(null = True, blank = True)
+	company = generic.GenericForeignKey('company_type', 'company_object_id')
 		
 	class Meta(Account.Meta):
 		pass
 	
 class Enterprise(Account):
 	
-	description = models.TextField(null = True, blank = True, default = '')
-	phone_number = models.CharField(null = True, blank = True, max_length = 11, default = '')
+	description = models.TextField(blank = True, default = '')
+	phone_number = models.CharField(blank = True, max_length = 11, default = '')
 	
-	stock_object = generic.GenericRelation(
-			'stocks.Stock',
-			content_type_field = 'enterprise_type',
-			object_id_field = 'enterprise_object_id',
+	members = generic.GenericRelation(
+			'Person',
+			content_type_field = 'company_type',
+			object_id_field = 'company_object_id',
 	)
 
 	class Meta(Account.Meta):
-		pass
+		abstract = True
 	
 class Company(Enterprise, HasReportModel):
 	

@@ -27,7 +27,7 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 		# response.template_name = 'webboard/passages/detail.html'
 		# return response
 	
-class PassageAPIViewSet(BasePassageViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
+class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	pass
 	
 class CommentAPIViewSet(viewsets.ModelViewSet):
