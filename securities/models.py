@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from common.fields import DecimalField
+from common.module_loading import import_by_path
 
 class Fond(models.Model):
 
@@ -42,6 +43,24 @@ class Share(models.Model):
 	shares = DecimalField(editable = False)
 	owner  = models.ForeignKey('accounts.Person', related_name = '%(app_label)s_shares')
 	
+	class Meta:
+		abstract = True
+		
+class Log(models.Model):
 	
 	class Meta:
 		abstract = True
+		
+def _get_fond(fond_type, attr):
+	"""
+		Example: get_fond_module('fund')
+	"""
+	return import_by_path('securities.%ss.models.%s' % (fond_type.lower(), attr))
+	
+def get_fond_class(fond_type):
+	return _get_fond(fond_type, fond_type.capitalize())
+	
+from functools import partial
+
+get_log_class = partial(_get_fond, attr = 'Log')
+get_share_class = partial(_get_fond, attr = 'Share')

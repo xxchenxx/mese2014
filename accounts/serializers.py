@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
 import models
+from file_upload.serializers import PrivateFileSerializer
 
 class AccountSerializer(serializers.Serializer):
 
@@ -31,16 +32,19 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
 	
 	company = serializers.Field(source = 'company.display_name')#HyperlinkedCompanySerializer()
+	debt_file = PrivateFileSerializer()
 	
 	class Meta:
 		model = models.Person	
-
+		exclude = ['consumption_reports', 'company_type', 'company_object_id']
+		
 class CompanySerializer(serializers.ModelSerializer, AccountSerializer):
 	
 	members = PersonSerializer(many = True, required = False)
-	
+
 	class Meta:
-		model = models.Company		
+		model = models.Company
+		exclude = ['financial_reports']
 		
 class BankSerializer(serializers.ModelSerializer, AccountSerializer):
 	
@@ -68,3 +72,6 @@ class UserSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = User
 		fields = ('is_admin', 'username', 'profile', 'id')
+		
+def get_serializer_by_object(obj):
+	return globals()['%sSerializer' % obj.__class__.__name__]

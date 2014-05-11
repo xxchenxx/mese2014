@@ -7,11 +7,11 @@
 	<script>
 	$(function() {
 		$("#file").uploadify({
-			'formData': {'type': 'private','saved': ''},
 			'swf': '/static/img/uploadify.swf',
-			'uploader': '/file/upload/',
+			'uploader': '/api/files/private/',
 			'cancelImg': '/static/img/uploadify-cancel.png',
 			'auto': true,
+			'fileObjName': 'file',
 			'queueID': 'fileQueue',
 			'onUploadSuccess': function(file, data, response) {
 				console.log(data);

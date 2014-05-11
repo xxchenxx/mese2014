@@ -15,10 +15,10 @@ class PassageSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
 	
 	author = WritableRelatedField(serializer_class = accounts.serializers.UserSerializer)
+	passage = serializers.PrimaryKeyRelatedField(write_only = True)
 	
 	class Meta:
 		model = models.Comment
-		exclude = ['passage']
 		
 class PaginatedCommentSerializer(pagination.PaginationSerializer):
 

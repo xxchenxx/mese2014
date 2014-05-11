@@ -9,8 +9,6 @@ class Fund(Fond):
 	unit_net_worth = DecimalField()
 	total_net_worth = DecimalField()
 	
-	issued_by = models.ForeignKey('accounts.FundCompany', related_name = 'issued_funds')
-	
 	class Meta:
 		pass
 		

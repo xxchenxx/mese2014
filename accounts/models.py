@@ -23,7 +23,7 @@ class HasReportModel(object):
 		else:
 			files = objects.filter(pk = int(file_ids))
 			
-		getattr(self, self.report_field).add(files)
+		getattr(self, self.report_field).add(*files)
 	
 class UserProfile(models.Model):
 	

@@ -1,5 +1,7 @@
 from rest_framework import viewsets, decorators, renderers, response, mixins
+from rest_framework.generics import get_object_or_404
 import models, serializers
+import json
 
 class BasePassageViewSet(viewsets.GenericViewSet):
 
@@ -21,11 +23,6 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 		response = super(PassageRetrieveViewSet, self).list(*args, **kwargs)
 		response.template_name = 'webboard/passages.html'
 		return response
-		
-	# def retrieve(self, *args, **kwargs):
-		# response = super(PassageRetrieveViewSet, self).retrieve(*args, **kwargs)
-		# response.template_name = 'webboard/passages/detail.html'
-		# return response
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	pass
@@ -37,4 +34,8 @@ class CommentAPIViewSet(viewsets.ModelViewSet):
 	
 	def get_queryset(self):
 		passage_pk = int(self.kwargs['passage_pk'])
-		return models.Passage.objects.get(pk = passage_pk).comments.all()
+		return get_object_or_404(models.Passage, pk = passage_pk).comments.all()
+		
+	def create(self, request, *args, **kwargs):
+		request.DATA['passage'] = int(kwargs['passage_pk'])
+		return super(CommentAPIViewSet, self).create(request, *args, **kwargs)

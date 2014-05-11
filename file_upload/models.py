@@ -16,7 +16,7 @@ class File(models.Model):
 			upload_to = '%s/'%settings.PATH_DATETIME_FORMAT, 
 			storage = SAEStorage(settings.SAE_FILE_STORAGE_DOMAIN_NAME)
 	)
-	file_type = models.CharField(max_length = 7, choices = FILE_TYPE_CHOICES, default = PUBLIC)
+	file_type = models.CharField(max_length = 7, choices = FILE_TYPE_CHOICES)
 	
 	class Meta:
 		ordering = ['-created_time']
