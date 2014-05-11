@@ -188,8 +188,6 @@ LOGGING = {
 }
 
 PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
-<<<<<<< HEAD
-=======
 
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
@@ -207,4 +205,3 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
 }
->>>>>>> 91f28342b34d310a7cc2181d5a48bb87f359abaa

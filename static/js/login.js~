@@ -14,6 +14,8 @@ function validate_form() {
     $("#pfg").addClass("has-error");
     pword.popover('show');
   }
+  uname.delay(3000).popover('hide');
+  pword.delay(3000).popover('hide');
 };
 
 function clean_error() {

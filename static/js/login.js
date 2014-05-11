@@ -9,10 +9,8 @@ function validate_form() {
   var pword=$("#inputPassword");
   if((uname.val().length) == 0){
     $("#ufg").addClass("has-error");
-    uname.popover('show');
   }if((pword.val().length) == 0){
     $("#pfg").addClass("has-error");
-    pword.popover('show');
   }
 };
 
@@ -21,6 +19,4 @@ function clean_error() {
    var pword=$("#inputPassword");
 	$("#ufg").removeClass("has-error");
 	$("#pfg").removeClass("has-error");
-	uname.popover('hide');
-	pword.popover('hide');
 };
