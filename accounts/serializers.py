@@ -3,6 +3,9 @@ from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
 import models
 from file_upload.serializers import PrivateFileSerializer
+from django.contrib.contenttypes.models import ContentType
+
+from django.http import Http404
 
 class AccountSerializer(serializers.Serializer):
 
@@ -27,8 +30,7 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 		model = models.Company
 		fields = ('url', 'display_name')
 		lookup_field = 'pk'
-		
-
+	
 class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
 	
 	company = serializers.Field(source = 'company.display_name')#HyperlinkedCompanySerializer()
@@ -75,3 +77,19 @@ class UserSerializer(serializers.ModelSerializer):
 		
 def get_serializer_by_object(obj):
 	return globals()['%sSerializer' % obj.__class__.__name__]
+	
+class EnterpriseField(serializers.WritableField):
+	
+	def field_to_native(self, obj, field_name):
+		enterprise = getattr(obj, field_name)
+		return get_serializer_by_object(enterprise)(enterprise).data
+		
+	def field_from_native(self, data, files, field_name, into):
+		enter_data = data[field_name]
+		cls = ContentType.objects.get(app_label = 'accounts', model = enter_data['type'])
+		
+		if not cls.model_class().objects.filter(pk = enter_data['id']).exists():
+			raise Http404
+		
+		into['%s_type' % field_name] = cls
+		into['%s_object_id' % field_name] = enter_data['id']

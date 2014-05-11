@@ -1,6 +1,7 @@
 from rest_framework import serializers
 import logs.models
 import models
+import accounts.serializers
 
 class HasFondSerializer(serializers.ModelSerializer):
 	
@@ -15,6 +16,7 @@ class HasFondSerializer(serializers.ModelSerializer):
 class FondSerializer(serializers.ModelSerializer):
 	
 	code_name = serializers.Field(source = 'code_name')
+	enterprise = accounts.serializers.EnterpriseField()
 	
 	class Meta:
 		exclude = ('enterprise_object_id', 'enterprise_type')

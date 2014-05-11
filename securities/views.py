@@ -1,4 +1,5 @@
 import serializers, models
+import logs.models
 
 from rest_framework import viewsets
 from common.permissions import IsAdminUser, IsPerson, OwnsObject
@@ -37,3 +38,12 @@ class ShareAPIViewSet(viewsets.ReadOnlyModelViewSet):
 		
 	def get_queryset(self):
 		return getattr(self.user.profile.info, '%ss_shares' % self.kwargs['fond_type']).all()
+		
+class TradeLogAPIViewSet(viewsets.ReadOnlyModelViewSet):
+
+	model = logs.models.TradeLog
+	serializer_class = serializers.TradeLogSerializer
+	permission_classes = (IsPerson, OwnsObject, )
+	
+	def get_queryset(self):
+		return self.request.user.profile.info.trade_logs.all()
