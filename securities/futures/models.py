@@ -9,11 +9,20 @@ class Future(Fond):
 
 	current_price = DecimalField()
 	
+	def get_price(self):
+		return self.get_price
+		
+	def get_share_class(self):
+		return share
+		
+	def get_log_class(self):
+		return Log
+	
 class Share(securities.models.Share):
 	
 	fond = models.ForeignKey(Future, related_name = 'shares')
 	
-class Log(models.Model):
+class Log(securities.models.Log):
 
 	future = models.ForeignKey(Future, related_name = 'logs')
 	
@@ -23,13 +32,11 @@ class Log(models.Model):
 	lowest_price = DecimalField(editable = False)
 	final_price = DecimalField(editable = False)
 	
-	transcation_quantity = models.IntegerField(editable = False)
+	transcation_quantity = DecimalField(editable = False)
 	transcation_money = DecimalField(editable = False)
 	
 	increasement = DecimalField(editable = False)
 	increased_rate = DecimalField(editable = False)
-	
-	year = FinancialYearField()
 	
 	class Meta:
 		ordering = ['-year']

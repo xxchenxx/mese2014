@@ -11,6 +11,15 @@ class Stock(securities.models.Fond):
 
 	current_price = DecimalField()
 		
+	def get_share_class(self):
+		return share
+		
+	def get_price(self):
+		return self.current_price
+		
+	def get_log_class(self):
+		return Log
+		
 	class Meta:
 		pass
 		
@@ -18,7 +27,7 @@ class Share(securities.models.Share):
 	
 	fond = models.ForeignKey(Stock, related_name = 'shares')
 	
-class Log(models.Model):
+class Log(securities.models.Log):
 
 	stock = models.ForeignKey(Stock, related_name = 'logs')
 
@@ -28,13 +37,11 @@ class Log(models.Model):
 	lowest_price = DecimalField(editable = False)
 	final_price = DecimalField(editable = False)
 	
-	transcation_quantity = models.IntegerField(editable = False)
+	transcation_quantity = DecimalField(editable = False)
 	transcation_money = DecimalField(editable = False)
 	
 	increasement = DecimalField(editable = False)
 	increased_rate = DecimalField(editable = False)
-	
-	year = FinancialYearField()
 	
 	class Meta:
 		ordering = ['-year']

@@ -6,6 +6,14 @@ from django.contrib.contenttypes import generic
 from common.fields import DecimalField
 from common.module_loading import import_by_path
 
+from timeline.fields import FinancialYearField
+
+from logs.models import TradeLog
+
+from decimal import Decimal
+
+import exceptions
+
 class Fond(models.Model):
 
 	display_name = models.CharField(unique = True, max_length = 20)
@@ -18,21 +26,90 @@ class Fond(models.Model):
 	@property
 	def code_name(self):
 		return '%.6d' % self.id	
-		
-	def get_share(self, user, create = False):	
-		pass
 	
-	def modify_log(self, quantity):
-		pass
+	def get_log_class(self):
+		return Log
+	
+	def modify_log(self, quantity, money):
+		#Can be override
+		log = self.get_log_class.objects.get_current_log()
+		log.transcation_quantity += quantity
+		log.transcation_money += money
+		log.save()		
 	
 	def get_price(self):
-		pass
-	
-	def sell(self, user, quantity):
+		#Must be implemented
 		pass
 		
-	def buy(self, user, quantity):
+	def calc_total_price(self, shares):
+		return self.get_price()*shares
+		
+	def get_share_class(self):
+		#Must be implemented
+		return Share
+		
+	def get_personal_share(self, person, create = False):
+		share_class = self.get_share_class()
+		try:
+			share = share_class.objects.get(owner = person)
+		except:
+			if create:
+				share = share_class(owner = person, fond = self)
+			else:
+				return
+		
+		return share
+	
+	def post_buy(self, person, quantity, money, share):
 		pass
+	
+	def buy(self, person, quantity):
+		total_price = self.calc_total_price()
+		if total_price > person.assets:
+			raise exceptions.MoneyNotEnough
+			
+		person.assets -= total_price
+		share = get_personal_share(person, True)
+		share.shares += Decimal(quantity)
+		TradeLog.objects.create(
+				owner = person,
+				action = 'buy',
+				fond = self,
+				quantity = quantity,
+				money = total_price,
+		)
+		self.modify_log(quantity, total_price)
+		self.post_buy(person, quantity, total_price, share)
+		
+		person.save()
+		share.save()
+		
+	def post_sell(self, person, quantity, money, share):
+		pass
+		
+	def sell(self, person, quantity):
+		share = self.get_personal_share(person)
+		if share is None or share.shares < quantity:
+			raise exceptions.SharesNotEnough
+			
+		total_price = self.calc_total_price(quantity)
+		person.assets += total_price
+		share.shares -= Decimal(quantity)
+		TradeLog.objects.create(
+				owner = person,
+				action = 'sell',
+				fond = self,
+				quantity = quantity,
+				money = total_price,		
+		)
+		self.modify_log(quantity, money)
+		self.post_sell(person, quantity, money, share)
+		
+		person.save()
+		if share.shares == 0:
+			share.delete()
+		else:
+			share.save()
 		
 	class Meta:
 		ordering = ['display_name']
@@ -46,7 +123,15 @@ class Share(models.Model):
 	class Meta:
 		abstract = True
 		
+class LogManager(models.Manager):
+		
+	def get_current_log(self):
+		return self.order_by('-year')[0]
+		
 class Log(models.Model):
+	
+	year = FinancialYearField()
+	objects = LogManager()
 	
 	class Meta:
 		abstract = True
