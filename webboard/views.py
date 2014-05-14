@@ -21,7 +21,7 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 	
 	def list(self, *args, **kwargs):
 		response = super(PassageRetrieveViewSet, self).list(*args, **kwargs)
-		response.template_name = 'webboard/passages.html'
+		response.template_name = 'wb/passages.html'
 		return response
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):

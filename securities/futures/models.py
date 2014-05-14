@@ -24,7 +24,7 @@ class Share(securities.models.Share):
 	
 class Log(securities.models.Log):
 
-	future = models.ForeignKey(Future, related_name = 'logs')
+	fond = models.ForeignKey(Future, related_name = 'logs')
 	
 	beginning_price = DecimalField(editable = False)
 	last_final_price = DecimalField(editable = False)

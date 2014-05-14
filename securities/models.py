@@ -23,6 +23,34 @@ class Fond(models.Model):
 	enterprise_type = models.ForeignKey(ContentType, related_name = '%(app_label)s')
 	enterprise = generic.GenericForeignKey('enterprise_type', 'enterprise_object_id')
 	
+	current_price_field = 'current_price'
+	
+	def create_log(self):
+		log = self.get_current_log()
+		
+		if log is None:
+			last_price = 0
+		else:
+			last_price = log.final_price = self.current_price 
+			log.save()
+		
+		args = {
+				'last_final_price': last_price,
+				'fond': self,
+		}
+		log_class = self.get_log_class()
+		if hasattr(log_class, 'beginning_price'):
+			log_class.update({'beginning_price': self.current_price})
+		
+		log = log_class.objects.create(**args)
+		return log
+	
+	def get_current_log(self):
+		try:
+			return self.logs.all().order_by('-year')[0]
+		except:
+			return
+	
 	@property
 	def code_name(self):
 		return '%.6d' % self.id	
@@ -31,15 +59,15 @@ class Fond(models.Model):
 		return Log
 	
 	def modify_log(self, quantity, money):
-		#Can be override
-		log = self.get_log_class.objects.get_current_log()
+		#Can be overrided
+		log = self.get_current_log()
 		log.transcation_quantity += quantity
 		log.transcation_money += money
 		log.save()		
 	
 	def get_price(self):
-		#Must be implemented
-		pass
+		#Can be overrided
+		return getattr(self, self.current_price_field)
 		
 	def calc_total_price(self, shares):
 		return self.get_price()*shares
@@ -64,12 +92,12 @@ class Fond(models.Model):
 		pass
 	
 	def buy(self, person, quantity):
-		total_price = self.calc_total_price()
+		total_price = self.calc_total_price(quantity)
 		if total_price > person.assets:
 			raise exceptions.MoneyNotEnough
 			
 		person.assets -= total_price
-		share = get_personal_share(person, True)
+		share = self.get_personal_share(person, True)
 		share.shares += Decimal(quantity)
 		TradeLog.objects.create(
 				owner = person,
@@ -124,9 +152,7 @@ class Share(models.Model):
 		abstract = True
 		
 class LogManager(models.Manager):
-		
-	def get_current_log(self):
-		return self.order_by('-year')[0]
+	pass
 		
 class Log(models.Model):
 	
@@ -149,3 +175,9 @@ from functools import partial
 
 get_log_class = partial(_get_fond, attr = 'Log')
 get_share_class = partial(_get_fond, attr = 'Share')
+
+def on_timeline_change(sender, year, **kwargs):
+	for fond_type in consts.fond_types:
+		fond_class = get_fond_class(bond_type)
+		for object in fond_class.objects.all().values(fond_class.current_price_field).select_related():
+			object.create_log()

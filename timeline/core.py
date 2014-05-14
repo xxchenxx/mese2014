@@ -16,7 +16,8 @@ def get_timeline(create_on_none = True):
 		if not create_on_none:
 			return None
 		else:
-			set_timeline(datetime.now().year)
+			year = datetime.now().year
+			set_timeline(year, False)
 	return {
 			'year': year,
 			'time_delta': datetime.now()-_KVClient.get('set_time')
@@ -25,11 +26,12 @@ def get_timeline(create_on_none = True):
 class TimelineNotExpiredError(Exception):
 	pass
 	
-def set_timeline(year):
+def set_timeline(year, send = True):
 	init()
 	set_time = _KVClient.get('set_time')
 	if set_time and (datetime.now()-set_time).seconds < MIN_TIMELINE:
 		raise TimelineNotExpiredError
 	_KVClient.set('year', year)
 	_KVClient.set('set_time', datetime.now())
-	signals.timeline_changed.send(sender = year, year = year)
+	if send:
+		signals.timeline_changed.send(sender = year, year = year)

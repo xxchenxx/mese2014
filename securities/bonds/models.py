@@ -23,9 +23,10 @@ class Share(securities.models.Share):
 	
 class Log(securities.models.Log):
 
-	bond = models.ForeignKey(Bond, related_name = 'logs')
+	fond = models.ForeignKey(Bond, related_name = 'logs')
 
 	beginning_price = DecimalField(editable = False)
+	last_final_price = DecimalField(editable = False)
 	highest_price = DecimalField(editable = False)
 	lowest_price = DecimalField(editable = False)
 	final_price = DecimalField(editable = False)

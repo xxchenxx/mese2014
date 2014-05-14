@@ -9,6 +9,8 @@ class Fund(Fond):
 	unit_net_worth = DecimalField()
 	total_net_worth = DecimalField()
 	
+	current_price_field = 'unit_net_worth'
+	
 	def get_price(self):
 		return self.unit_net_worth
 		
@@ -17,6 +19,9 @@ class Fund(Fond):
 		
 	def get_log_class(self):
 		return log
+	
+	def modify_log(self):
+		return
 	
 	class Meta:
 		pass
@@ -27,7 +32,8 @@ class Share(securities.models.Share):
 	
 class Log(securities.models.Log):
 	
-	fund = models.ForeignKey(Fund, related_name = 'logs')
+	fond = models.ForeignKey(Fund, related_name = 'logs')
+	last_final_price = DecimalField(editable = False)
 	increasement = DecimalField(editable = False)
 	increased_rate = DecimalField(editable = False)
 	

@@ -34,11 +34,11 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
 	
 	company = serializers.Field(source = 'company.display_name')#HyperlinkedCompanySerializer()
-	debt_file = PrivateFileSerializer()
+	debt_file = PrivateFileSerializer(required = False)
 	
 	class Meta:
 		model = models.Person	
-		exclude = ['consumption_reports', 'company_type', 'company_object_id']
+		exclude = ['company_type', 'company_object_id']
 		
 class CompanySerializer(serializers.ModelSerializer, AccountSerializer):
 	
@@ -46,7 +46,7 @@ class CompanySerializer(serializers.ModelSerializer, AccountSerializer):
 
 	class Meta:
 		model = models.Company
-		exclude = ['financial_reports']
+		#exclude = ['financial_reports']
 		
 class BankSerializer(serializers.ModelSerializer, AccountSerializer):
 	

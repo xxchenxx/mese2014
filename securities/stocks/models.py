@@ -12,7 +12,7 @@ class Stock(securities.models.Fond):
 	current_price = DecimalField()
 		
 	def get_share_class(self):
-		return share
+		return Share
 		
 	def get_price(self):
 		return self.current_price
@@ -29,7 +29,7 @@ class Share(securities.models.Share):
 	
 class Log(securities.models.Log):
 
-	stock = models.ForeignKey(Stock, related_name = 'logs')
+	fond = models.ForeignKey(Stock, related_name = 'logs')
 
 	beginning_price = DecimalField(editable = False)
 	last_final_price = DecimalField(editable = False)

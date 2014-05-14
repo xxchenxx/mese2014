@@ -3,7 +3,7 @@ from django.db import models
 
 DecimalField = partial(
 		models.DecimalField,
-		max_digits = 6,
-		decimal_places = 2,
+		max_digits = 15,
+		decimal_places = 4,
 		default = 0
 )

@@ -16,7 +16,7 @@ router.register(r'files/private', PrivateFileAPIViewSet)
 router.register(r'(?P<fond_type>bond|future|fund|stock)s', FondAPIViewSet)
 router.register(r'(?P<fond_type>bond|future|fund|stock)s/(?P<fond_pk>\d+)/logs', LogAPIViewSet)
 router.register(r'(?P<fond_type>bond|future|fund|stock)s/shares', ShareAPIViewSet)
-router.register(r'trade-logs/', TradeLogAPIViewSet)
+router.register(r'trade-logs', TradeLogAPIViewSet)
 
 urlpatterns = patterns('',
 	url(r'^auth/', include('rest_framework.urls', namespace = 'rest_framework')),
