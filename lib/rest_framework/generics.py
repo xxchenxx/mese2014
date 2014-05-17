@@ -12,6 +12,7 @@ from rest_framework import views, mixins, exceptions
 from rest_framework.request import clone_request
 from rest_framework.settings import api_settings
 import warnings
+from functools import partial
 
 
 def strict_positive_int(integer_string, cutoff=None):
@@ -99,7 +100,7 @@ class GenericAPIView(views.APIView):
         serializer_class = self.get_serializer_class()
         context = self.get_serializer_context()
         return serializer_class(instance, data=data, files=files,
-                                many=many, partial=partial, context=context)
+                                many=many, partial=partial, context=context,)
 
     def get_pagination_serializer(self, page):
         """
@@ -235,9 +236,11 @@ class GenericAPIView(views.APIView):
 
         (Eg. admins get full serialization, others get basic serialization)
         """
+
+        serializer_options = getattr(self,'serializer_options',{})				
         serializer_class = self.serializer_class
         if serializer_class is not None:
-            return serializer_class
+            return partial(serializer_class,**serializer_options)
 
         assert self.model is not None, \
             "'%s' should either include a 'serializer_class' attribute, " \
@@ -248,7 +251,7 @@ class GenericAPIView(views.APIView):
         class DefaultSerializer(self.model_serializer_class):
             class Meta:
                 model = self.model
-        return DefaultSerializer
+        return partial(DefaultSerializer,**serializer_options)
 
     def get_queryset(self):
         """

@@ -1,19 +1,18 @@
 from django.db import models
-import core
+from core import Timeline
 
 class FinancialYearField(models.CharField):
 
 	def __init__(self, *args, **kw_args):
-		#self.default = core.get_timeline()['year']
-		kw_args['max_length'] = 4
+		kw_args['max_length'] = 5
 		kw_args['editable'] = False
 		super(FinancialYearField, self).__init__(*args, **kw_args)
 		
 	def pre_save(self, model_instance, add):
 		if add:
-			value = core.get_timeline()['year']
+			data = Timeline().get()
+			value = '%(year)d%(quarter)d' % data
 			setattr(model_instance, self.attname, value)
-			print value
 			return value
 		else:
 			return super(FinancialYearField, self).pre_save(model_instance, add)

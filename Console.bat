@@ -35,9 +35,8 @@ goto menu
 :1
 echo Input the package name:
 set /p Name=
-cd/d "E:\Program Files\Python\Scripts"
 echo You are going to install %Name%
-pip install %Name%
+E:\Program" "Files\Python\Scripts\pip install %Name%
 pause
 goto menu
 

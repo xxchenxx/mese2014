@@ -22,6 +22,8 @@ from django.forms import widgets
 from django.utils.datastructures import SortedDict
 from rest_framework.compat import get_concrete_model, six
 from rest_framework.settings import api_settings
+from timeline.serializer_fields import FinancialYearField
+import timeline.fields
 
 
 # Note: We do the following so that users of the framework can use this style:
@@ -182,6 +184,9 @@ class BaseSerializer(WritableField):
     def __init__(self, instance=None, data=None, files=None,
                  context=None, partial=False, many=None,
                  allow_add_remove=False, **kwargs):
+        fields = kwargs.pop('fields', None)
+        exclude = kwargs.pop('exclude', None)
+
         super(BaseSerializer, self).__init__(**kwargs)
         self.opts = self._options_class(self.Meta)
         self.parent = None
@@ -200,6 +205,16 @@ class BaseSerializer(WritableField):
         self._data = None
         self._files = None
         self._errors = None
+
+        existing = set(self.fields.keys())
+        if fields:
+            allowed = set(fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+        if exclude:
+            disallowed = set(exclude)
+            for field_name in disallowed & existing:
+                self.fields.pop(field_name)
 
         if many and instance is not None and not hasattr(instance, '__iter__'):
             raise ValueError('instance should be a queryset or other iterable with many=True')
@@ -588,10 +603,10 @@ class BaseSerializer(WritableField):
         self._data = None
 
         if isinstance(self.object, list):
-            [self.save_object(item, **kwargs) for item in self.object]
+            (self.save_object(item, **kwargs) for item in self.object)
 
             if self.object._deleted:
-                [self.delete_object(item) for item in self.object._deleted]
+                (self.delete_object(item) for item in self.object._deleted)
         else:
             self.save_object(self.object, **kwargs)
 
@@ -651,6 +666,7 @@ class ModelSerializer(Serializer):
         models.NullBooleanField: BooleanField,
         models.FileField: FileField,
         models.ImageField: ImageField,
+				timeline.fields.FinancialYearField: FinancialYearField,
     }
 
     def get_default_fields(self):

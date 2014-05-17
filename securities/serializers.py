@@ -7,11 +7,11 @@ class HasFondSerializer(serializers.ModelSerializer):
 	
 	fond = serializers.SerializerMethodField('get_fond')
 	
-	def get_fond_serializer_class(self):
-		return FondSerializer
+	def get_fond_serializer_class(self, obj):
+		return get_fond_serializer_class(obj.fond.__class__.__name__.lower())
 		
 	def get_fond(self, obj):
-		return self.get_fond_serializer_class()(obj.fond).data
+		return self.get_fond_serializer_class(obj)(obj.fond).data
 
 class FondSerializer(serializers.ModelSerializer):
 	
@@ -26,7 +26,7 @@ class ShareSerializer(HasFondSerializer):
 	class Meta:
 		fields = ('fond', 'shares')
 		
-class TradeLogSerializer(HasFondSerializer):
+class TradeLogSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = logs.models.TradeLog

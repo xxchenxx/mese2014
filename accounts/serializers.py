@@ -2,10 +2,11 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
 import models
-from file_upload.serializers import PrivateFileSerializer
 from django.contrib.contenttypes.models import ContentType
 
 from django.http import Http404
+
+from common.serializers import FileField 
 
 class AccountSerializer(serializers.Serializer):
 
@@ -33,27 +34,50 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 	
 class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
 	
-	company = serializers.Field(source = 'company.display_name')#HyperlinkedCompanySerializer()
-	debt_file = PrivateFileSerializer(required = False)
+	company = serializers.SerializerMethodField('get_company')
+	debt_files = FileField(many = True, required = False)
+	consumption_reports = FileField(required = False, many = True)
+	
+	def get_company(self, obj):
+		if obj.company is None:
+			return 
+		serializer = get_serializer_by_object(obj.company)
+		return serializer(obj.company, exclude = [
+				'members',
+				'financial_reports',
+				'assets',
+				
+		]).data
 	
 	class Meta:
 		model = models.Person	
 		exclude = ['company_type', 'company_object_id']
 		
-class CompanySerializer(serializers.ModelSerializer, AccountSerializer):
+class EnterpriseSerializer(serializers.ModelSerializer, AccountSerializer):
 	
-	members = PersonSerializer(many = True, required = False)
-
+	members = PersonSerializer(many = True, required = False, exclude=[
+			'company',
+			'consumption_reports',
+			'debt_files',
+	])
+	financial_reports = FileField(many = True, required = False)
+	
 	class Meta:
-		model = models.Company
-		#exclude = ['financial_reports']
+		model = models.Enterprise
 		
-class BankSerializer(serializers.ModelSerializer, AccountSerializer):
+class CompanySerializer(EnterpriseSerializer):
+	
+	financial_reports = FileField(many = True, required = False)
+	
+	class Meta:
+		model = models.Company	
+		
+class BankSerializer(EnterpriseSerializer):
 	
 	class Meta:
 		model = models.Bank
 		
-class FundCompanySerializer(serializers.ModelSerializer, AccountSerializer):
+class FundCompanySerializer(EnterpriseSerializer):
 	
 	class Meta:
 		model = models.FundCompany

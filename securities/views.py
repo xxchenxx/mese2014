@@ -50,7 +50,7 @@ class ShareAPIViewSet(viewsets.ReadOnlyModelViewSet):
 		return serializers.get_share_serializer_class(self.kwargs['fond_type'])
 		
 	def get_queryset(self):
-		return getattr(self.user.profile.info, '%ss_shares' % self.kwargs['fond_type']).all()
+		return getattr(self.request.user.profile.info, '%ss_shares' % self.kwargs['fond_type']).all()
 		
 class TradeLogAPIViewSet(viewsets.ReadOnlyModelViewSet):
 

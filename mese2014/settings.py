@@ -149,6 +149,7 @@ INSTALLED_APPS = (
 		'timeline',
 		'api',
 		'rest_framework',
+		'django_filters',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
@@ -193,6 +194,8 @@ REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
 	'PAGINATE_BY': 10, 
+	'PAGINATE_BY_PARAM': 'limit',  # Allow client to override, using `?page_size=xxx`.
+    'MAX_PAGINATE_BY': 50, 
     'DEFAULT_MODEL_SERIALIZER_CLASS':
         'rest_framework.serializers.HyperlinkedModelSerializer',
 
@@ -204,4 +207,5 @@ REST_FRAMEWORK = {
 	'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+	'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
 }

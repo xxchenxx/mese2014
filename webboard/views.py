@@ -25,7 +25,14 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 		return response
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
-	pass
+	
+	def create(self, request, *args, **kwargs):
+		request.DATA['author'] = request.user.id
+		return super(PassageAPIViewSet, self).create(request, *args, **kwargs)
+
+	def list(self, request, *args, **kwargs):
+		self.serializer_options = {'exclude':['content']}
+		return super(PassageAPIViewSet,self).list(self,request,*args,**kwargs)
 	
 class CommentAPIViewSet(viewsets.ModelViewSet):
 
@@ -38,4 +45,5 @@ class CommentAPIViewSet(viewsets.ModelViewSet):
 		
 	def create(self, request, *args, **kwargs):
 		request.DATA['passage'] = int(kwargs['passage_pk'])
+		request.DATA['author'] = request.user.id
 		return super(CommentAPIViewSet, self).create(request, *args, **kwargs)

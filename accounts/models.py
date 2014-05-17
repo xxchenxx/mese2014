@@ -9,21 +9,39 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from common import fields
-from file_upload.models import PrivateFile, PublicFile
+from file_upload.models import PrivateFile, PublicFile, File
 from annoying.fields import AutoOneToOneField
 	
 import managers
 	
 class HasReportModel(object):
 	
-	def upload_reports(self, file_ids):
+	@classmethod
+	def has_field(cls, field_name):
+		try:
+			return cls._meta.get_field_by_name(field_name)
+		except:
+			pass
+	
+	def upload_reports(self, file_ids, **kwargs):
+		field_name = kwargs.pop('field_name',self.report_field)
+		field = self.has_field(field_name)
+		if not field:
+			return
+		
 		objects = PrivateFile.objects.only('pk')
 		if isinstance(file_ids, (list, tuple)):
-			files = objects.filter(pk__in = file_ids)
-		else:
+			files = objects.filter(pk__in = file_ids) if isinstance(file_ids, (str,int)) else files
+		elif isinstance(file_ids, (int, str)):
 			files = objects.filter(pk = int(file_ids))
-			
-		getattr(self, self.report_field).add(*files)
+		else:
+			files	=	(file_ids,)
+
+		if isinstance(field, models.ForeignKey):
+			setattr(self, field_name, files[0])
+			self.save()
+		else:
+			getattr(self, field_name).add(*files)
 	
 class UserProfile(models.Model):
 	
@@ -96,7 +114,7 @@ class Person(Account, HasReportModel):
 	report_field = 'consumption_reports'
 
 	fixed_assets = fields.DecimalField()
-	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
+	debt_files = models.ManyToManyField(PrivateFile, related_name = 'person_in_debt',  blank = True)
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
 
 	company_type = models.ForeignKey(ContentType, null = True, blank = True)

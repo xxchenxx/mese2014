@@ -12,7 +12,7 @@ from logs.models import TradeLog
 
 from decimal import Decimal
 
-import exceptions
+import exceptions, consts
 
 class Fond(models.Model):
 
@@ -178,6 +178,6 @@ get_share_class = partial(_get_fond, attr = 'Share')
 
 def on_timeline_change(sender, year, **kwargs):
 	for fond_type in consts.fond_types:
-		fond_class = get_fond_class(bond_type)
+		fond_class = get_fond_class(fond_type)
 		for object in fond_class.objects.all().values(fond_class.current_price_field).select_related():
 			object.create_log()
