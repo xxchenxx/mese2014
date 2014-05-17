@@ -1,3 +1,4 @@
-from django.db import models
+from signals import timeline_changed
+import securities.models
 
-# Create your models here.
+timeline_changed.connect(securities.models.on_timeline_change)

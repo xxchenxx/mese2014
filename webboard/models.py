@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from common.fields import FinancialYearField
 class Passage(models.Model):
 	
 	CONFERENCE = 'CO'
-	MEDIA = 'ME'
-	GOVERNMENT = 'GO'
-	COMPANY = 'CY'
+	MEDIA = 'MED'
+	GOVERNMENT = 'GOV'
+	COMPANY = 'COM'
 	
 	TYPE_CHOICES = (
 			(CONFERENCE, 'conference'),
@@ -15,9 +15,10 @@ class Passage(models.Model):
 			(COMPANY, 'company'),
 	)
 	
-	type = models.CharField(max_length = 2, choices = TYPE_CHOICES)
+	type = models.CharField(max_length = 3, choices = TYPE_CHOICES)
 	title = models.CharField(max_length = 255, unique = True)
 	created_time = models.DateTimeField(auto_now_add = True)
+	year = FinancialYearField()
 	author = models.ForeignKey(User, related_name = 'passages')
 	content = models.TextField()
 	

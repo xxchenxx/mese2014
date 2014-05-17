@@ -14,3 +14,6 @@ try:
 	sys.modules['memcache'] = pylibmc
 except ImportError:
 	pass
+	
+from lib import rest_framework
+sys.modules['rest_framework'] = rest_framework

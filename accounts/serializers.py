@@ -1,35 +1,83 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
 import models
+from django.contrib.contenttypes.models import ContentType
+
+from django.http import Http404
+
+from common.serializers import FileField 
 
 class AccountSerializer(serializers.Serializer):
+
 	account_type = serializers.CharField(read_only = True)
+	url = serializers.SerializerMethodField('get_url')
+	
+	def get_url(self, obj):
+		return reverse('user-profile', kwargs = {'pk':obj.profile.user.pk})
 
 class AdminSerializer(AccountSerializer):
 	
-	display_name = serializers.CharField(read_only = True)
-
-class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
-	
-	class Meta:
-		model = models.Person
+	display_name = serializers.CharField(read_only = True, required = False)
 		
 class EnterpriseSerializer(serializers.ModelSerializer, AccountSerializer):
 
 	class Meta:
 		model = models.Enterprise
 		
-class CompanySerializer(serializers.ModelSerializer, AccountSerializer):
+class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 	
 	class Meta:
 		model = models.Company
+		fields = ('url', 'display_name')
+		lookup_field = 'pk'
+	
+class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
+	
+	company = serializers.SerializerMethodField('get_company')
+	debt_files = FileField(many = True, required = False)
+	consumption_reports = FileField(required = False, many = True)
+	
+	def get_company(self, obj):
+		if obj.company is None:
+			return 
+		serializer = get_serializer_by_object(obj.company)
+		return serializer(obj.company, exclude = [
+				'members',
+				'financial_reports',
+				'assets',
+				
+		]).data
+	
+	class Meta:
+		model = models.Person	
+		exclude = ['company_type', 'company_object_id']
 		
-class BankSerializer(serializers.ModelSerializer, AccountSerializer):
+class EnterpriseSerializer(serializers.ModelSerializer, AccountSerializer):
+	
+	members = PersonSerializer(many = True, required = False, exclude=[
+			'company',
+			'consumption_reports',
+			'debt_files',
+	])
+	financial_reports = FileField(many = True, required = False)
+	
+	class Meta:
+		model = models.Enterprise
+		
+class CompanySerializer(EnterpriseSerializer):
+	
+	financial_reports = FileField(many = True, required = False)
+	
+	class Meta:
+		model = models.Company	
+		
+class BankSerializer(EnterpriseSerializer):
 	
 	class Meta:
 		model = models.Bank
 		
-class FundCompanySerializer(serializers.ModelSerializer, AccountSerializer):
+class FundCompanySerializer(EnterpriseSerializer):
 	
 	class Meta:
 		model = models.FundCompany
@@ -37,9 +85,9 @@ class FundCompanySerializer(serializers.ModelSerializer, AccountSerializer):
 class UserSerializer(serializers.ModelSerializer):
 
 	is_admin = serializers.Field(source = 'is_staff')
-	profile  = serializers.Field(source = 'profile')
+	profile  = serializers.SerializerMethodField('get_profile')
 
-	def transform_profile(self, obj, value):
+	def get_profile(self, obj):
 		profile = obj.profile.info
 		if profile is None:
 			return {}
@@ -50,3 +98,22 @@ class UserSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = User
 		fields = ('is_admin', 'username', 'profile', 'id')
+		
+def get_serializer_by_object(obj):
+	return globals()['%sSerializer' % obj.__class__.__name__]
+	
+class EnterpriseField(serializers.WritableField):
+	
+	def field_to_native(self, obj, field_name):
+		enterprise = getattr(obj, field_name)
+		return get_serializer_by_object(enterprise)(enterprise).data
+		
+	def field_from_native(self, data, files, field_name, into):
+		enter_data = data[field_name]
+		cls = ContentType.objects.get(app_label = 'accounts', model = enter_data['type'])
+		
+		if not cls.model_class().objects.filter(pk = enter_data['id']).exists():
+			raise Http404
+		
+		into['%s_type' % field_name] = cls
+		into['%s_object_id' % field_name] = enter_data['id']
