@@ -21,7 +21,10 @@ function add_error(type) {
 	    $("#pfg").addClass("has-error");
 		$("#Result").text("用户名或密码不能为空").addClass("visible");
 	}
-	else {
+	else if(type=="error"){
+      $("#ufg").addClass("has-error");
+	    $("#pfg").addClass("has-error");
+		 $("#Result").text("用户名或密码错误").addClass("visible");
 	}
 }
 function clean_form() {
@@ -37,11 +40,13 @@ function clean_form() {
 }
 function login() {
 	$.ajax({
-		url : "",
-		dataType: "json",
+		async:false,
+		url : "/accounts/login/",
 		data : $('#login-form').serialize(),
+		type:"POST",
 		success: function(data) {
-			return data;
-		}
+			if(data.status=="error") {add_error("error");}
+			else {}
+		},
 	});
 }

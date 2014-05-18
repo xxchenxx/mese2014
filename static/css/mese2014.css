@@ -233,25 +233,20 @@ li {
 	color:#FFF;
 	background-color:#563D7C;
 }
-#p_list {
-	margin-top:50px;
-	z-index:1;
-}
-.sidenav > li.active:after {
-	position:absolute;
-	z-index:2;
-	right:-48px;
-	content:' ';
-	height:0;
-	width:0;
-	border:24.5px solid transparent;
-	border-left-color:#563D7C;
-	top:0px;
-}
+.no-pad {padding:0;}
+#p_list {box-shadow:-2px 5px 3px #bbb;z-index: 3;}
+.list-group {max-height:600px;overflow: auto;}
 .list-group,
 .list-group-item,
 .list-group-item:first-child,
 .list-group-item:last-child {
 	border-radius:0;
+	font-size:18px;
+	line-height: 1.6;
+}
+.list-group-item.active,
+.list-group-item.active:hover,
+.list-group-item.active:active {
+	background-color:#563D7C;
 }
 }
