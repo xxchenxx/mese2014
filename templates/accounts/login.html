@@ -1,0 +1,22 @@
+{%extends "index.html" %}
+{%block main_content %}
+<script src="/static/js/login.js"></script>
+<main class="login" role="main">
+  <div class="container">
+  <form id="login-form">
+  <div class="form-group" id="ufg">
+    <label for="inputUsername">用户名：</label>
+    <input type="text" onfocus="clean_form()" class="form-control form-login" id="inputUsername" placeholder="请输入用户名" >
+  </div>
+  <div class="form-group" id="pfg">
+    <label for="inputPassword">密码：</label>
+    <input type="password" onfocus="clean_form()" class="form-control form-login" id="inputPassword" placeholder="请输入密码" >
+  </div>
+  <div class="alert alert-danger alert-login" id="Result"></div>
+  <div class="form-group">
+    <button type="submit" class="btn btn-login" onClick="validate_form()">登录</button>
+  </div>
+  </form>
+  </div>
+</main>
+{%endblock%}

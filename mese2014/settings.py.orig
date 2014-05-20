@@ -49,7 +49,7 @@ ALLOWED_HOSTS = ["*"]
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'GMT-8'
+TIME_ZONE = 'Asia/Shanghai'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -113,7 +113,10 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+<<<<<<< HEAD
+=======
+#    'django.middleware.csrf.CsrfViewMiddleware',
+>>>>>>> linux_master
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
@@ -145,12 +148,18 @@ INSTALLED_APPS = (
 		'securities.funds',
 		'securities.stocks',
 		'securities.futures',
+<<<<<<< HEAD
 		'securities.logs',
+=======
+>>>>>>> linux_master
 		'securities.bonds',
 		'timeline',
 		'api',
 		'rest_framework',
+<<<<<<< HEAD
 		'django_filters',
+=======
+>>>>>>> linux_master
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
@@ -195,18 +204,29 @@ REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
 	'PAGINATE_BY': 10, 
+<<<<<<< HEAD
 	'PAGINATE_BY_PARAM': 'limit',  # Allow client to override, using `?page_size=xxx`.
     'MAX_PAGINATE_BY': 50, 
+=======
+>>>>>>> linux_master
     'DEFAULT_MODEL_SERIALIZER_CLASS':
         'rest_framework.serializers.HyperlinkedModelSerializer',
 
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
+<<<<<<< HEAD
         'rest_framework.permissions.IsAuthenticated'
+=======
+    #    'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+>>>>>>> linux_master
     ],
 	'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+<<<<<<< HEAD
 	'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
 }
+=======
+}
+>>>>>>> linux_master

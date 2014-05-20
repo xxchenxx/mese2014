@@ -4,11 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.js"></script>
-    <link href="http://www.lib.sinaapp.com/js/bootstrap/latest/css/bootstrap.css" rel="stylesheet"></link>
-<script src="http://www.lib.sinaapp.com/js/bootstrap/latest/js/bootstrap.js"></script>
-    <link href="../static/css/mese2014.css" rel="stylesheet" />
-
+	 {% include "cdn.html" %}
   </head>
   <body>
     <nav class="mese-header" role="navigation">
@@ -25,14 +21,17 @@
                </div>
 		  <div class="collapse navbar-collapse" id="mese-navbar-collapse" style="height :50px;">
 	        <ul class="nav">
-		      <li><a href="#">首页</a></li>
+		      <li><a href="/">首页</a></li>
 		      <li><a href="#">交易大厅</a></li>
-		      <li><a href="#">新闻中心</a></li>
+		      <li><a href="/webboard/passages">新闻中心</a></li>
+		      <li><a href="/accounts/login">登录</a></li>
 		    </ul>
 	      </div>
 		</div>
 	  </div>
 	</nav>
+	{% block main_content %}
+	{% endblock %}
     <script>
 	  $(document).ready(function() {
 	    $('#mese-navbar-collapse').collapse('show');
