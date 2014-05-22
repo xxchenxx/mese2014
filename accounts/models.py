@@ -8,13 +8,22 @@ from common.storage import SAEStorage
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from common import fields
+from common.fields import DecimalField
 from file_upload.models import PrivateFile, PublicFile, File
 from annoying.fields import AutoOneToOneField
 	
 import managers
+
+# Abstract logical interfaces.
+
+class HasAssetsModel(models.Model):
 	
-class HasReportModel(object):
+	assets = DecimalField()
+	
+	class Meta:
+		abstract = True
+
+class HasReportsModel(object):
 	
 	@classmethod
 	def has_field(cls, field_name):
@@ -41,7 +50,33 @@ class HasReportModel(object):
 			setattr(self, field_name, files[0])
 			self.save()
 		else:
-			getattr(self, field_name).add(*files)
+			getattr(self, field_name).add(*files)		
+		
+class PersonalModel(Account, HasAssetsModel):
+
+	MALE = 'M'
+	FEMALE = 'F'
+	GENDER_CHOICE = (
+			(MALE, 'male'),
+			(FEMALE, 'female'),
+	)
+	
+	gender = models.CharField(max_length = 1, default = MALE)
+	position = models.CharField(max_length = 20, default = '')
+	
+	class Meta:
+		abstract = True
+
+class HasFundModel(models.Model):
+	
+	funds = generic.GenericRelation(
+			'funds.Fund',
+			content_type_field = 'owner_type',
+			object_id_field = 'owner_object_id'
+	)	
+	
+	class Meta:
+		abstract = True	
 	
 class UserProfile(models.Model):
 	
@@ -65,113 +100,71 @@ class UserProfile(models.Model):
 	def info(self, obj):
 		if self.user.is_staff:
 			return
-		self.info_object = obj
-	
+		self.info_object = obj	
+
+# Models definition.		
+		
 class Account(models.Model):
 	
+	display_name = models.CharField(max_length = 50, default = '')
 	profile_object = generic.GenericRelation(
 			'UserProfile',
 			content_type_field = 'info_type',
 			object_id_field = 'info_object_id'
 	)
-	display_name = models.CharField(max_length = 255, default = '', blank = True)
-	assets = fields.DecimalField()
-	
-	@property
-	def account_type(self):
-		return self.__class__.__name__.lower()
-	
-	@property
-	def profile(self):
-		if not hasattr(self, '_profile'):
-			try:
-				self._profile = self.profile_object.all()[0]
-			except:
-				self._profile = None
-		
-		return self._profile
 	
 	class Meta:
 		abstract = True
-		ordering = ['display_name']
 		
-class Admin(object):
-
-	display_name = u'管理员'
-	account_type = u'admin'
+class Media(Account):
 	
-	def __init__(self, profile):
-		self.profile = profile
+	contact = models.CharField(max_length = 20, default = '')	
 		
-	def update(self, *args, **kwargs):
-		return
-		
-	def save(self, *args, **kwargs):
-		return
-		
-class Person(Account, HasReportModel):
+class Section(models.Model):
 
+	display_name = models.CharField(max_length = 20, default = '')
+	
+class Industry(models.Model):
+
+	section = models.ForeignKey(Section, related_name = 'industries')
+	display_name = models.CharField(max_length = 20, default = '')		
+		
+class Person(PersonalModel, HasReportsModel):
+
+	company = models.ForiegnKey('Company', related_name = 'members')
+	industry = models.ForeignKey(Industry, related_name = 'persons')
+	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
+	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
+	
 	report_field = 'consumption_reports'
+	
+class Government(PersonalModel):
 
-	fixed_assets = fields.DecimalField()
-	debt_files = models.ManyToManyField(PrivateFile, related_name = 'person_in_debt',  blank = True)
-	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
+	pass
+	
+class Enterprise(Account, HasAssetsModel, HasReportsModel):
 
-	company_type = models.ForeignKey(ContentType, null = True, blank = True)
-	company_object_id = models.PositiveIntegerField(null = True, blank = True)
-	company = generic.GenericForeignKey('company_type', 'company_object_id')
-		
-	class Meta(Account.Meta):
-		pass
-	
-class Enterprise(Account):
-	
-	description = models.TextField(blank = True, default = '')
-	phone_number = models.CharField(blank = True, max_length = 11, default = '')
-	
-	members = generic.GenericRelation(
-			'Person',
-			content_type_field = 'company_type',
-			object_id_field = 'company_object_id',
-	)
-
-	class Meta(Account.Meta):
-		abstract = True
-	
-class Company(Enterprise, HasReportModel):
+	description = models.CharField(max_length = 255, default = '')
+	contact = models.CharField(max_length = 20, default = '')
+	financial_reports = models.ManyToManyField(PrivateFile, related_name = '%(model)ss')
 	
 	report_field = 'financial_reports'
 	
-	financial_reports = models.ManyToManyField(PrivateFile, related_name = 'company_owned_reports')
-	
-	class Meta(Enterprise.Meta):
-		pass
+	class Meta:
+		abstract = True
 		
-class FinancialInstitution(Enterprise):
-	
-	BANK = 'BK'
-	FUND_COMPANY = 'FC'
-	
-	INSTITUTION_TYPE_CHOICES = (
-			(BANK, 'bank'),
-			(FUND_COMPANY, 'fund_company'),
-	)
-	
-	type = models.CharField(max_length = 2, default = BANK, choices = INSTITUTION_TYPE_CHOICES)
-	
-	class Meta(Enterprise.Meta):
-		pass
-		
-class Bank(FinancialInstitution):
+class Company(Enterprise):
 
-	objects = managers.BankManager()
-
-	class Meta(FinancialInstitution.Meta):
-		proxy = True
-		
-class FundCompany(FinancialInstitution):
-
-	objects = managers.FundCompanyManager()
+	industry = models.ForeignKey(Industry, related_name = 'companies', null = True)
 	
-	class Meta(FinancialInstitution.Meta):
-		proxy = True
+class FundCompany(Enterprise, HasFundModel):
+
+	pass
+	
+class Bank(Enterprise, HasFundModel):
+	
+	pass	
+	
+class Fund(Account, HasAssetsModel):
+
+	pass

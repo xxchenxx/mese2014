@@ -2,6 +2,10 @@ from rest_framework import viewsets, decorators, renderers, response, mixins
 from rest_framework.generics import get_object_or_404
 import models, serializers
 import json
+from django.shortcuts import render_to_response
+
+def test(a):
+	return render_to_response('p_test.html')
 
 class BasePassageViewSet(viewsets.GenericViewSet):
 

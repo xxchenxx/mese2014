@@ -1,41 +1,18 @@
 from django.db import models
-from common.fields import DecimalField
-from timeline.fields import FinancialYearField
 
-import securities.models 
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 
-class Bond(securities.models.Fond):
+class Bond(models.Model):
 	
-	current_price = DecimalField()
+	publisher_type = models.ForeignKey(ContentType, null = True, blank = True)
+	publisher_object_id = models.PositiveIntegerField(null = True, blank = True)
+	publisher = generic.GenericForeignKey('publisher_type', 'publisher_object_id')
 	
-	def get_price(self):
-		return self.current_price
-		
-	def get_share_class(self):
-		return Share
-		
-	def get_log_class(self):
-		return Log
+class Log(models.Model):
 	
-class Share(securities.models.Share):
+	bond = models.ForeignKey(Bond, related_name = 'logs')
 	
-	fond = models.ForeignKey(Bond, related_name = 'shares')
+class Share(models.Model):
 	
-class Log(securities.models.Log):
-
-	fond = models.ForeignKey(Bond, related_name = 'logs')
-
-	beginning_price = DecimalField(editable = False)
-	last_final_price = DecimalField(editable = False)
-	highest_price = DecimalField(editable = False)
-	lowest_price = DecimalField(editable = False)
-	final_price = DecimalField(editable = False)
-	
-	transcation_quantity = DecimalField(editable = False)
-	transcation_money = DecimalField(editable = False)
-	
-	increasement = DecimalField(editable = False)
-	increased_rate = DecimalField(editable = False)
-	
-	class Meta:
-		ordering = ['-year']
+	pass

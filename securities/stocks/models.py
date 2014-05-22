@@ -1,47 +1,30 @@
 from django.db import models
+
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from common.fields import DecimalField
-import securities.models
-
-from timeline.fields import FinancialYearField
-
-class Stock(securities.models.Fond):
-
-	current_price = DecimalField()
-		
-	def get_share_class(self):
-		return Share
-		
-	def get_price(self):
-		return self.current_price
-		
-	def get_log_class(self):
-		return Log
-		
-	class Meta:
-		pass
-		
-class Share(securities.models.Share):
+class Stock(models.Model):
 	
-	fond = models.ForeignKey(Stock, related_name = 'shares')
+	publisher_type = models.ForeignKey(ContentType, null = True, blank = True)
+	publisher_object_id = models.PositiveIntegerField(null = True, blank = True)
+	publisher = generic.GenericForeignKey('publisher_type', 'publisher_object_id')
 	
-class Log(securities.models.Log):
+class Log(models.Model):
+	
+	stock = models.ForeignKey(Stock, related_name = 'logs')
 
-	fond = models.ForeignKey(Stock, related_name = 'logs')
+class Application(models.Model):
 
-	beginning_price = DecimalField(editable = False)
-	last_final_price = DecimalField(editable = False)
-	highest_price = DecimalField(editable = False)
-	lowest_price = DecimalField(editable = False)
-	final_price = DecimalField(editable = False)
+	applicant_type = models.ForeignKey(ContentType, null = True, blank = True)
+	applicant_object_id = models.PositiveIntegerField(null = True, blank = True)
+	applicant = generic.GenericForeignKey('applicant_type', 'applicant_object_id')
 	
-	transcation_quantity = DecimalField(editable = False)
-	transcation_money = DecimalField(editable = False)
+	stock = models.ForeignKey(Stock, related_name = 'applications')
 	
-	increasement = DecimalField(editable = False)
-	increased_rate = DecimalField(editable = False)
+class Share(models.Model):
 	
-	class Meta:
-		ordering = ['-year']
+	owner_type = models.ForeignKey(ContentType, null = True, blank = True)
+	owner_object_id = models.PositiveIntegerField(null = True, blank = True)
+	owner = generic.GenericForeignKey('owner_type', 'owner_object_id')
+	
+	stock = models.ForeignKey(Stock, related_name = 'applications')
