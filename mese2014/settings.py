@@ -143,12 +143,14 @@ INSTALLED_APPS = (
 		'securities.funds',
 		'securities.stocks',
 		'securities.futures',
-		'securities.logs',
 		'securities.bonds',
 		'timeline',
 		'api',
+		'notifications',
 		'rest_framework',
 		'django_filters',
+		'notifications',
+		'transfer',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

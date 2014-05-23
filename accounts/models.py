@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from common.fields import DecimalField
-from file_upload.models import PrivateFile, PublicFile, File
+from files.models import PrivateFile, PublicFile, File
 from annoying.fields import AutoOneToOneField
 	
 import managers
@@ -51,21 +51,6 @@ class HasReportsModel(object):
 			self.save()
 		else:
 			getattr(self, field_name).add(*files)		
-		
-class PersonalModel(Account, HasAssetsModel):
-
-	MALE = 'M'
-	FEMALE = 'F'
-	GENDER_CHOICE = (
-			(MALE, 'male'),
-			(FEMALE, 'female'),
-	)
-	
-	gender = models.CharField(max_length = 1, default = MALE)
-	position = models.CharField(max_length = 20, default = '')
-	
-	class Meta:
-		abstract = True
 
 class HasFundModel(models.Model):
 	
@@ -115,7 +100,22 @@ class Account(models.Model):
 	
 	class Meta:
 		abstract = True
-		
+	
+class PersonalModel(Account, HasAssetsModel):
+
+	MALE = 'M'
+	FEMALE = 'F'
+	GENDER_CHOICE = (
+			(MALE, 'male'),
+			(FEMALE, 'female'),
+	)
+	
+	gender = models.CharField(max_length = 1, default = MALE)
+	position = models.CharField(max_length = 20, default = '')
+	
+	class Meta:
+		abstract = True
+	
 class Media(Account):
 	
 	contact = models.CharField(max_length = 20, default = '')	
@@ -131,7 +131,7 @@ class Industry(models.Model):
 		
 class Person(PersonalModel, HasReportsModel):
 
-	company = models.ForiegnKey('Company', related_name = 'members')
+	company = models.ForeignKey('Company', related_name = 'members')
 	industry = models.ForeignKey(Industry, related_name = 'persons')
 	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
@@ -146,7 +146,7 @@ class Enterprise(Account, HasAssetsModel, HasReportsModel):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')
-	financial_reports = models.ManyToManyField(PrivateFile, related_name = '%(model)ss')
+	financial_reports = models.ManyToManyField(PrivateFile, related_name = '%(class)ss')
 	
 	report_field = 'financial_reports'
 	

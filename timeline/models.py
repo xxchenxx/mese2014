@@ -1,4 +1,4 @@
 from signals import timeline_changed
-import securities.models
+#import securities.models
 
-timeline_changed.connect(securities.models.on_timeline_change)
+#timeline_changed.connect(securities.models.on_timeline_change)
