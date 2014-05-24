@@ -1,12 +1,12 @@
 from accounts.models import *
 from django.contrib.auth.models import User
 
+section = Section.objects.create(display_name = 'A')
+industry = Industry.objects.get(display_name = 'B')#create(section = section, display_name = 'B')
+
 user = User.objects.create_user(username = 'cpy', password = 'cpy')
-user.profile.info = Company.objects.create()
-user.profile.save()
+company = user.profile.create_info(class_name = 'Company', industry = industry)
 user = User.objects.create_user(username = 'test', password = 'test')
-user.profile.info = Person.objects.create(assets = 10000,company=Company.objects.get(pk=1))
-user.profile.save()
+user.profile.create_info('Person',assets = 10000,company=Company.objects.get(pk=1), industry = industry)
 user = User.objects.create_user(username = 'test2', password = 'test2')
-user.profile.info = Person.objects.create(assets = 10000,company=Company.objects.get(pk=1))
-user.profile.save()
+user.profile.create_info('Person', assets = 10000,company=Company.objects.get(pk=1), industry = industry)

@@ -52,6 +52,17 @@ class HasReportsModel(object):
 		else:
 			getattr(self, field_name).add(*files)		
 
+class HasStockModel(models.Model):
+	
+	stock_shares = generic.GenericRelation(
+			'stocks.Share',
+			content_type_field = 'owner_type',
+			object_id_field = 'owner_object_id'
+	)		
+	
+	class Meta:
+		abstract = True
+			
 class HasFundModel(models.Model):
 	
 	funds = generic.GenericRelation(
@@ -70,6 +81,13 @@ class UserProfile(models.Model):
 	info_type = models.ForeignKey(ContentType, null = True, blank = True)
 	info_object_id = models.PositiveIntegerField(null = True, blank = True)
 	info_object = generic.GenericForeignKey('info_type', 'info_object_id')
+	
+	def create_info(self, class_name, save = True, **kwargs):
+		if self.info_object is None:
+			self.info_object = globals()[class_name].objects.create(**kwargs)
+			if save:
+				self.save()
+		return self.info_object
 	
 	@property
 	def info(self):
@@ -129,7 +147,7 @@ class Industry(models.Model):
 	section = models.ForeignKey(Section, related_name = 'industries')
 	display_name = models.CharField(max_length = 20, default = '')		
 		
-class Person(PersonalModel, HasReportsModel):
+class Person(PersonalModel, HasReportsModel, HasStockModel):
 
 	company = models.ForeignKey('Company', related_name = 'members')
 	industry = models.ForeignKey(Industry, related_name = 'persons')
@@ -138,11 +156,16 @@ class Person(PersonalModel, HasReportsModel):
 	
 	report_field = 'consumption_reports'
 	
-class Government(PersonalModel):
+	def save(self, *args, **kwargs):
+		if self.id is None:
+			self.industry = company.industry
+		super(Person, self).save(*args, **kwargs)
+	
+class Government(PersonalModel, HasStockModel):
 
 	pass
 	
-class Enterprise(Account, HasAssetsModel, HasReportsModel):
+class Enterprise(Account, HasAssetsModel, HasReportsModel, HasStockModel):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')
