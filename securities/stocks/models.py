@@ -142,8 +142,6 @@ class ShareManager(models.Manager):
 		except Share.DoesNotExist:
 			if create:
 				return Share(owner = owner, stock = stock, **kwargs)
-			else:
-				return	
 		
 class Share(models.Model):
 	

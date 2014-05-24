@@ -16,14 +16,14 @@ import managers
 
 # Abstract logical interfaces.
 
-class HasAssetsModel(models.Model):
+class HasAssetsMixin(models.Model):
 	
 	assets = DecimalField()
 	
 	class Meta:
 		abstract = True
 
-class HasReportsModel(object):
+class HasReportsMixin(object):
 	
 	@classmethod
 	def has_field(cls, field_name):
@@ -52,18 +52,42 @@ class HasReportsModel(object):
 		else:
 			getattr(self, field_name).add(*files)		
 
-class HasStockModel(models.Model):
-	
+class HasStockMixin(HasAssetsMixin):
+
 	stock_shares = generic.GenericRelation(
 			'stocks.Share',
 			content_type_field = 'owner_type',
 			object_id_field = 'owner_object_id'
-	)		
+	)
+	
+	class Meta:
+		abstract = True
+		
+class HasBondMixin(HasAssetsMixin):
+
+	bond_shares = generic.GenericRelation(
+			'bonds.Share',
+			content_type_field = 'owner_type',
+			object_id_field = 'owner_object_id'
+	)
+	
+	def buy_bond(self, bond, money):
+		if bond.published or self.assets < money:
+			assert 1==2
+			
+		bond.apply_money(self, money)
+		self.assets -= money
+		
 	
 	class Meta:
 		abstract = True
 			
-class HasFundModel(models.Model):
+class HasStockBondMixin(HasStockMixin, HasBondMixin):
+	
+	class Meta:
+		abstract = True
+			
+class OwnFundMixin(models.Model):
 	
 	funds = generic.GenericRelation(
 			'funds.Fund',
@@ -72,7 +96,9 @@ class HasFundModel(models.Model):
 	)	
 	
 	class Meta:
-		abstract = True	
+		abstract = True
+		
+# Models definition.
 	
 class UserProfile(models.Model):
 	
@@ -103,9 +129,7 @@ class UserProfile(models.Model):
 	def info(self, obj):
 		if self.user.is_staff:
 			return
-		self.info_object = obj	
-
-# Models definition.		
+		self.info_object = obj			
 		
 class Account(models.Model):
 	
@@ -119,7 +143,7 @@ class Account(models.Model):
 	class Meta:
 		abstract = True
 	
-class PersonalModel(Account, HasAssetsModel):
+class PersonalModel(Account, HasAssetsMixin):
 
 	MALE = 'M'
 	FEMALE = 'F'
@@ -147,7 +171,7 @@ class Industry(models.Model):
 	section = models.ForeignKey(Section, related_name = 'industries')
 	display_name = models.CharField(max_length = 20, default = '')		
 		
-class Person(PersonalModel, HasReportsModel, HasStockModel):
+class Person(PersonalModel, HasReportsMixin, HasStockBondMixin):
 
 	company = models.ForeignKey('Company', related_name = 'members')
 	industry = models.ForeignKey(Industry, related_name = 'persons')
@@ -161,11 +185,11 @@ class Person(PersonalModel, HasReportsModel, HasStockModel):
 			self.industry = company.industry
 		super(Person, self).save(*args, **kwargs)
 	
-class Government(PersonalModel, HasStockModel):
+class Government(PersonalModel, HasStockBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasAssetsModel, HasReportsModel, HasStockModel):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')
@@ -180,14 +204,14 @@ class Company(Enterprise):
 
 	industry = models.ForeignKey(Industry, related_name = 'companies', null = True)
 	
-class FundCompany(Enterprise, HasFundModel):
+class FundCompany(Enterprise, OwnFundMixin):
 
 	pass
 	
-class Bank(Enterprise, HasFundModel):
+class Bank(Enterprise, OwnFundMixin):
 	
 	pass	
 	
-class Fund(Account, HasAssetsModel):
+class Fund(Account, HasAssetsMixin):
 
 	pass
