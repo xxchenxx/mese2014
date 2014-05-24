@@ -69,7 +69,7 @@ class Application(models.Model):
 	shares = DecimalField()
 	created_time = models.DateTimeField(auto_now_add = True)
 	
-	def save(self, *args, **args):
+	def save(self, *args, **kwargs):
 		if self.id is not None:
 			application_updated.send(self, application = self)
 		

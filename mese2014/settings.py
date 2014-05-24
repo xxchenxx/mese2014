@@ -107,7 +107,6 @@ SECRET_KEY = '5(&isb6ohk8@4+f56c%+$4o1oazr_&$bopww4q&86gp5j!c+ep'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -115,8 +114,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+		'common.middlewares.SQLMiddleware',
 )
 
 ROOT_URLCONF = 'mese2014.urls'
