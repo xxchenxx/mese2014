@@ -56,6 +56,12 @@ class Stock(models.Model):
 		application_updated.send(self, application = application)
 		
 		return application
+		
+	def update_price(self, price):
+		if Decimal(price) - Decimal(self.current_price) > 1e-4:
+			Log.objects.create(stock = self, price = price)
+			self.current_price = price
+			self.save()
 	
 	class Meta:
 		ordering = ['-current_price', '-created_time']
@@ -117,9 +123,9 @@ class Application(models.Model):
 			if self._share is None or self._share.shares < self.shares:
 				raise SharesNotEnough			
 	
-	def save(self, *args, **kwargs):
-		#if self.id is not None:
-		#	application_updated.send(self, application = self)
+	def save(self, send = False, *args, **kwargs):
+		if send and self.id is not None:
+			application_updated.send(self, application = self)
 		
 		super(Application, self).save(*args, **kwargs)
 	
@@ -177,7 +183,6 @@ def process_application_updated(sender, **kwargs):
 		application_sets.pop()	
 
 	Application.objects.filter(id__in = (app[0].id for app in application_sets)).delete()
-	stock.current_price = application.price
-	stock.save()
+	stock.update_price(application.price)
 	
 application_updated.connect(process_application_updated)
