@@ -1,5 +1,6 @@
 from common.mixins import *
-from models import Share
+from models import Share, Application
+from signals import application_updated
 
 __all__ = ['HasStockMixin']
 
@@ -17,6 +18,20 @@ class HasStockMixin(HasAssetsMixin):
 		except Share.DoesNotExist:
 			if create:
 				return Share(owner = self, stock = stock, **kwargs)
+				
+	def __apply(self, command, stock, price, shares):
+		application = Application(stock = stock, applicant = self, price = price, command = command, shares = shares)
+		application.clean()
+		application.save()
+		application_updated.send(self, application = application)
+		
+		return application
+		
+	def buy(self, stock, price, shares):
+		self.__apply(Application.BUY, stock, price, shares)
+		
+	def sell(self, stock, price, shares):
+		self.__apply(Application.SELL, stock, price, shares)
 	
 	class Meta:
 		abstract = True

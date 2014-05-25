@@ -5,6 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from common.fields import DecimalField
+from common.mixins import get_inc_dec_mixin
+from exceptions import BondPublished
 
 class Bond(models.Model):
 	
@@ -29,6 +31,10 @@ class Bond(models.Model):
 	published_time = models.DateTimeField()
 	created_time = models.DateTimeField(auto_now_add = True)
 	
+	def check_published(self):
+		if self.published:
+			raise BondPublished
+	
 	def clean_fields(self, *args, **kwargs):
 		if self.type is None:
 			self.type = self.GOVERNMENT if self.publisher.__class__.__name__ == 'Government' else self.ENTERPRISE
@@ -36,27 +42,16 @@ class Bond(models.Model):
 		super(Bond, self).clean_fields(*args, **kwargs)
 	
 	def apply_money(self, actor, money):
-		share = Share.get_share(actor, self, create = True, money = money)
-		if share.id is not None:
-			share.money = F('money') + money
-		share.save()
-		
-		self.publisher.assets = F('assets') + money
-		self.publisher.save()
+		share = actor.get_share(self, create = True, money = money).inc_money(money)
+		self.publisher.inc_assets(money)
 	
 	class Meta:
 		ordering = ['-created_time']
 	
 class ShareManager(models.Manager):
-
-	def get_share(self, owner, bond, create = False, **kwargs):
-		try:
-			return owner.bond_shares.get(bond = bond)
-		except Bond.DoesNotExist:
-			if create:
-				return Share(owner = owner, bond = bond, **kwargs)
+	pass
 	
-class Share(models.Model):
+class Share(get_inc_dec_mixin(['money'])):
 	
 	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'bond_shares')
 	owner_object_id = models.PositiveIntegerField(null = True, blank = True)

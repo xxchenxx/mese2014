@@ -135,11 +135,11 @@ class Person(PersonalModel, HasReportsMixin, HasStockBondMixin):
 			self.industry = company.industry
 		super(Person, self).save(*args, **kwargs)
 	
-class Government(PersonalModel, HasStockBondMixin):
+class Government(PersonalModel, HasStockBondMixin, HasBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasReportsMixin, HasStockBondMixin):
+class Enterprise(Account, HasReportsMixin, HasStockBondMixin, HasBondMixin):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')

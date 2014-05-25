@@ -29,8 +29,8 @@ class StockTest(TestCase):
 		
 user1, user2 = Person.objects.all()
 stk = Stock.objects.get(pk=1)
-stk.apply(user1, 0.9, 'sell', 10)
-stk.apply(user2, 0.9, 'buy', 10)
+user1.sell(stk, 0.9, 10)
+user2.buy(stk, 0.9, 10)
 
 from django.db import connection
 print len(connection.queries)

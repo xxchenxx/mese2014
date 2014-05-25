@@ -4,6 +4,7 @@ from common.fields import DecimalField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from functools import partial
+from exceptions import AssetsNotEnough
 
 def get_inc_dec_mixin(fields = []):
 
@@ -46,6 +47,12 @@ def get_inc_dec_mixin(fields = []):
 class HasAssetsMixin(get_inc_dec_mixin(['assets'])):
 	
 	assets = DecimalField()
+	
+	def check_assets(self, assets):
+		if self.assets < assets:
+			raise AssetsNotEnough
+		
+		return True
 	
 	class Meta:
 		abstract = True

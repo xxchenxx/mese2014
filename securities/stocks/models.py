@@ -8,7 +8,7 @@ from django.contrib.contenttypes import generic
 
 from common.fields import DecimalField
 from common.mixins import get_inc_dec_mixin
-from exceptions import (AssetsNotEnough, SharesNotEnough)
+from exceptions import SharesNotEnough
 from signals import application_updated
 
 from decimal import Decimal
@@ -42,14 +42,6 @@ class Stock(models.Model):
 		
 		seller.get_share(self, create = True).dec_shares(shares)
 		share = buyer.get_share(self, create = True).inc_shares(shares)
-	
-	def apply(self, applicant, price, command, shares):
-		application = Application(stock = self, applicant = applicant, price = price, command = command, shares = shares)
-		application.clean()
-		application.save()
-		application_updated.send(self, application = application)
-		
-		return application
 		
 	def update_price(self, price):
 		if Decimal(price) - Decimal(self.current_price) > 1e-4:
@@ -109,8 +101,8 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 	def clean(self):
 		current_price, new_price = self.stock.current_price, Decimal(self.price)
 		assert abs((current_price-new_price) / current_price) <= 0.2, "Stock price overflow."
-		if self.command and self.command == self.BUY and self.applicant.assets < new_price * self.shares:
-			raise AssetsNotEnough
+		if self.command and self.command == self.BUY:
+			self.applicant.check_assets(new_price * self.shares)
 
 		if self.command and self.command == self.SELL:
 			self.get_share()
