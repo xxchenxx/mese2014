@@ -11,17 +11,13 @@ from django.contrib.contenttypes import generic
 from common.fields import DecimalField
 from files.models import PrivateFile, PublicFile, File
 from annoying.fields import AutoOneToOneField
-	
+
 import managers
 
-# Abstract logical interfaces.
+from common.mixins import HasAssetsMixin
+from securities.mixins import *
 
-class HasAssetsMixin(models.Model):
-	
-	assets = DecimalField()
-	
-	class Meta:
-		abstract = True
+# Abstract logical interfaces.
 
 class HasReportsMixin(object):
 	
@@ -44,59 +40,13 @@ class HasReportsMixin(object):
 		elif isinstance(file_ids, (int, str)):
 			files = objects.filter(pk = int(file_ids))
 		else:
-			files	=	(file_ids,)
+			files = (file_ids,)
 
 		if isinstance(field, models.ForeignKey):
 			setattr(self, field_name, files[0])
 			self.save()
 		else:
-			getattr(self, field_name).add(*files)		
-
-class HasStockMixin(HasAssetsMixin):
-
-	stock_shares = generic.GenericRelation(
-			'stocks.Share',
-			content_type_field = 'owner_type',
-			object_id_field = 'owner_object_id'
-	)
-	
-	class Meta:
-		abstract = True
-		
-class HasBondMixin(HasAssetsMixin):
-
-	bond_shares = generic.GenericRelation(
-			'bonds.Share',
-			content_type_field = 'owner_type',
-			object_id_field = 'owner_object_id'
-	)
-	
-	def buy_bond(self, bond, money):
-		if bond.published or self.assets < money:
-			assert 1==2
-			
-		bond.apply_money(self, money)
-		self.assets -= money
-		
-	
-	class Meta:
-		abstract = True
-			
-class HasStockBondMixin(HasStockMixin, HasBondMixin):
-	
-	class Meta:
-		abstract = True
-			
-class OwnFundMixin(models.Model):
-	
-	funds = generic.GenericRelation(
-			'funds.Fund',
-			content_type_field = 'owner_type',
-			object_id_field = 'owner_object_id'
-	)	
-	
-	class Meta:
-		abstract = True
+			getattr(self, field_name).add(*files)
 		
 # Models definition.
 	
@@ -189,7 +139,7 @@ class Government(PersonalModel, HasStockBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin):
+class Enterprise(Account, HasReportsMixin, HasStockBondMixin):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')

@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from common.fields import DecimalField
-
+from common.mixins import get_inc_dec_mixin
 from exceptions import (AssetsNotEnough, SharesNotEnough)
 from signals import application_updated
 
@@ -37,17 +37,11 @@ class Stock(models.Model):
 			Price: %f
 			shares: %f""" %(seller, buyer, price, shares)
 		money = Decimal(price) * shares
-		seller.assets = F('assets') + money
-		seller.save()
-		buyer.assets = F('assets') - money
-		buyer.save()
+		seller.inc_assets(money)
+		buyer.dec_assets(money)
 		
-		share = Share.objects.get_share(seller, self, create = True)
-		share.shares -= shares
-		share.save()
-		share = Share.objects.get_share(buyer, self, create = True)
-		share.shares += shares
-		share.save()
+		seller.get_share(self, create = True).dec_shares(shares)
+		share = buyer.get_share(self, create = True).inc_shares(shares)
 	
 	def apply(self, applicant, price, command, shares):
 		application = Application(stock = self, applicant = applicant, price = price, command = command, shares = shares)
@@ -80,7 +74,7 @@ class ApplicationManager(models.Manager):
 	def fetch_suitable_applications(self, application):
 		return self.filter(stock = application.stock, price = application.price).exclude(command = application.command)
 		
-class Application(models.Model):
+class Application(get_inc_dec_mixin(['shares', 'price'])):
 
 	SELL = 'sell'
 	BUY  = 'buy'
@@ -100,7 +94,7 @@ class Application(models.Model):
 	created_time = models.DateTimeField(auto_now_add = True)
 	
 	def decrease_or_delete(self, shares):
-		self.shares -= shares
+		self.dec_shares(shares, commit = False)
 		if self.shares == Decimal(0) and self.id:
 			self.delete()
 		else:
@@ -108,7 +102,7 @@ class Application(models.Model):
 	
 	def get_share(self):
 		if not hasattr(self, '_share'):
-			self._share = Share.objects.get_share(owner = self.applicant, stock = self.stock)
+			self._share = self.applicant.get_share(stock = self.stock)
 			
 		return self._share
 	
@@ -136,14 +130,9 @@ class Application(models.Model):
 		
 class ShareManager(models.Manager):				
 			
-	def get_share(self, owner, stock, create = False, **kwargs):
-		try:
-			return owner.stock_shares.get(stock = stock)
-		except Share.DoesNotExist:
-			if create:
-				return Share(owner = owner, stock = stock, **kwargs)
+	pass
 		
-class Share(models.Model):
+class Share(get_inc_dec_mixin(['shares'])):
 	
 	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'stock_shares')
 	owner_object_id = models.PositiveIntegerField(null = True, blank = True)
@@ -180,7 +169,7 @@ def process_application_updated(sender, **kwargs):
 	if quantity < 0:
 		application_sets.pop()	
 
-	Application.objects.filter(id__in = (app[0].id for app in application_sets)).delete()
-	stock.update_price(application.price)
+	#Application.objects.filter(id__in = (app[0].id for app in application_sets)).delete()
+	#stock.update_price(application.price)
 	
 application_updated.connect(process_application_updated)

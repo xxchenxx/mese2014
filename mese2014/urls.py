@@ -4,6 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+	url(r'^cron/', 'mese2014.views.cron'),
 	url(r'^$', 'mese2014.views.index', name='index'),
 	url(r'^accounts/', include('accounts.urls')),
 	url(r'^webboard/', include('webboard.urls')),

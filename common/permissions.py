@@ -1,10 +1,10 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-from accounts.models import HasReportsModel, Person
+from accounts.models import HasReportsMixin, Person
 
 class HasReport(BasePermission):
 
 	def has_permission(self, request, view):
-		return request.user and isinstance(request.user.profile.info, HasReportsModel)
+		return request.user and isinstance(request.user.profile.info, HasReportsMixin)
 		
 class IsAdminUser(BasePermission):
 

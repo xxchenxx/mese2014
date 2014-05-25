@@ -42,6 +42,7 @@ class Bond(models.Model):
 		share.save()
 		
 		self.publisher.assets = F('assets') + money
+		self.publisher.save()
 	
 	class Meta:
 		ordering = ['-created_time']
