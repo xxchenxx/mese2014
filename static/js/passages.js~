@@ -1,6 +1,6 @@
-
 function loadList(p_argu) {
 	var argu = p_argu.substr(1);
+	$(p_argu+'C').html("");
 	if (argu!=null) {
 		$.ajax({
 			type:"GET",
@@ -8,12 +8,20 @@ function loadList(p_argu) {
 			success: function(data){
 				$.each(data.results, function(){
 					$(p_argu+'C').append('<div class="panel panel-default"><div class="panel-heading"><h4 class="'+
-					'panel-title"><a data-toggle="collapse" data-parent="#'+argu+'C" href="#ps'+
-					+this.id+'">'+this.title+'</a>'+this.created_time+'by@'+this.author.profile.display_name+
-					'</h4></div></div>')
-					})
+					'panel-title"><a onClick="loadPassage(this.id)" data-toggle="collapse" has-clicked="false" data-parent="#'+argu+'C" href="#ps'+
+					+this.id+'" id="ps'+this.id+'">'+this.title+'</a>'+'<span class="pull-right">'+this.created_time+'by@'+this.author.profile.display_name+
+					'</span></h4></div></div>');
+					});
 			}
 		})
 	}
 }
-
+function loadPassage(id)
+{
+	var p_id=id.substr(2);
+	var c = $("#"+id);
+	var container = c.parent('.panel');
+	if (c.attr("has-clicked" == "false" )) {
+		container.append("<div class='panel)		
+	}
+}
