@@ -4,7 +4,7 @@ from signals import application_updated
 
 __all__ = ['HasStockMixin']
 
-class HasStockMixin(HasAssetsMixin):
+class HasStockMixin(models.Model):
 
 	stock_shares = generic.GenericRelation(
 			'stocks.Share',
@@ -12,7 +12,7 @@ class HasStockMixin(HasAssetsMixin):
 			object_id_field = 'owner_object_id'
 	)
 	
-	def get_share(self, stock, create = False, **kwargs):
+	def get_stock_share(self, stock, create = False, **kwargs):
 		try:
 			return self.stock_shares.get(stock = stock)
 		except Share.DoesNotExist:

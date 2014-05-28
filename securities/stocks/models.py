@@ -40,8 +40,8 @@ class Stock(models.Model):
 		seller.inc_assets(money)
 		buyer.dec_assets(money)
 		
-		seller.get_share(self, create = True).dec_shares(shares)
-		share = buyer.get_share(self, create = True).inc_shares(shares)
+		seller.get_stock_share(self, create = True).dec_shares(shares)
+		share = buyer.get_stock_share(self, create = True).inc_shares(shares)
 		
 	def update_price(self, price):
 		if Decimal(price) - Decimal(self.current_price) > 1e-4:
@@ -94,7 +94,7 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 	
 	def get_share(self):
 		if not hasattr(self, '_share'):
-			self._share = self.applicant.get_share(stock = self.stock)
+			self._share = self.applicant.get_stock_share(stock = self.stock)
 			
 		return self._share
 	

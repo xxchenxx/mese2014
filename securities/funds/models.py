@@ -3,7 +3,10 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from common.fields import DecimalField
+from common.fields import DecimalField, TimeDeltaField
+from common.mixins import get_inc_dec_mixin
+
+from decimal import Decimal
 
 class Fund(models.Model):
 
@@ -27,17 +30,26 @@ class Fund(models.Model):
 	min_return_rate = DecimalField()
 	max_return_rate = DecimalField()
 	inital_money = DecimalField()
-	lasted_time = DecimalField()
+	lasted_time = TimeDeltaField()
 	published_time = DecimalField()
 	
 	fund_type = models.CharField(max_length = 10, choices = TYPE_CHOICE)
 	
 	created_time = models.DateTimeField(auto_now_add = True)
 	
+	def apply_money(self, actor, money):
+		pass
+	
+	def can_buy(self):
+		return True
+	
 	class Meta:
 		ordering = ['-created_time']
 	
 class ClosedEndFund(Fund):
+	
+	def can_buy(self):
+		return not self.published
 	
 	class Meta:
 		proxy = True
@@ -47,7 +59,7 @@ class OpenEndFund(Fund):
 	class Meta:
 		proxy = True
 		
-class Share(models.Model):
+class Share(get_inc_dec_mixin(['money'])):
 
 	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'fund_shares')
 	owner_object_id = models.PositiveIntegerField(null = True, blank = True)
@@ -55,6 +67,7 @@ class Share(models.Model):
 	
 	fund = models.ForeignKey(Fund, related_name = 'shares')
 	money = DecimalField()
+	percentage = DecimalField()
 	
 	class Meta:
 		ordering = ['-money']

@@ -4,9 +4,13 @@ from django.db.models import F
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from common.fields import DecimalField
+from common.fields import DecimalField, TimeDeltaField
 from common.mixins import get_inc_dec_mixin
 from exceptions import BondPublished
+
+from decimal import Decimal
+
+from django.conf import settings
 
 class Bond(models.Model):
 	
@@ -17,7 +21,7 @@ class Bond(models.Model):
 			(ENTERPRISE, 'Enterprise'),
 	)
 	
-	display_name = models.CharField(max_length = 255, default = '')
+	display_name = models.CharField(max_length = 255, default = '', blank = True)
 	
 	publisher_type = models.ForeignKey(ContentType, null = True, blank = True)
 	publisher_object_id = models.PositiveIntegerField(null = True, blank = True)
@@ -26,23 +30,41 @@ class Bond(models.Model):
 	
 	published = models.BooleanField(default = False)
 	
-	interest_rate = DecimalField()
-	lasted_time = models.TimeField()
+	profit_rate = DecimalField()
+	lasted_time = TimeDeltaField()
 	published_time = models.DateTimeField()
 	created_time = models.DateTimeField(auto_now_add = True)
 	
+	def publish(self):
+		self.published = True
+		self.save()
+		
 	def check_published(self):
 		if self.published:
 			raise BondPublished
 	
+	def finish(self):
+		pass
+		# Wait for implementation.
+	
+	def share_profits(self):
+		rate = self.profit_rate / 100
+		total = Decimal(0)
+		for share in self.shares.prefetch_related():
+			money = share.money * rate
+			total += money
+			share.owner.inc_assets(money)
+		if self.type == self.ENTERPRISE:
+			self.publisher.dec_assets(total)
+	
 	def clean_fields(self, *args, **kwargs):
-		if self.type is None:
+		if not self.type:
 			self.type = self.GOVERNMENT if self.publisher.__class__.__name__ == 'Government' else self.ENTERPRISE
 			
 		super(Bond, self).clean_fields(*args, **kwargs)
 	
 	def apply_money(self, actor, money):
-		share = actor.get_share(self, create = True, money = money).inc_money(money)
+		share = actor.get_bond_share(self, create = True, money = money).inc_money(money)
 		self.publisher.inc_assets(money)
 	
 	class Meta:

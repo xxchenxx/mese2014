@@ -132,14 +132,14 @@ class Person(PersonalModel, HasReportsMixin, HasStockBondMixin):
 	
 	def save(self, *args, **kwargs):
 		if self.id is None:
-			self.industry = company.industry
+			self.industry = self.company.industry
 		super(Person, self).save(*args, **kwargs)
 	
-class Government(PersonalModel, HasStockBondMixin, HasBondMixin):
+class Government(PersonalModel, HasStockBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasReportsMixin, HasStockBondMixin, HasBondMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')

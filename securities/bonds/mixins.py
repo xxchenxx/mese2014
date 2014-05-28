@@ -4,7 +4,7 @@ from exceptions import BondPublished
 
 __all__ = ['HasBondMixin', 'OwnBondMixin']
 
-class HasBondMixin(HasAssetsMixin):
+class HasBondMixin(models.Model):
 
 	bond_shares = generic.GenericRelation(
 			'bonds.Share',
@@ -18,12 +18,12 @@ class HasBondMixin(HasAssetsMixin):
 		bond.apply_money(self, money)
 		self.dec_assets(money)
 		
-	def get_share(self, bond, create = False, **kwargs):
+	def get_bond_share(self, bond, create = False, **kwargs):
 		try:
 			return self.bond_shares.get(bond = bond)
 		except Share.DoesNotExist:
 			if create:
-				return Share(owner = self, stock = stock, **kwargs)
+				return Share(owner = self, bond = bond, **kwargs)
 
 	class Meta:
 		abstract = True
