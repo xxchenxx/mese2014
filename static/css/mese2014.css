@@ -1,7 +1,8 @@
 /* Start .mese-header */
 body{background-color:#272727;}
+body {font-family:"Microsoft YaHei UI";
+font-size:16px;}
 .mese-header {
-  position:static;
   right:0;
   left:0;
   overflow:visible;
@@ -15,6 +16,14 @@ body{background-color:#272727;}
 	height:10px;
 }
 .mese-header .container{  }
+.mese-header:after {
+  position:absolute;
+  top:50px;
+  width:100%;
+  height:10px;
+  box-shadow:0px 1.5px 1.5px rgba(0,0,0,.4);
+  content:" ";
+}
 .mese-header .nav {
   position:relative;
   left:0;
@@ -25,9 +34,9 @@ body{background-color:#272727;}
 .mese-header .nav > li {
   float:left;
 }
-li {
-  line-height:20px;
-}
+.panel {box-shadow:none;border-radius:0px;}
+.panel-heading {border-bottom:0;}
+.list-group-item {line-height:0.9;font-size:14px;}
 .mese-header .navbar-header .navbar-brand,
 .mese-header .nav > li > a {
   color:#E9E9E9;

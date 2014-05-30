@@ -24,18 +24,84 @@
 		      <li><a href="/">首页</a></li>
 		      <li><a href="#">交易大厅</a></li>
 		      <li><a href="/webboard/passages">新闻中心</a></li>
-		      <li><a href="/accounts/login">登录</a></li>
+		      <li><a href="/accounts/login/">登录</a></li>
 		    </ul>
 	      </div>
 		</div>
 	  </div>
 	</nav>
-	{% block main_content %}
-	{% endblock %}
+    {% block main_content %}
+	<section class="container">
+      
+    </section>
+    <main class="container">
+      <div class="row">
+        <div class="col-md-4 hidden-xs hidden-sm" id="mGOV">
+          <div class="panel panel-default">
+            <div class="panel-heading">政府信息</div>
+              <ul class="list-group">
+    			<li class="list-group-item">Cras justo odio</li>
+    			<li class="list-group-item">Dapibus ac facilisis in</li>
+    			<li class="list-group-item">Morbi leo risus</li>
+    			<li class="list-group-item">Porta ac consectetur ac</li>
+    			<li class="list-group-item">Vestibulum at eros</li>
+                <li class="list-group-item">Cras justo odio</li>
+    			<li class="list-group-item">Dapibus ac facilisis in</li>
+    			<li class="list-group-item">Morbi leo risus</li>
+    			<li class="list-group-item">Porta ac consectetur ac</li>
+    			<li class="list-group-item">Vestibulum at eros</li>
+  			  </ul>
+          </div>
+        </div>
+        <div class="col-md-8 hidden-xs hidden-sm" id="mSTO">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 hidden-xs hidden-sm" id="mMED">
+          <div class="panel panel-default">
+            <div class="panel-heading">新闻媒体</div>
+            <ul class="list-group">
+    			<li class="list-group-item">Cras justo odio</li>
+    			<li class="list-group-item">Dapibus ac facilisis in</li>
+    			<li class="list-group-item">Morbi leo risus</li>
+    			<li class="list-group-item">Porta ac consectetur ac</li>
+    			<li class="list-group-item">Vestibulum at eros</li>
+                <li class="list-group-item">Cras justo odio</li>
+    			<li class="list-group-item">Dapibus ac facilisis in</li>
+    			<li class="list-group-item">Morbi leo risus</li>
+    			<li class="list-group-item">Porta ac consectetur ac</li>
+    			<li class="list-group-item">Vestibulum at eros</li>
+  			  </ul>
+          </div>
+        </div>
+        <div class="col-md-8 hidden-xs hidden-sm" id="mFUR">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              期货板块
+            </div>
+          </div>
+          <table class="table">
+            <tr>
+              <th>#</th>
+              <th>名称</th>
+              <th>价格</th>
+              <th></th>
+            </tr>
+            <tr>
+              <th>1</th>
+              <th>ID1</th>
+              <th><i class="fa fa-cny"> l2</i></th>
+              <th><i class="fa fa-caret-down fa-lg"></i></th>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </main>
     <script>
 	  $(document).ready(function() {
 	    $('#mese-navbar-collapse').collapse('show');
 	  })
 	</script>
+    {% endblock %}
   </body>
 </html>
