@@ -6,6 +6,8 @@ from django.contrib.contenttypes import generic
 from common.fields import DecimalField, TimeDeltaField
 from common.mixins import get_inc_dec_mixin
 
+from django.db import connection
+
 from decimal import Decimal
 
 class Fund(models.Model):
@@ -16,7 +18,7 @@ class Fund(models.Model):
 		(OPEN, 'open'),
 		(CLOSE, 'close'),
 	)
-
+	
 	display_name = models.CharField(max_length = 255, default = '')
 
 	publisher_type = models.ForeignKey(ContentType, null = True, blank = True)
@@ -37,11 +39,21 @@ class Fund(models.Model):
 	
 	created_time = models.DateTimeField(auto_now_add = True)
 	
+	def __init__(self, *args, **kwargs):
+		self.__total_money = None
+		return super(Fund, self).__init__(*args, **kwargs)
+	
 	def apply_money(self, actor, money):
 		pass
 	
 	def can_buy(self):
 		return True
+	
+	def get_total_money(self):
+		if self.__total_money is None:
+			self.__total_money = Share.objects.get_total_money(self)
+			
+		return self.__total_money
 	
 	class Meta:
 		ordering = ['-created_time']
@@ -59,6 +71,13 @@ class OpenEndFund(Fund):
 	class Meta:
 		proxy = True
 		
+class ShareManager(models.Manager):
+	
+	def get_total_money(self, fund):
+		cursor = connection.cursor()
+		cursor.execute("SELECT SUM(assets) FROM %s GROUP BY id HAVING id=%d" % Share._meta.db_table, [fund.id])
+		return cursor.fetchone()[0]
+		
 class Share(get_inc_dec_mixin(['money'])):
 
 	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'fund_shares')
@@ -68,6 +87,30 @@ class Share(get_inc_dec_mixin(['money'])):
 	fund = models.ForeignKey(Fund, related_name = 'shares')
 	money = DecimalField()
 	percentage = DecimalField()
+	
+	def pre_set_money(self, value):
+		total_money = self.fund.get_total_money()
+		new_total_money = total_money + value
+		cursor = connection.cursor()
+		if not self.fund.published:
+			cursor.execute(
+					"""UPDATE funds_share SET percentage=CASE id WHEN %(id)d THEN (percentage/100*%(total)d+%(value)s)/%(new_total)d*100 
+						ELSE percentage*%(total)d/%(new_total)d END WHERE fund_id=%(fund_id)d
+					""" %
+					{
+						'total': total_money,
+						'new_total': new_total_money,
+						'id': self.id,
+						'fund_id': self.fund.id,
+						'value': value,
+					}
+			)
+		else:
+			cursor.execute(
+					"""UPDATE funds_share SET percentage"""
+			
+	
+	objects = ShareManager()
 	
 	class Meta:
 		ordering = ['-money']
