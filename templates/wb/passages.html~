@@ -14,7 +14,7 @@
     </div>
     <div class="list-group" id="feeds-container">
       <div class="feeds">
-      <h4 class="feeds-title feeds-title-hot"><a href="#">一条测试用的bulletfin</a><em class="feeds-info pull-right">5.28 2014 by @admin</em></h4>
+      <h4 class="feeds-title-hot"><a href="#">一条测试用的bulletfin</a><em class="feeds-info pull-right">5.28 2014 by @admin</em></h4>
       <p class="feeds-details">sadfhasdjfkljasjdfladfhlkasdf...<a href="#">详细</a></p>
      </div> 
      <div class="feeds">
