@@ -149,6 +149,7 @@ INSTALLED_APPS = (
 		'django_filters',
 		'notifications',
 		'transfer',
+		'cron',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

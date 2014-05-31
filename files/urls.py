@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
 
-urlpatterns = patterns('file_upload.views',
+urlpatterns = patterns('files.views',
 	url(r'^$', 'index'),
 )
