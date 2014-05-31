@@ -14,3 +14,7 @@ class SimpleTest(TestCase):
         Tests that 1 + 1 always equals 2.
         """
         self.assertEqual(1 + 1, 2)
+
+from accounts.models import *
+p1,p2 = Person.objects.all()
+p1.remove_money(Bank.objects.all()[0], 100)

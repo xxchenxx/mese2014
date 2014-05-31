@@ -4,8 +4,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from common.fields import DecimalField
+from common.mixins import get_inc_dec_mixin
 
-class Deposit(models.Model):
+class Deposit(get_inc_dec_mixin(['money'])):
 
 	bank = models.ForeignKey('accounts.Bank', related_name = 'deposits')
 	

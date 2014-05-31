@@ -1,5 +1,6 @@
 from django.db import models
 from common.fields import DecimalField
+from decimal import Decimal
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -21,7 +22,7 @@ def get_inc_dec_mixin(fields = []):
 				if commit:
 					self.save()
 			else:
-				setattr(self, field_name, getattr(self, field_name)+value)
+				setattr(self, field_name, getattr(self, field_name)+Decimal(value))
 				if commit:
 					self.save()
 				if reload:

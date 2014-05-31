@@ -12,10 +12,13 @@ from common.fields import DecimalField
 from files.models import PrivateFile, PublicFile, File
 from annoying.fields import AutoOneToOneField
 
+from django.db import connection
+
 import managers
 
 from common.mixins import HasAssetsMixin
 from securities.mixins import *
+from transfer.mixins import *
 
 # Abstract logical interfaces.
 
@@ -97,7 +100,7 @@ class Account(models.Model):
 	class Meta:
 		abstract = True
 	
-class PersonalModel(Account, HasAssetsMixin, HasFundMixin):
+class PersonalModel(Account, HasAssetsMixin, HasFundMixin, CanTransferMixin):
 
 	MALE = 'M'
 	FEMALE = 'F'
@@ -125,7 +128,7 @@ class Industry(models.Model):
 	section = models.ForeignKey(Section, related_name = 'industries')
 	display_name = models.CharField(max_length = 20, default = '')		
 		
-class Person(PersonalModel, HasReportsMixin, HasStockBondMixin):
+class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 
 	company = models.ForeignKey('Company', related_name = 'members')
 	industry = models.ForeignKey(Industry, related_name = 'persons')
@@ -143,7 +146,7 @@ class Government(PersonalModel, HasStockBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanStoreMixin, CanTransferMixin):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')
@@ -164,7 +167,14 @@ class FundCompany(Enterprise, OwnFundMixin):
 	
 class Bank(Enterprise, OwnFundMixin):
 	
-	pass	
+	rate = DecimalField()
+	
+	def share_profits(self):
+		rate = rate /100
+		cursor = connection.cursor()
+		cursor.execute(
+				"""UPDATE transfer_deposits SET money = ROUND(money*(1+%s), 4) WHERE bank_id=%d""" % self.id
+		)
 	
 class Fund(Account, HasAssetsMixin):
 

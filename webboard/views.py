@@ -19,13 +19,23 @@ class BasePassageViewSet(viewsets.GenericViewSet):
 			queryset = queryset.filter(type = _type)
 		return queryset	
 
-class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
 
-	renderer_classes = (renderers.TemplateHTMLRenderer,)
+	renderer_classes = (renderers.TemplateHTMLRenderer,renderers.JSONRenderer)
 	
 	def list(self, *args, **kwargs):
 		response = super(PassageRetrieveViewSet, self).list(*args, **kwargs)
 		response.template_name = 'wb/passages.html'
+		return response
+		
+	@decorators.action(methods = ['POST', 'GET'])	
+	def write(self, request, *args, **kwargs):
+		response = super(PassageRetrieveViewSet, self).create(*args, **kwargs)
+		if request.method == 'GET':
+			response = response.Response({})
+			response.template_name = 'wb/write.html'
+		else:
+			response = super(PassageRetrieveViewSet, self).create(request, *args, **kwargs)
 		return response
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
