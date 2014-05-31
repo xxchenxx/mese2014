@@ -30,10 +30,11 @@ class Fund(models.Model):
 	published = models.BooleanField(default = False)
 	
 	min_return_rate = DecimalField()
+	return_rate = DecimalField()
 	max_return_rate = DecimalField()
-	inital_money = DecimalField()
+	initial_money = DecimalField()
 	lasted_time = TimeDeltaField()
-	published_time = DecimalField()
+	published_time = models.DateTimeField()
 	
 	fund_type = models.CharField(max_length = 10, choices = TYPE_CHOICE)
 	
@@ -44,12 +45,59 @@ class Fund(models.Model):
 		return super(Fund, self).__init__(*args, **kwargs)
 	
 	def apply_money(self, actor, money):
-		pass
+		share = actor.get_fund_share(self, create = True, money = money)
+		if share.id is None:
+			share.save()
+		else:
+			share.inc_money(money)
+		if self.published:
+			self.account.inc_assets(money)
+		
+	def share_profits(self, commit = True):
+		rate = self.return_rate / 100
+		cursor = connection.cursor()
+		cursor.execute(
+				"UPDATE funds_share SET money=ROUND(money*(1+%s), 4) WHERE fund_id=%d" % (rate, self.id)
+		)
+		if commit:
+			connection.connection.commit()
+	
+	def _end(self):
+		if self.account:
+			self.account.profile.user.delete()
+			self.account.delete()
+		self.delete()
+	
+	def finish(self):
+		shares = self.shares.prefetch_related()
+		for share in self.shares.all():
+			share.owner.inc_assets(share.money)
+		shares.delete()
+		self._end()
+	
+	def publish(self, delete_on_failed = True, username = 'fundd', password = None):
+		try:
+			print self.total_money
+			assert self.total_money >= self.initial_money
+		except AssertionError:
+			if delete_on_failed:
+				self._end()
+			else:
+				raise
+				
+		User = ContentType.objects.get(app_label = 'auth', model = 'user').model_class()
+		user = User.objects.create_user(username = username, password = password or User.objects.make_random_password(6))
+		account = user.profile.create_info('Fund', display_name = self.display_name, assets = self.total_money)
+		self.account = account
+		self.published = True
+		self.save()
+		return user
 	
 	def can_buy(self):
 		return True
 	
-	def get_total_money(self):
+	@property
+	def total_money(self):
 		if self.__total_money is None:
 			self.__total_money = Share.objects.get_total_money(self)
 			
@@ -75,8 +123,14 @@ class ShareManager(models.Manager):
 	
 	def get_total_money(self, fund):
 		cursor = connection.cursor()
-		cursor.execute("SELECT SUM(assets) FROM %s GROUP BY id HAVING id=%d" % Share._meta.db_table, [fund.id])
-		return cursor.fetchone()[0]
+		sql = "SELECT SUM(money) FROM funds_share GROUP BY fund_id HAVING fund_id=%d" % fund.id
+		cursor.execute(sql)
+		result = cursor.fetchone()
+		print result
+		if result:
+			return result[0]
+		else:
+			return 0
 		
 class Share(get_inc_dec_mixin(['money'])):
 
@@ -88,26 +142,38 @@ class Share(get_inc_dec_mixin(['money'])):
 	money = DecimalField()
 	percentage = DecimalField()
 	
+	def save(self, *args, **kwargs):
+		super(Share, self).save(*args, **kwargs)
+		cursor = connection.cursor()
+		cursor.execute(
+				"""UPDATE funds_share, (SELECT SUM(money) as sum FROM funds_share WHERE fund_id=%d) as t SET percentage=ROUND(money/t.sum*100,4)
+				""" % self.fund.id
+		)
+	
 	def pre_set_money(self, value):
-		total_money = self.fund.get_total_money()
+		total_money = self.fund.total_money
 		new_total_money = total_money + value
 		cursor = connection.cursor()
-		if not self.fund.published:
+		ctx = {
+			'total': total_money,
+			'new_total': new_total_money,
+			'id': self.id,
+			'fund_id': self.fund.id,
+			'value': value,
+		}
+
+		if self.fund.published:
 			cursor.execute(
-					"""UPDATE funds_share SET percentage=CASE id WHEN %(id)d THEN (percentage/100*%(total)d+%(value)s)/%(new_total)d*100 
-						ELSE percentage*%(total)d/%(new_total)d END WHERE fund_id=%(fund_id)d
-					""" %
-					{
-						'total': total_money,
-						'new_total': new_total_money,
-						'id': self.id,
-						'fund_id': self.fund.id,
-						'value': value,
-					}
+					"""UPDATE funds_share SET percentage=CASE id WHEN %(id)d THEN ROUND((percentage/100*%(total)d+%(value)s)/%(new_total)s*100, 4)
+						ELSE ROUND(percentage*%(total)s/%(new_total)s, 4) END WHERE fund_id=%(fund_id)d
+					""" % ctx
 			)
 		else:
 			cursor.execute(
-					"""UPDATE funds_share SET percentage"""
+					"""UPDATE funds_share SET percentage=CASE id WHEN %(id)d THEN ROUND((money+%(value)s)/%(new_total)s*100,4) ELSE ROUND(money/%(new_total)s*100, 4) END
+					   WHERE fund_id=%(fund_id)d
+					""" % ctx
+			)
 			
 	
 	objects = ShareManager()

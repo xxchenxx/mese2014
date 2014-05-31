@@ -6,9 +6,9 @@ __all__ = ['OwnFundMixin', 'HasFundMixin']
 class HasFundMixin(models.Model):
 	
 	fund_shares = generic.GenericRelation(
-			'funds.Fund',
-			content_type_field = 'publisher_type',
-			object_id_field = 'publisher_object_id',
+			'funds.Share',
+			content_type_field = 'owner_type',
+			object_id_field = 'owner_object_id',
 	)
 
 	def get_fund_share(self, fund, create = False, **kwargs):

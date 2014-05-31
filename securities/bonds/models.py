@@ -44,8 +44,17 @@ class Bond(models.Model):
 			raise BondPublished
 	
 	def finish(self):
-		pass
-		# Wait for implementation.
+		rate = self.profit_rate / 100
+		total = Decimal(0)
+		shares = self.shares.prefetch_related()
+		for share in shares:
+			money = share.money * (1+rate)
+			total += money
+			share.owner.inc_assets(money)
+		if self.type == self.ENTERPRISE:
+			self.publisher.dec_assets(total)
+		shares.delete()
+		self.delete()
 	
 	def share_profits(self):
 		rate = self.profit_rate / 100

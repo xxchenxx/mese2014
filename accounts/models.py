@@ -90,10 +90,14 @@ class Account(models.Model):
 			object_id_field = 'info_object_id'
 	)
 	
+	@property
+	def profile(self):
+		return self.profile_object.all()[0]
+	
 	class Meta:
 		abstract = True
 	
-class PersonalModel(Account, HasAssetsMixin):
+class PersonalModel(Account, HasAssetsMixin, HasFundMixin):
 
 	MALE = 'M'
 	FEMALE = 'F'
@@ -139,7 +143,7 @@ class Government(PersonalModel, HasStockBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin):
 
 	description = models.CharField(max_length = 255, default = '')
 	contact = models.CharField(max_length = 20, default = '')
