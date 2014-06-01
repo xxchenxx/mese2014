@@ -42,8 +42,8 @@ class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	
 	def create(self, request, *args, **kwargs):
 		request.DATA['author'] = request.user.id
-		return super(PassageAPIViewSet, self).create(request, *args, **kwargs)
-
+		return super(PassageAPIViewSet, self).create(request, *args, **kwargs)	
+		
 	def list(self, request, *args, **kwargs):
 		self.serializer_options = {'exclude':['content']}
 		return super(PassageAPIViewSet,self).list(self,request,*args,**kwargs)

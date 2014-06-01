@@ -1,3 +1,7 @@
+"""
+	Copy from django.db -.-
+"""
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.datastructures import SortedDict
@@ -9,29 +13,18 @@ from django.utils import six
 import imp
 import sys
 import os
+from crons import Cron
 
 class AppCache(object):
     """
     A cache that stores installed applications and their cron. Used to
     provide reverse-relations and for app introspection (e.g. admin).
     """
-    # Use the Borg pattern to share state between all instances. Details at
-    # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66531.
     __shared_state = dict(
-        # Keys of app_store are the model modules for each application.
         app_store=SortedDict(),
-
-        # Mapping of installed app_labels to model modules for that app.
         app_labels={},
-
-        # Mapping of app_labels to a dictionary of model names to model code.
-        # May contain apps that are not installed.
-        app_cron=SortedDict(),
-
-        # Mapping of app_labels to errors raised when trying to import the app.
+        app_crons=[],
         app_errors={},
-
-        # -- Everything below here is only used when populating the cache --
         loaded=False,
         handled={},
         postponed=[],
@@ -50,12 +43,6 @@ class AppCache(object):
         """
         if self.loaded:
             return
-        # Note that we want to use the import lock here - the app loading is
-        # in many cases initiated implicitly by importing, and thus it is
-        # possible to end up in deadlock when one thread initiates loading
-        # without holding the importer lock and another thread then tries to
-        # import something which also launches the app loading. For details of
-        # this situation see #18251.
         imp.acquire_lock()
         try:
             if self.loaded:
@@ -78,6 +65,10 @@ class AppCache(object):
         """
         return app_mod.__name__.split('.')[-2]
 
+	def get_crons(self):
+		self._populate()
+		return {'%s.%s' % (app_name, cron.__class__.__name__):cron for cron in app.itervalues() if isinstance(cron, Cron) for app, app_name in self.app_store.iteritems()}
+		
     def load_app(self, app_name, can_postpone=True):
         """
         Loads the app with the provided fully qualified name, and returns the
@@ -90,17 +81,8 @@ class AppCache(object):
             cron = import_module('.cron', app_name)
         except ImportError:
             self.nesting_level -= 1
-            # If the app doesn't have a cron module, we can just ignore the
-            # ImportError and return no cron for it.
             if not module_has_submodule(app_module, 'cron'):
                 return None
-            # But if the app does have a cron module, we need to figure out
-            # whether to suppress or propagate the error. If can_postpone is
-            # True then it may be that the package is still being imported by
-            # Python and the cron module isn't available yet. So we add the
-            # app to the postponed list and we'll try it again after all the
-            # recursion has finished (in populate). If can_postpone is False
-            # then it's time to raise the ImportError.
             else:
                 if can_postpone:
                     self.postponed.append(app_name)
@@ -113,15 +95,6 @@ class AppCache(object):
             self.app_store[cron] = len(self.app_store)
             self.app_labels[self._label_for(cron)] = cron
         return cron
-
-    def app_cache_ready(self):
-        """
-        Returns true if the model cache is fully populated.
-
-        Useful for code that wants to cache the results of get_cron() for
-        themselves once it is safe to do so.
-        """
-        return self.loaded
 
     def get_apps(self):
         "Returns a list of all installed modules that contain cron."
@@ -159,94 +132,5 @@ class AppCache(object):
         "Returns the map of known problems with the INSTALLED_APPS."
         self._populate()
         return self.app_errors
-
-    def get_cron(self, app_mod=None,
-                   include_auto_created=False, include_deferred=False,
-                   only_installed=True, include_swapped=False):
-        """
-        Given a module containing cron, returns a list of the cron.
-        Otherwise returns a list of all installed cron.
-
-        By default, auto-created cron (i.e., m2m cron without an
-        explicit intermediate table) are not included. However, if you
-        specify include_auto_created=True, they will be.
-
-        By default, cron created to satisfy deferred attribute
-        queries are *not* included in the list of cron. However, if
-        you specify include_deferred, they will be.
-
-        By default, cron that aren't part of installed apps will *not*
-        be included in the list of cron. However, if you specify
-        only_installed=False, they will be.
-
-        By default, cron that have been swapped out will *not* be
-        included in the list of cron. However, if you specify
-        include_swapped, they will be.
-        """
-        cache_key = (app_mod, include_auto_created, include_deferred, only_installed, include_swapped)
-        try:
-            return self._get_cron_cache[cache_key]
-        except KeyError:
-            pass
-        self._populate()
-        if app_mod:
-            if app_mod in self.app_store:
-                app_list = [self.app_cron.get(self._label_for(app_mod),
-                                                SortedDict())]
-            else:
-                app_list = []
-        else:
-            if only_installed:
-                app_list = [self.app_cron.get(app_label, SortedDict())
-                            for app_label in six.iterkeys(self.app_labels)]
-            else:
-                app_list = six.itervalues(self.app_cron)
-        model_list = []
-        for app in app_list:
-            model_list.extend(
-                model for model in app.values()
-                if ((not model._deferred or include_deferred) and
-                    (not model._meta.auto_created or include_auto_created) and
-                    (not model._meta.swapped or include_swapped))
-            )
-        self._get_cron_cache[cache_key] = model_list
-        return model_list
-
-    def get_model(self, app_label, model_name,
-                  seed_cache=True, only_installed=True):
-        """
-        Returns the model matching the given app_label and case-insensitive
-        model_name.
-
-        Returns None if no model is found.
-        """
-        if seed_cache:
-            self._populate()
-        if only_installed and app_label not in self.app_labels:
-            return None
-        return self.app_cron.get(app_label, SortedDict()).get(model_name.lower())
-
-    def register_cron(self, app_label, *cron):
-        """
-        Register a set of cron as belonging to an app.
-        """
-        for model in cron:
-            # Store as 'name: model' pair in a dictionary
-            # in the app_cron dictionary
-            model_name = model._meta.object_name.lower()
-            model_dict = self.app_cron.setdefault(app_label, SortedDict())
-            if model_name in model_dict:
-                # The same model may be imported via different paths (e.g.
-                # appname.cron and project.appname.cron). We use the source
-                # filename as a means to detect identity.
-                fname1 = os.path.abspath(upath(sys.modules[model.__module__].__file__))
-                fname2 = os.path.abspath(upath(sys.modules[model_dict[model_name].__module__].__file__))
-                # Since the filename extension could be .py the first time and
-                # .pyc or .pyo the second time, ignore the extension when
-                # comparing.
-                if os.path.splitext(fname1)[0] == os.path.splitext(fname2)[0]:
-                    continue
-            model_dict[model_name] = model
-        self._get_cron_cache.clear()
 
 cache = AppCache()

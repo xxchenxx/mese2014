@@ -1,0 +1,2 @@
+class Cron(object):
+	pass

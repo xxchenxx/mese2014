@@ -8,7 +8,7 @@ from common.mixins import get_inc_dec_mixin
 
 class Deposit(get_inc_dec_mixin(['money'])):
 
-	bank = models.ForeignKey('accounts.Bank', related_name = 'deposits')
+	bank = models.ForeignKey('accounts.Bank', related_name = 'stored_deposits')
 	
 	owner_content_type = models.ForeignKey(ContentType, related_name='deposit_owner')
 	owner_object_id = models.CharField(max_length=255)
