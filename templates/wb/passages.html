@@ -8,22 +8,34 @@
       <li class="active">信息中心</li>
     </ol></div>
     <div id="ncon"><div class="nav nav-tabs nav-mese2014">
-      <li><a href="#GOV"><i class="fa fa-bank fa-fw"></i>政府&会务</a></li>
-      <li><a href="#MED"><i class="fa fa-rss fa-fw"></i>媒体信息</a></li>
+      <li><a href="?type=GOV"><i class="fa fa-bank fa-fw"></i>政府&会务</a></li>
+      <li><a href="?type=MED"><i class="fa fa-rss fa-fw"></i>媒体信息</a></li>
       </div>
     </div>
     <div class="list-group" id="feeds-container">
-      <div class="feeds">
-      <h4 class="feeds-title feeds-title-hot"><a href="#">一条测试用的bulletin</a><em class="feeds-info pull-right">5.28 2014 by @admin</em></h4>
-      <p class="feeds-details">sadfhasdjfkljasjdfladfhlkasdf...<a href="#">详细</a></p>
-     </div> 
-     <div class="feeds">
-      <h4 class="feeds-title"><a href="#">一条测试用的bulletin</a><em class="feeds-info pull-right">5.28 2014 by @admin</em></h4>
-      <p class="feeds-details">sadfhasdjfkljasjdfladfhlkasdf...<a href="#">详细</a></p>
-     </div> 
+      <h3 class="text-center feeds-details-title">aahsdjfaldsf</h3>
+      <div class="text-center feeds-details-info">2014-05-28 by @admin</div>
+      <p class="feeds-details-text">
+        这是一条测试用的信息！这是一条测试用的信息！这是一条测试用的信息！这是一条测试用的信息！
+      </p>
+      <p class="feeds-details-text">
+        这是一条测试用的信息！这是一条测试用的信息！这是一条测试用的信息！这是一条测试用的信息！
+      </p>
     </div>
   </div>
   <div class="col-md-4 hidden-xs hidden-sm">
   </div>
+  <script>
+    $(document).ready(function(){
+      var passage = new MESEIO();
+      utype=$.getUrlParam("type");
+      feedid=$.getUrlParam("id");
+      console.log(utype+","+feedid);
+      //if(!feedid){ passage.loadfeeds(utype)}
+      //else if (feedid) {
+        //passage.loadfdetails(feedid)
+      }
+    })
+  </script>
 </div>
 {% endblock %}

@@ -29,16 +29,6 @@ function MESEIO(){}
 				},
 			})
 		}
-		MESEIO.prototype.loadfdetails = function(id){
-			var api_url = "/api/passages/"+id;
-			$.ajax({
-				url:api_url,
-				type:"GET",
-				success:function(data){
-					$("#feeds-container").append("")
-				},
-			})
-		}
 })();
 (function($){
 $.getUrlParam = function(name){
