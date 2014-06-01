@@ -3,4 +3,8 @@ version: 1
 libraries:
 - name: "django"
   version: "1.5"
-  
+
+cron:
+- description: main_cron
+  url: /cron/
+  schedule: "* /1 * * * *"

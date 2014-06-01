@@ -1,42 +1,8 @@
 from django.db import models
 
-from securities.models import Fond
-import securities.models
 from common.fields import DecimalField
-from timeline.fields import FinancialYearField
 
-class Future(Fond):
-
+class Future(models.Model):
+	
+	display_name = models.CharField(max_length = 30, default = '')
 	current_price = DecimalField()
-	
-	def get_price(self):
-		return self.get_price
-		
-	def get_share_class(self):
-		return share
-		
-	def get_log_class(self):
-		return Log
-	
-class Share(securities.models.Share):
-	
-	fond = models.ForeignKey(Future, related_name = 'shares')
-	
-class Log(securities.models.Log):
-
-	fond = models.ForeignKey(Future, related_name = 'logs')
-	
-	beginning_price = DecimalField(editable = False)
-	last_final_price = DecimalField(editable = False)
-	highest_price = DecimalField(editable = False)
-	lowest_price = DecimalField(editable = False)
-	final_price = DecimalField(editable = False)
-	
-	transcation_quantity = DecimalField(editable = False)
-	transcation_money = DecimalField(editable = False)
-	
-	increasement = DecimalField(editable = False)
-	increased_rate = DecimalField(editable = False)
-	
-	class Meta:
-		ordering = ['-year']

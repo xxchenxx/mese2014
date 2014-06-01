@@ -6,5 +6,6 @@ router = DefaultRouter()
 router.register(r'passages', views.PassageRetrieveViewSet)
 
 urlpatterns = patterns('webboard.views',
+	url(r'test/', 'test'),
 	url(r'^', include(router.urls)),
 )

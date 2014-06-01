@@ -113,11 +113,9 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+		'common.middlewares.SQLMiddleware',
 )
 
 ROOT_URLCONF = 'mese2014.urls'
@@ -139,18 +137,19 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
 		'accounts',
 		'webboard',
-		'file_upload',
-		'file_publicity',
+		'files',
 		'securities',
 		'securities.funds',
 		'securities.stocks',
 		'securities.futures',
-		'securities.logs',
 		'securities.bonds',
 		'timeline',
 		'api',
 		'rest_framework',
 		'django_filters',
+		'notifications',
+		'transfer',
+		'cron',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
@@ -189,6 +188,8 @@ LOGGING = {
     }
 }
 
+PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
+TIME_INTERVAL_SECONDS = 300
 PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
 
 REST_FRAMEWORK = {

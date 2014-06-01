@@ -1,5 +1,5 @@
 from rest_framework.relations import PrimaryKeyRelatedField
-from file_upload.serializers import FileField
+from files.serializers import FileField
 
 class WritableRelatedField(PrimaryKeyRelatedField):
 
