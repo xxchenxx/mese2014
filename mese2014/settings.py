@@ -107,17 +107,14 @@ SECRET_KEY = '5(&isb6ohk8@4+f56c%+$4o1oazr_&$bopww4q&86gp5j!c+ep'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+		'common.middlewares.SQLMiddleware',
 )
 
 ROOT_URLCONF = 'mese2014.urls'
@@ -139,13 +136,20 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
 		'accounts',
 		'webboard',
-		'file_upload',
-		'file_publicity',
+		'files',
 		'securities',
 		'securities.funds',
 		'securities.stocks',
 		'securities.futures',
+		'securities.bonds',
 		'timeline',
+		'api',
+		'notifications',
+		'rest_framework',
+		'django_filters',
+		'notifications',
+		'transfer',
+		'cron',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
@@ -184,4 +188,29 @@ LOGGING = {
     }
 }
 
+<<<<<<< HEAD
 PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
+=======
+TIME_INTERVAL_SECONDS = 300
+PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
+
+REST_FRAMEWORK = {
+    # Use hyperlinked styles by default.
+    # Only used if the `serializer_class` attribute is not set on a view.
+	'PAGINATE_BY': 10, 
+	'PAGINATE_BY_PARAM': 'limit',  # Allow client to override, using `?page_size=xxx`.
+    'MAX_PAGINATE_BY': 50, 
+    'DEFAULT_MODEL_SERIALIZER_CLASS':
+        'rest_framework.serializers.HyperlinkedModelSerializer',
+
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ],
+	'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+	'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+}
+>>>>>>> ad3fad7e282237169910f34dc4495289dc3dbe8e

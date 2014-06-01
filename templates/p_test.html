@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<script type="text/javascript" src="/static/js/jquery-1.10.0.min.js"></script>
+		<script type="text/javascript" src="/static/ckeditor/ckeditor.js"></script>
+		<script type="text/javascript" src="/static/ckeditor/config.js"></script>
+		<script type="text/javascript" src="/static/js/uploadify.js"></script>
+	</head>
+	<body>
+		<div>
+		<textarea rows="30" cols="50" id="text" name="text">sdg好tgqwetqwgasd</textarea>
+		</div>
+		<div id="queue"><input type="file" name="file" id="file"></div>
+		<script type="text/javascript">
+			CKEDITOR.replace('text',{extraPlugins:'img', queueId:'queue', fileId:'file',toolbar:[[ 'Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink' ],
+				[ 'img' ]
+			]});
+		</script>
+	</body>
+</html>

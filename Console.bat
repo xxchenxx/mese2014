@@ -1,5 +1,4 @@
 @echo off
-color 3f 
 
 :menu
 cls
@@ -35,9 +34,8 @@ goto menu
 :1
 echo Input the package name:
 set /p Name=
-cd/d "E:\Program Files\Python\Scripts"
 echo You are going to install %Name%
-pip install %Name%
+E:\Program" "Files\Python\Scripts\pip install %Name%
 pause
 goto menu
 
@@ -85,7 +83,7 @@ set /p choice="manage> "
 if /i "%choice%"=="exit" goto menu
 if /i "%choice%"=="cls" goto cls
 if /i "%choice%"=="cleardb" goto cleardb
-python manage.py %choice%
+python manage.py %choice% --traceback
 echo.
 goto 4
 :cleardb
