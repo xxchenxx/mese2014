@@ -70,13 +70,7 @@ class UserProfile(models.Model):
 	
 	@property
 	def info(self):
-		if self.user.is_staff:
-			if not hasattr(self, '_info'):
-				self._info = Admin(self)
-				
-			return self._info
-		else:
-			return self.info_object
+		return self.info_object
 			
 	@info.setter
 	def info(self, obj):
