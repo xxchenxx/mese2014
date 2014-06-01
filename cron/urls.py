@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns('cron.views',
-	include('^$', 'index'),
+	url('^$', 'index'),
 )
