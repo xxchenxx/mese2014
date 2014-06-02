@@ -1,0 +1,47 @@
+from django.core.urlresolvers import reverse
+from rest_framework import serializers, pagination
+import models
+from django.contrib.auth.models import User
+import accounts.serializers
+<<<<<<< HEAD
+from common.serializers import WritableRelatedField
+
+class PassageSerializer(serializers.ModelSerializer):
+
+	author = WritableRelatedField(serializer_class = accounts.serializers.UserSerializer)
+	
+	class Meta:
+		model = models.Passage
+		
+class CommentSerializer(serializers.ModelSerializer):
+	
+	author = WritableRelatedField(serializer_class = accounts.serializers.UserSerializer)
+	passage = serializers.PrimaryKeyRelatedField(write_only = True)
+	
+	class Meta:
+		model = models.Comment
+		
+class PaginatedCommentSerializer(pagination.PaginationSerializer):
+
+=======
+
+class PassageSerializer(serializers.ModelSerializer):
+
+	author = accounts.serializers.UserSerializer(required = False)
+	
+	class Meta:
+		model = models.Passage
+		#fields = ['content', 'title', 'author', 'created_time']
+		
+class CommentSerializer(serializers.ModelSerializer):
+	
+	author = accounts.serializers.UserSerializer(required = False)
+	
+	class Meta:
+		model = models.Comment
+		exclude = ['passage']
+		
+class PaginatedCommentSerializer(pagination.PaginationSerializer):
+>>>>>>> linux_master
+	class Meta:
+		object_serializer_class = CommentSerializer

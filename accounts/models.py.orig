@@ -68,6 +68,16 @@ class UserProfile(models.Model):
 				self.save()
 		return self.info_object
 	
+<<<<<<< HEAD
+		@property
+		def info(self):
+			return self.info_object
+		@info.setter
+		def info(self, obj):
+			if self.user.is_staff:
+				return
+			self.info_object = obj					
+=======
 	@property
 	def info(self):
 		return self.info_object
@@ -78,6 +88,7 @@ class UserProfile(models.Model):
 			return
 		self.info_object = obj			
 		
+>>>>>>> hsfzxjy-master
 class Account(models.Model):
 	
 	display_name = models.CharField(max_length = 50, default = '', blank = True)
@@ -90,6 +101,10 @@ class Account(models.Model):
 	@property
 	def profile(self):
 		return self.profile_object.all()[0]
+		
+	@property
+	def account_type(self):
+		return self.__class__.__name__.lower()
 	
 	class Meta:
 		abstract = True
