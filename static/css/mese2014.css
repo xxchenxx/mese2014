@@ -295,4 +295,7 @@ text-indent: 2.2em;
 font-size:1.2em;
 padding:0px 10px; 
 }
-.f-back {color:#CCC;}
+.f-back {padding-left:5px;color:#CCC;}
+.f-back:hover,
+.f-back:active,
+.f-back:focus {color:#CCC;}
