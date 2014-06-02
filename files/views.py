@@ -32,7 +32,7 @@ class PublicFileAPIViewSet(ModelViewSet):
 
 	model = PublicFile
 	serializer_class = PublicFileSerializer
-	permission_classes = (IsAdminUser, )
+	permission_classes = ()#(IsAdminUser, )
 	
 	def create(self, request, *args, **kwargs):
 		request.DATA['file_type'] = File.PUBLIC

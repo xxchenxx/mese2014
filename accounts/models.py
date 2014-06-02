@@ -68,17 +68,19 @@ class UserProfile(models.Model):
 				self.save()
 		return self.info_object
 	
-		@property
-		def info(self):
-			return self.info_object
-		@info.setter
-		def info(self, obj):
-			if self.user.is_staff:
-				return
-			self.info_object = obj					
+	@property
+	def info(self):
+		return self.info_object
+			
+	@info.setter
+	def info(self, obj):
+		if self.user.is_staff:
+			return
+		self.info_object = obj			
+		
 class Account(models.Model):
 	
-	display_name = models.CharField(max_length = 50, default = '')
+	display_name = models.CharField(max_length = 50, default = '', blank = True)
 	profile_object = generic.GenericRelation(
 			'UserProfile',
 			content_type_field = 'info_type',
@@ -101,8 +103,8 @@ class PersonalModel(Account, HasAssetsMixin, HasFundMixin, CanTransferMixin):
 			(FEMALE, 'female'),
 	)
 	
-	gender = models.CharField(max_length = 1, default = MALE)
-	position = models.CharField(max_length = 20, default = '')
+	gender = models.CharField(max_length = 1, default = MALE, blank = True)
+	position = models.CharField(max_length = 20, default = '', blank = True)
 	
 	class Meta:
 		abstract = True
@@ -122,7 +124,9 @@ class Industry(models.Model):
 		
 class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 
-	company = models.ForeignKey('Company', related_name = 'members')
+	company_type = models.ForeignKey(ContentType, null = True, blank = True)
+	company_object_id = models.PositiveIntegerField(null = True, blank = True)
+	company = generic.GenericForeignKey('company_type', 'company_object_id')
 	industry = models.ForeignKey(Industry, related_name = 'persons')
 	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
@@ -138,18 +142,24 @@ class Government(PersonalModel, HasStockBondMixin):
 
 	pass
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanStoreMixin, CanTransferMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin):
 
-	description = models.CharField(max_length = 255, default = '')
-	contact = models.CharField(max_length = 20, default = '')
+	description = models.CharField(max_length = 255, default = '', blank = True)
+	contact = models.CharField(max_length = 20, default = '', blank = True)
 	financial_reports = models.ManyToManyField(PrivateFile, related_name = '%(class)ss')
+
+	members = generic.GenericRelation(
+			'Person',
+			content_type_field = 'company_type',
+			object_id_field = 'company_object_id'
+	)	
 	
 	report_field = 'financial_reports'
 	
 	class Meta:
 		abstract = True
 		
-class Company(Enterprise):
+class Company(Enterprise,CanStoreMixin):
 
 	industry = models.ForeignKey(Industry, related_name = 'companies', null = True)
 	

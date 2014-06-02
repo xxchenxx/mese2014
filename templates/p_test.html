@@ -1,20 +1,39 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+		<script type="text/javascript" src="/static/js/utils.js"></script> <!--A script containing many useful methods-->
 		<script type="text/javascript" src="/static/js/jquery-1.10.0.min.js"></script>
 		<script type="text/javascript" src="/static/ckeditor/ckeditor.js"></script>
 		<script type="text/javascript" src="/static/ckeditor/config.js"></script>
 		<script type="text/javascript" src="/static/js/uploadify.js"></script>
+		<style type="text/css">
+			.red {
+				background-color:red;
+			}
+		</style>
 	</head>
 	<body>
 		<div>
 		<textarea rows="30" cols="50" id="text" name="text">sdg好tgqwetqwgasd</textarea>
 		</div>
-		<div id="queue"><input type="file" name="file" id="file"></div>
+		<div id="queue"><input type="file" name="file" id="file" style=""></div>
+		<ul id="list">
+			<p>已上传：</p>
+		</ul>
 		<script type="text/javascript">
-			CKEDITOR.replace('text',{extraPlugins:'img', queueId:'queue', fileId:'file',toolbar:[[ 'Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink' ],
-				[ 'img' ]
-			]});
+			CKEDITOR.replace('text',{
+				upload:{
+					queueId:'queue', /*required*/
+					fileId:'file',   /*required*/
+					uploader:{       /*optional*/
+						buttonClass: "red",
+						callback:function(data){
+							/* data may look like this: {id:1, url:xxxx, name:xxx}*/
+							$("#list").append('<li>{name}</li>'.render(data));
+						}
+					}
+				}
+			});
 		</script>
 	</body>
 </html>

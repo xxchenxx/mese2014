@@ -8,13 +8,21 @@ from common.storage import SAEStorage
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from common import fields
-from file_upload.models import PrivateFile, PublicFile, File
+from common.fields import DecimalField
+from files.models import PrivateFile, PublicFile, File
 from annoying.fields import AutoOneToOneField
-	
+
+from django.db import connection
+
 import managers
-	
-class HasReportModel(object):
+
+from common.mixins import HasAssetsMixin
+from securities.mixins import *
+from transfer.mixins import *
+
+# Abstract logical interfaces.
+
+class HasReportsMixin(object):
 	
 	@classmethod
 	def has_field(cls, field_name):
@@ -35,13 +43,15 @@ class HasReportModel(object):
 		elif isinstance(file_ids, (int, str)):
 			files = objects.filter(pk = int(file_ids))
 		else:
-			files	=	(file_ids,)
+			files = (file_ids,)
 
 		if isinstance(field, models.ForeignKey):
 			setattr(self, field_name, files[0])
 			self.save()
 		else:
 			getattr(self, field_name).add(*files)
+		
+# Models definition.
 	
 class UserProfile(models.Model):
 	
@@ -51,143 +61,138 @@ class UserProfile(models.Model):
 	info_object_id = models.PositiveIntegerField(null = True, blank = True)
 	info_object = generic.GenericForeignKey('info_type', 'info_object_id')
 	
+	def create_info(self, class_name, save = True, **kwargs):
+		if self.info_object is None:
+			self.info_object = globals()[class_name].objects.create(**kwargs)
+			if save:
+				self.save()
+		return self.info_object
+	
+<<<<<<< HEAD
+		@property
+		def info(self):
+			return self.info_object
+		@info.setter
+		def info(self, obj):
+			if self.user.is_staff:
+				return
+			self.info_object = obj					
+=======
 	@property
 	def info(self):
-		if self.user.is_staff:
-			if not hasattr(self, '_info'):
-				self._info = Admin(self)
-				
-			return self._info
-		else:
-			return self.info_object
+		return self.info_object
 			
 	@info.setter
 	def info(self, obj):
 		if self.user.is_staff:
 			return
-		self.info_object = obj
-	
+		self.info_object = obj			
+		
+>>>>>>> hsfzxjy-master
 class Account(models.Model):
 	
+	display_name = models.CharField(max_length = 50, default = '', blank = True)
 	profile_object = generic.GenericRelation(
 			'UserProfile',
 			content_type_field = 'info_type',
 			object_id_field = 'info_object_id'
 	)
-<<<<<<< HEAD
-	display_name = models.CharField(max_length = 255, default = '', blank = True)
-=======
-	display_name = models.CharField(max_length = 255, default = '')
->>>>>>> linux_master
-	assets = fields.DecimalField()
 	
+	@property
+	def profile(self):
+		return self.profile_object.all()[0]
+		
 	@property
 	def account_type(self):
 		return self.__class__.__name__.lower()
 	
-	@property
-	def profile(self):
-		if not hasattr(self, '_profile'):
-			try:
-				self._profile = self.profile_object.all()[0]
-			except:
-				self._profile = None
-		
-		return self._profile
+	class Meta:
+		abstract = True
+	
+class PersonalModel(Account, HasAssetsMixin, HasFundMixin, CanTransferMixin):
+
+	MALE = 'M'
+	FEMALE = 'F'
+	GENDER_CHOICE = (
+			(MALE, 'male'),
+			(FEMALE, 'female'),
+	)
+	
+	gender = models.CharField(max_length = 1, default = MALE, blank = True)
+	position = models.CharField(max_length = 20, default = '', blank = True)
 	
 	class Meta:
 		abstract = True
-		ordering = ['display_name']
-		
-class Admin(object):
-
-	display_name = u'管理员'
-	account_type = u'admin'
-<<<<<<< HEAD
 	
-	def __init__(self, profile):
-		self.profile = profile
+class Media(Account):
+	
+	contact = models.CharField(max_length = 20, default = '')	
 		
-	def update(self, *args, **kwargs):
-		return
-		
-	def save(self, *args, **kwargs):
-		return
-=======
->>>>>>> linux_master
-		
-class Person(Account, HasReportModel):
+class Section(models.Model):
 
-	report_field = 'consumption_reports'
+	display_name = models.CharField(max_length = 20, default = '')
+	
+class Industry(models.Model):
 
-	fixed_assets = fields.DecimalField()
-<<<<<<< HEAD
-	debt_files = models.ManyToManyField(PrivateFile, related_name = 'person_in_debt',  blank = True)
-=======
-	debt_file = models.ForeignKey(PrivateFile, related_name = 'person_in_debt', null = True, blank = True)
->>>>>>> linux_master
-	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'person_owned_reports')
+	section = models.ForeignKey(Section, related_name = 'industries')
+	display_name = models.CharField(max_length = 20, default = '')		
+		
+class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 
 	company_type = models.ForeignKey(ContentType, null = True, blank = True)
 	company_object_id = models.PositiveIntegerField(null = True, blank = True)
 	company = generic.GenericForeignKey('company_type', 'company_object_id')
-		
-	class Meta(Account.Meta):
-		pass
+	industry = models.ForeignKey(Industry, related_name = 'persons')
+	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
+	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
 	
-class Enterprise(Account):
+	report_field = 'consumption_reports'
 	
-<<<<<<< HEAD
-	description = models.TextField(blank = True, default = '')
-	phone_number = models.CharField(blank = True, max_length = 11, default = '')
-=======
-	description = models.TextField(null = True, blank = True, default = '')
-	phone_number = models.CharField(null = True, blank = True, max_length = 11, default = '')
->>>>>>> linux_master
+	def save(self, *args, **kwargs):
+		if self.id is None:
+			self.industry = self.company.industry
+		super(Person, self).save(*args, **kwargs)
 	
+class Government(PersonalModel, HasStockBondMixin):
+
+	pass
+	
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin):
+
+	description = models.CharField(max_length = 255, default = '', blank = True)
+	contact = models.CharField(max_length = 20, default = '', blank = True)
+	financial_reports = models.ManyToManyField(PrivateFile, related_name = '%(class)ss')
+
 	members = generic.GenericRelation(
 			'Person',
 			content_type_field = 'company_type',
-			object_id_field = 'company_object_id',
-	)
-
-	class Meta(Account.Meta):
-		abstract = True
-	
-class Company(Enterprise, HasReportModel):
+			object_id_field = 'company_object_id'
+	)	
 	
 	report_field = 'financial_reports'
 	
-	financial_reports = models.ManyToManyField(PrivateFile, related_name = 'company_owned_reports')
-	
-	class Meta(Enterprise.Meta):
-		pass
+	class Meta:
+		abstract = True
 		
-class FinancialInstitution(Enterprise):
-	
-	BANK = 'BK'
-	FUND_COMPANY = 'FC'
-	
-	INSTITUTION_TYPE_CHOICES = (
-			(BANK, 'bank'),
-			(FUND_COMPANY, 'fund_company'),
-	)
-	
-	type = models.CharField(max_length = 2, default = BANK, choices = INSTITUTION_TYPE_CHOICES)
-	
-	class Meta(Enterprise.Meta):
-		pass
-		
-class Bank(FinancialInstitution):
+class Company(Enterprise,CanStoreMixin):
 
-	objects = managers.BankManager()
-
-	class Meta(FinancialInstitution.Meta):
-		proxy = True
-		
-class FundCompany(FinancialInstitution):
-
-	objects = managers.FundCompanyManager()
+	industry = models.ForeignKey(Industry, related_name = 'companies', null = True)
 	
-	class Meta(FinancialInstitution.Meta):
-		proxy = True
+class FundCompany(Enterprise, OwnFundMixin):
+
+	pass
+	
+class Bank(Enterprise, OwnFundMixin):
+	
+	rate = DecimalField()
+	
+	def share_profits(self):
+		rate = rate /100
+		cursor = connection.cursor()
+		cursor.execute(
+				"""UPDATE transfer_deposits SET money = ROUND(money*(1+%s), 4) WHERE bank_id=%d""" % self.id
+		)
+	
+class Fund(Account, HasAssetsMixin):
+
+	pass

@@ -10,6 +10,11 @@ from django.db import connection
 
 from decimal import Decimal
 
+class FundManager(models.Manager):
+	
+	def published(self):
+		return self.filter(published = True)
+
 class Fund(models.Model):
 
 	OPEN = 'open'
@@ -94,7 +99,7 @@ class Fund(models.Model):
 		return user
 	
 	def can_buy(self):
-		return True
+		return not (not self.published and self.fund_type == self.CLOSE)
 	
 	@property
 	def total_money(self):
@@ -105,19 +110,8 @@ class Fund(models.Model):
 	
 	class Meta:
 		ordering = ['-created_time']
-	
-class ClosedEndFund(Fund):
-	
-	def can_buy(self):
-		return not self.published
-	
-	class Meta:
-		proxy = True
-	
-class OpenEndFund(Fund):
-
-	class Meta:
-		proxy = True
+		
+	objects = FundManager()
 		
 class ShareManager(models.Manager):
 	
