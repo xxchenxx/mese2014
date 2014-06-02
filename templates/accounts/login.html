@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {%extends "index.html" %}
 {%block main_content %}
 <script src="/static/js/login.js"></script>
@@ -8,29 +7,18 @@
   <div class="form-group" id="ufg">
   <div class="input-group">
     <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
-    <input type="text" onfocus="clean_form()" class="form-control form-login" id="inputUsername" placeholder="请输入用户名" >
+    <input type="text" onfocus="clean_form()" name="username" class="form-control form-login" id="inputUsername" placeholder="请输入用户名" >
   </div></div>
   <div class="form-group" id="pfg">
     <div class="input-group">
     <div class="input-group-addon"><i class="fa fa-key fa-fw"></i></div>
-    <input type="password" onfocus="clean_form()" class="form-control form-login" id="inputPassword" placeholder="请输入密码" >
+    <input type="password" onfocus="clean_form()" name="password" class="form-control form-login" id="inputPassword" placeholder="请输入密码" >
   </div></div>
   <div class="alert alert-danger alert-login" id="Result"></div>
   <div class="form-group">
-    <button type="submit" class="btn btn-login" onClick="validate_form()">登录</button>
+    <button type="submit" class="btn btn-login">登录</button>
   </div>
   </form>
   </div>
 </main>
 {%endblock%}
-=======
-<html>
-<body>
-<form method="post">
-<input type="text" name="username" />
-<input type="text" name="password" />
-<input type="submit" />
-</form>
-</body>
-</html>
->>>>>>> ad3fad7e282237169910f34dc4495289dc3dbe8e

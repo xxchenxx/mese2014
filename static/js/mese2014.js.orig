@@ -1,9 +1,0 @@
-$(document).ready(function(){
-<<<<<<< HEAD
-	$.ajaxSetup({
-	  dataType:"json"	
-	})
-})
-=======
-  $.ajaxSetup({dataType:"json"})})
->>>>>>> 1ae77473a12b7dbb01204ea4ff89e06c28dc05a7
