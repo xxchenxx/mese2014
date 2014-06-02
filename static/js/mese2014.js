@@ -35,9 +35,13 @@ function MESEIO(){}
 				url:api_url,
 				type:"GET",
 				success:function(data){
-					$("#feeds-container").append("")
+					var f_back = "<span><a class='f-back' href='?type="+ data.type +"'></a>"
+					var f_title = "<h3 class='text-center feeds-details-title'>" + data.title + "</h3>";
+					var f_info = "<div class='text-center feeds-details-info'>" + data.create_time +"by @" +data.author.profile.display_name + "</div>"
+					var f_detail = data.content;
+					$("#feeds-container").append(f_back+f_title+f_info+f_detail);
 				},
-			})
+			})			
 		}
 })();
 (function($){
