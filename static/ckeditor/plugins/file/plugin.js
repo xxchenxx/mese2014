@@ -1,6 +1,6 @@
-CKEDITOR.plugins.add('img', {
+CKEDITOR.plugins.add('file', {
 	init: function(editor){
-		var config = editor.config.upload, fileId=config.fileId, queueId = config.queueId, $file=$("#"+fileId), $queue=$("#"+queueId), insertion="<img src='{url}' />",
+		var config = editor.config.upload, fileId=config.fileId, queueId = config.queueId, $file=$("#"+fileId), $queue=$("#"+queueId), insertion="<a src='{url}' >{name}</a>",
 		uploaderConfig=clone(config.uploader)||{};
 		console.log(uploaderConfig);
 		uploaderConfig.buttonText=uploaderConfig.buttonText||"选择上传文件";
@@ -11,14 +11,14 @@ CKEDITOR.plugins.add('img', {
 		uploaderConfig.queueId=queueId;
 		uploaderConfig.onUploadSuccess=function (file, data) {
 				var data = decodeJSON(data);
-				editor.insertHtml(insertion.replace('{url}', data.url).replace('{name}', data.name));
+				editor.insertHtml(window.uploadInsertion.replace('{url}', data.url).replace('{name}', data.name));
 				uploaderConfig.callback&&uploaderConfig.callback(data);
 		};
 		uploaderConfig.onUploadComplete=function (){ $queue.hide();};
 		console.log(uploaderConfig);
 		$queue.hide();
 		$file.uploadify(uploaderConfig);
-		editor.addCommand( 'img',
+		editor.addCommand( 'file',
 		{
 			exec : function( editor )
 			{    
@@ -26,10 +26,10 @@ CKEDITOR.plugins.add('img', {
 				$queue.show();
 			}
 		});
-	editor.ui.addButton( 'img',
+	editor.ui.addButton( 'file',
 		{
-			label: '图片',
-			command: 'img',
+			label: '文件',
+			command: 'file',
 			icon: this.path + 'icon.png'
 		} );
 	},

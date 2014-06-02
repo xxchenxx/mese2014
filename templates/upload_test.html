@@ -8,7 +8,7 @@
 	$(function() {
 		$("#file").uploadify({
 			'swf': '/static/img/uploadify.swf',
-			'uploader': '/api/files/',
+			'uploader': '/api/files/public/',
 			'cancelImg': '/static/img/uploadify-cancel.png',
 			'auto': true,
 			'method':'patch',
@@ -24,6 +24,6 @@
 
 <body>
 	<div id="fileQueue"> </div>
-	<input type="file" name="file" id="file" />
+	<input type="file" name="file" id="file" style="position:relative;right:99999px;"/>
 </body>
 </html>

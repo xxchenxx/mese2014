@@ -8,23 +8,37 @@ from django.http import Http404
 
 from common.serializers import FileField 
 
-class AccountSerializer(serializers.Serializer):
+def get_industry_serializer(field_name = 'industry'):
+
+	class HasIndustrySerializer(serializers.Serializer):
+		
+		industry = serializers.Field(source = '%s.display_name' % field_name)
+		
+	return HasIndustrySerializer
+
+class AccountSerializer(serializers.ModelSerializer):
 
 	account_type = serializers.CharField(read_only = True)
 	url = serializers.SerializerMethodField('get_url')
 	
 	def get_url(self, obj):
 		return reverse('user-profile', kwargs = {'pk':obj.profile.user.pk})
-
-class AdminSerializer(AccountSerializer):
-	
-	display_name = serializers.CharField(read_only = True, required = False)
 		
-class EnterpriseSerializer(serializers.ModelSerializer, AccountSerializer):
+class MediaSerializer(AccountSerializer):
+	
+	class Meta:
+		model = models.Media
+
+class PersonalSerializer(AccountSerializer):
 
 	class Meta:
-		model = models.Enterprise
+		model = models.PersonalModel
 		
+class GovernmentSerializer(PersonalSerializer):
+	
+	class Meta:
+		model = models.Government
+
 class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 	
 	class Meta:
@@ -32,7 +46,7 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 		fields = ('url', 'display_name')
 		lookup_field = 'pk'
 	
-class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
+class PersonSerializer(PersonalSerializer, get_industry_serializer()):
 	
 	company = serializers.SerializerMethodField('get_company')
 	debt_files = FileField(many = True, required = False)
@@ -53,7 +67,7 @@ class PersonSerializer(serializers.ModelSerializer, AccountSerializer):
 		model = models.Person	
 		exclude = ['company_type', 'company_object_id']
 		
-class EnterpriseSerializer(serializers.ModelSerializer, AccountSerializer):
+class EnterpriseSerializer(AccountSerializer):
 	
 	members = PersonSerializer(many = True, required = False, exclude=[
 			'company',
@@ -65,7 +79,7 @@ class EnterpriseSerializer(serializers.ModelSerializer, AccountSerializer):
 	class Meta:
 		model = models.Enterprise
 		
-class CompanySerializer(EnterpriseSerializer):
+class CompanySerializer(EnterpriseSerializer, get_industry_serializer()):
 	
 	financial_reports = FileField(many = True, required = False)
 	
@@ -81,6 +95,11 @@ class FundCompanySerializer(EnterpriseSerializer):
 	
 	class Meta:
 		model = models.FundCompany
+		
+class FundSerializer(AccountSerializer):
+
+	class Meta:
+		model = models.Fund
 
 class UserSerializer(serializers.ModelSerializer):
 

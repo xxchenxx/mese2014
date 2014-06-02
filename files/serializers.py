@@ -2,11 +2,12 @@ from rest_framework import serializers
 from models import PrivateFile, PublicFile,	File
 import os.path
 
-class	FileField(serializers.FileField):
+class FileField(serializers.FileField):
 
 	encode_file = lambda self, obj:{
 			"file_name": os.path.basename(obj.file.name),
-			"file_url":obj.file.url
+			"file_url":obj.file.url,
+			"id": obj.id,
 	}
 
 	def	__init__(self, *args, **kwargs):
@@ -16,12 +17,13 @@ class	FileField(serializers.FileField):
 		super(FileField, self).__init__(*args, **kwargs) 
 		
 	def from_native(self, value):
+		cls = self.type == 'private' and PrivateFile or PublicFile
 		if self.many:
 			assert isinstance(value, (tuple, list))
-			return File.objects.filter(pk__in	=	value)
+			return cls.objects.filter(pk__in =	value)
 		else:
 			assert isinstance(value, (str, int))
-			return File.objects.get(pk = value)
+			return cls.objects.get(pk = value)
 		
 	def to_native(self, value):
 		if self.many:
