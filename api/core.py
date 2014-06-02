@@ -13,23 +13,22 @@ from django.utils import six
 import imp
 import sys
 import os
-from .cron import Cron
 
 class AppCache(object):
 	"""
-	A cache that stores installed applications and their cron. Used to
+	A cache that stores installed applications and their router. Used to
 	provide reverse-relations and for app introspection (e.g. admin).
 	"""
 	__shared_state = dict(
 		app_store=SortedDict(),
 		app_labels={},
-		app_crons=[],
+		app_routers=[],
 		app_errors={},
 		loaded=False,
 		handled={},
 		postponed=[],
 		nesting_level=0,
-		_get_cron_cache={},
+		_get_router_cache={},
 	)
 
 	def __init__(self):
@@ -62,19 +61,15 @@ class AppCache(object):
 
 	def _label_for(self, app_mod):
 		"""
-		Return app_label for given cron module.
+		Return app_label for given router module.
 
 		"""
 		return app_mod.__name__.split('.')[-2]
 
-	def get_crons(self):
+	def get_routers(self):
 		res = {}
-		print self.get_apps()
 		for app in self.get_apps():
-			for name in dir(app):
-				cron = getattr(app, name)
-				if isinstance(cron, type) and issubclass(cron, Cron):
-					res['%s.%s' % (app.__name__, cron.__name__)] = cron
+			res.update(getattr(app, 'routes', {}))
 		return res
 		
 	def load_app(self, app_name, can_postpone=True):
@@ -86,10 +81,10 @@ class AppCache(object):
 		self.nesting_level += 1
 		app_module = import_module(app_name)
 		try:
-			cron = import_module('.crons', app_name)
+			router = import_module('.routers', app_name)
 		except ImportError:
 			self.nesting_level -= 1
-			if not module_has_submodule(app_module, 'crons'):
+			if not module_has_submodule(app_module, 'routers'):
 				return None
 			else:
 				if can_postpone:
@@ -99,13 +94,13 @@ class AppCache(object):
 					raise
 
 		self.nesting_level -= 1
-		if cron not in self.app_store:
-			self.app_store[cron] = len(self.app_store)
-			self.app_labels[self._label_for(cron)] = cron
-		return cron
+		if router not in self.app_store:
+			self.app_store[router] = len(self.app_store)
+			self.app_labels[self._label_for(router)] = router
+		return router
 
 	def get_apps(self):
-		"Returns a list of all installed modules that contain cron."
+		"Returns a list of all installed modules that contain router."
 		self._populate()
 
 		# Ensure the returned list is always in the same order (with new apps
@@ -117,8 +112,8 @@ class AppCache(object):
 
 	def get_app(self, app_label, emptyOK=False):
 		"""
-		Returns the module containing the cron for the given app_label. If
-		the app has no cron in it and 'emptyOK' is True, returns None.
+		Returns the module containing the router for the given app_label. If
+		the app has no router in it and 'emptyOK' is True, returns None.
 		"""
 		self._populate()
 		imp.acquire_lock()
@@ -129,7 +124,7 @@ class AppCache(object):
 					if mod is None:
 						if emptyOK:
 							return None
-						raise ImproperlyConfigured("App with label %s is missing a cron.py module." % app_label)
+						raise ImproperlyConfigured("App with label %s is missing a router.py module." % app_label)
 					else:
 						return mod
 			raise ImproperlyConfigured("App with label %s could not be found" % app_label)

@@ -9,6 +9,7 @@ from django.conf import settings
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework import status
 from common.permissions import HasReport, IsAdminUser, HasFile
 
 from django.http import Http404
@@ -46,6 +47,8 @@ class PrivateFileAPIViewSet(ModelViewSet):
 	
 	def dispatch(self, request, *args, **kwargs):
 		self.account = request.user.profile.info
+		if not hasattr(self.account, 'report_field'):
+			raise Http404
 		self.field_name = (kwargs['field_name'] or self.account.report_field).replace('-','_')
 		print self.field_name
 		field = self.account.has_field(self.field_name)

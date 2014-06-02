@@ -1,21 +1,25 @@
 from django.conf.urls import url, patterns, include
 
 from rest_framework.routers import DefaultRouter
+from rest_framework.viewsets import ViewSetMixin
+from rest_framework.views import APIView
 
-from webboard.views import PassageAPIViewSet, CommentAPIViewSet
-from accounts.views import UserAPIViewSet
-from files.views import PrivateFileAPIViewSet, PublicFileAPIViewSet
-from timeline.views import TimelineAPIView
+from .core import cache
 
+extra_list = []
 router = DefaultRouter()
-router.register(r'passages', PassageAPIViewSet)
-router.register(r'passages/(?P<passage_pk>\d+)/comments', CommentAPIViewSet)
-router.register(r'users', UserAPIViewSet)
-router.register(r'files/public', PublicFileAPIViewSet)
+for pattern, obj in cache.get_routers().iteritems():
+	print pattern
+	if issubclass(obj, ViewSetMixin):
+		router.register(pattern, obj)
+	elif issubclass(obj, APIView):
+		extra_list.append(url(pattern, obj.as_view()))
+	elif callable(obj) or isinstance(obj, (str, unicode)):
+		extra_list.append(url(pattern, obj))
+				
+extra_list.append(url(r'^', include(router.urls)))
 
 urlpatterns = patterns('',
 	url(r'^auth/', include('rest_framework.urls', namespace = 'rest_framework')),
-	url(r'^timeline/$', TimelineAPIView.as_view()),
-	url(r'^files/$',	'files.views.upload_view'),
-	url(r'^', include(router.urls)),
+	*extra_list
 )
