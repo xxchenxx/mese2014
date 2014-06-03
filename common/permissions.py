@@ -4,6 +4,7 @@ from accounts.models import HasReportsMixin, Person
 class HasReport(BasePermission):
 
 	def has_permission(self, request, view):
+		print request.user, request.user.profile.info
 		return request.user and isinstance(request.user.profile.info, HasReportsMixin)
 		
 class IsAdminUser(BasePermission):

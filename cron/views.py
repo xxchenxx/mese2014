@@ -7,8 +7,8 @@ cache_client = memcache.Client()
 
 def index(request):
 	crons = cache.get_crons()
-	print crons
 	times = cache_client.get_multi(crons.keys())
+	print crons
 	for cron_name, cron_cls in crons.iteritems():
 		cron = cron_cls()
 		if cron.execute(times.get(cron_name, None)):

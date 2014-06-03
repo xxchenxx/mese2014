@@ -12,6 +12,11 @@ from decimal import Decimal
 
 from django.conf import settings
 
+class BondManager(models.Manager):
+	
+	def published(self):
+		return self.filter(published = True)
+
 class Bond(models.Model):
 	
 	GOVERNMENT = 'GOV'
@@ -78,6 +83,8 @@ class Bond(models.Model):
 	
 	class Meta:
 		ordering = ['-created_time']
+		
+	objects = BondManager()
 	
 class ShareManager(models.Manager):
 	pass

@@ -28,7 +28,13 @@ class StockTest(TestCase):
 		self.stock.apply(self.user1, 0.9, 'sell', 10)
 		
 user1, user2 = Person.objects.all()
-stk = Stock.objects.get(pk=1)
+try:
+	stk = Stock.objects.get(pk=1)
+except:
+	stk = Stock.objects.create(publisher = Company.objects.all()[0], current_price = 1.0)
+	
+if user1.get_stock_share(stk) is None:
+	Share.objects.create(stock = stk, owner = user1, shares = 10000)
 user1.sell(stk, 0.9, 10)
 user2.buy(stk, 0.9, 10)
 

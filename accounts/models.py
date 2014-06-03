@@ -90,6 +90,10 @@ class Account(models.Model):
 	@property
 	def profile(self):
 		return self.profile_object.all()[0]
+		
+	@property
+	def account_type(self):
+		return self.__class__.__name__.lower()
 	
 	class Meta:
 		abstract = True
@@ -172,10 +176,10 @@ class Bank(Enterprise, OwnFundMixin):
 	rate = DecimalField()
 	
 	def share_profits(self):
-		rate = rate /100
+		rate = self.rate /100
 		cursor = connection.cursor()
 		cursor.execute(
-				"""UPDATE transfer_deposits SET money = ROUND(money*(1+%s), 4) WHERE bank_id=%d""" % self.id
+				"""UPDATE transfer_deposit SET money = ROUND(money*(1+%s), 4) WHERE bank_id=%d""" % (rate, self.id) 
 		)
 	
 class Fund(Account, HasAssetsMixin):
