@@ -99,7 +99,7 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 		return self._share
 	
 	def clean(self):
-		current_price, new_price = self.stock.current_price, Decimal(self.price)
+		current_price, new_price = Decimal(self.stock.current_price), Decimal(self.price)
 		assert abs((current_price-new_price) / current_price) <= 0.2, "Stock price overflow."
 		if self.command and self.command == self.BUY:
 			self.applicant.check_assets(new_price * self.shares)
