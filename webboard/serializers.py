@@ -9,7 +9,7 @@ from common.serializers import WritableRelatedField
 class PassageSerializer(serializers.ModelSerializer):
 
 	author = WritableRelatedField(serializer_class = accounts.serializers.UserSerializer)
-	attachments = FileField(type = 'public', many = True)
+	attachments = FileField(type = 'public', many = True, required = False)
 	
 	class Meta:
 		model = models.Passage

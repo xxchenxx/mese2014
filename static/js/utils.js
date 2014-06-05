@@ -31,7 +31,7 @@ window.encodeJSON = JSON.stringify||JsonToStr;
 window.decodeJSON = JSON.parse||function(d){eval('('+d+')')};
 
 String.prototype.render = function(context) {
-	return this.replace(/{(.+)}/, function (word) {
+	return this.replace(/{([^{}]+)}/g, function (word) {
 		var words=word.slice(1,-1).split(),obj=context;
 		for (var i=0,l=words.length;i<l;i++){
 			obj=context[words[i]];

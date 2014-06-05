@@ -27,10 +27,10 @@ class HasStockMixin(models.Model):
 		
 		return application
 		
-	def buy(self, stock, price, shares):
+	def buy_stock(self, stock, price, shares):
 		self.__apply(Application.BUY, stock, price, shares)
 		
-	def sell(self, stock, price, shares):
+	def sell_stock(self, stock, price, shares):
 		self.__apply(Application.SELL, stock, price, shares)
 	
 	class Meta:
