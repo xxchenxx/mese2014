@@ -34,6 +34,7 @@ class CanStoreMixin(models.Model):
 			deposit.dec_money(money)
 			self.inc_assets(money)
 			bank.dec_assets(money)
+			return deposit
 		except Deposit.DoesNotExist:
 			raise Exception, "Deposits not enough."
 			
@@ -48,7 +49,7 @@ class CanTransferMixin(models.Model):
 		self.check_assets(dec_money)
 		self.dec_assets(dec_money)
 		transfer_to.inc_assets(money)
-		TransferLog.objects.create(
+		return TransferLog.objects.create(
 				transfer_to = transfer_to,
 				transfer_by = self,
 				money = money

@@ -7,6 +7,17 @@ from common.permissions import IsAdminUser
 from .exceptions import ParamError
 from decimal import Decimal
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+class LogAPIViewSet(GenericViewSet, mixins.ListModelMixin):
+	
+	model = models.Log
+	serializer_class = serializers.LogSerializer
+	
+	def get_queryset(self):
+		pk = self.kwargs.get('stock_pk', None)
+		stock = get_object_or_404(models.Stock, pk = pk)
+		return stock.logs.all()
 
 class ShareAPIViewSet(GenericViewSet, mixins.ListModelMixin):
 	
@@ -50,7 +61,7 @@ class StockAPIViewSet(ModelViewSet):
 		
 		response = super(StockAPIViewSet, self).create(request, *args, **kwargs)
 		models.Share.objects.create(stock = self.object, shares = shares, owner = owner)
-		return response
+		return response	
 		
 	def apply(self, request, type, *args, **kwargs):
 		price = request.DATA.get('price', None)

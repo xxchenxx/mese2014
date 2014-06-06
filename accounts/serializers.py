@@ -131,8 +131,13 @@ class AccountField(serializers.WritableField):
 		enter_data = data[field_name]
 		cls = ContentType.objects.get(app_label = 'accounts', model = enter_data['type'])
 		
-		if not cls.model_class().objects.filter(pk = enter_data['id']).exists():
+		try:
+			obj = cls.model_class().objects.get(pk = enter_data['id'])
+		except cls.model_class().DoesNotExist:
 			raise Http404
 		
 		into['%s_type' % field_name] = cls
 		into['%s_object_id' % field_name] = enter_data['id']
+		into[field_name] = obj
+		
+		return obj

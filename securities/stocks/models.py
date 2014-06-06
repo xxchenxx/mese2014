@@ -139,6 +139,7 @@ def process_application_updated(sender, **kwargs):
 	application = kwargs.get('application', None)
 	assert isinstance(application, Application), "There must be an application argument."
 	stock = application.stock
+	price = application.price
 	
 	application_sets = []
 	quantity = application.shares
@@ -159,6 +160,8 @@ def process_application_updated(sender, **kwargs):
 		stock.transfer(seller, buyer, share)	
 		
 	if quantity < 0:
-		application_sets.pop()	
+		application_sets.pop()
+		
+	stock.update_price(price)
 	
 application_updated.connect(process_application_updated)

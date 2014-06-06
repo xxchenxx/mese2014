@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, pagination
 from .models import Stock, Share, Application, Log
 from accounts.serializers import AccountField
 
@@ -14,7 +14,7 @@ class LogSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Log
-		exclude = ('stock',)
+		fields = ('created_time', 'price')
 		
 class ShareSerializer(serializers.ModelSerializer):
 	

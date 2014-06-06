@@ -9,13 +9,12 @@ from .core import cache
 extra_list = []
 router = DefaultRouter()
 for pattern, obj in cache.get_routers():
-	print pattern
-	if issubclass(obj, ViewSetMixin):
+	if callable(obj) and not isinstance(obj, type) or isinstance(obj, (str, unicode)):
+		extra_list.append(url(pattern, obj))
+	elif issubclass(obj, ViewSetMixin):
 		router.register(pattern, obj)
 	elif issubclass(obj, APIView):
 		extra_list.append(url(pattern, obj.as_view()))
-	elif callable(obj) or isinstance(obj, (str, unicode)):
-		extra_list.append(url(pattern, obj))
 				
 extra_list.append(url(r'^', include(router.urls)))
 
