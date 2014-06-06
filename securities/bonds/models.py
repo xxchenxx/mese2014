@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 from django.db.models import F
 
@@ -39,6 +40,14 @@ class Bond(models.Model):
 	lasted_time = TimeDeltaField()
 	published_time = models.DateTimeField()
 	created_time = models.DateTimeField(auto_now_add = True)
+	
+	def __unicode__(self):
+		if self.type == self.GOVERNMENT:
+			_type = u'政府'
+		else:
+			_type = u'公司'
+			
+		return u'%s基金 %s' % (_type, self.display_name)
 	
 	def publish(self):
 		self.published = True

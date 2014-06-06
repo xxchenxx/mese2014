@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 
 from django.contrib.contenttypes.models import ContentType
@@ -28,6 +29,16 @@ class NotificationQuerySet(models.query.QuerySet):
 			
 		qs.update(unread=True)
 		
+class NotificationManager(managers.PassThroughManager):
+	
+	def create_notification(self, recipient, verb, actor = None, target = None):
+		_actor = u'有人' if actor is None else actor
+		if target is None:
+			msg = u"%s %s" % (_actor, verb)
+		else:
+			msg = u"%s %s %s" % (_actor, verb, target)
+		return self.create(message = msg, recipient = recipient, actor = actor, verb = verb, target = target)
+		
 class Notification(models.Model):
 
 	recipient = models.ForeignKey(
@@ -50,7 +61,9 @@ class Notification(models.Model):
 		
 	created_time = models.DateTimeField(auto_now_add = True)
 	
-	objects = managers.PassThroughManager.for_queryset_class(NotificationQuerySet)()
+	message = models.TextField()
+	
+	objects = NotificationManager.for_queryset_class(NotificationQuerySet)()
 	
 	class Meta:
 		ordering = ['-created_time']

@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 
 from django.contrib.contenttypes.models import ContentType
@@ -44,6 +45,13 @@ class Fund(models.Model):
 	fund_type = models.CharField(max_length = 10, choices = TYPE_CHOICE)
 	
 	created_time = models.DateTimeField(auto_now_add = True)
+	
+	def __unicode__(self):
+		if self.fund_type == self.OPEN:
+			_type = u'开放'
+		else:
+			_type = u'封闭'
+		return u'%s式基金 %s' % (_type, self.display_name)
 	
 	def __init__(self, *args, **kwargs):
 		self.__total_money = None

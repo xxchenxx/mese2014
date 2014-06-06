@@ -1,3 +1,4 @@
+#encoding=utf8
 from __future__ import division
 from django.db import models
 from django.db.models import F
@@ -49,6 +50,9 @@ class Stock(models.Model):
 			self.current_price = price
 			self.save()
 	
+	def __unicode__(self):
+		return u"股票 %s" % self.display_name
+	
 	class Meta:
 		ordering = ['-current_price', '-created_time']
 	
@@ -71,8 +75,8 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 	SELL = 'sell'
 	BUY  = 'buy'
 	COMMAND_CHOICE = (
-		(SELL, 'sell'),
-		(BUY,  'buy'),
+		(SELL, u'卖出'),
+		(BUY,  u'买入'),
 	)
 
 	applicant_type = models.ForeignKey(ContentType, null = True, blank = True)
@@ -114,6 +118,14 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 			application_updated.send(self, application = self)
 		
 		super(Application, self).save(*args, **kwargs)
+	
+	def __unicode__(self):
+		if self.command == self.SELL:
+			action = u'卖出'
+		else:
+			action = u'买入'
+			
+		return u'股票 %s 的%s申请' % (self.stock, action) 
 	
 	class Meta:
 		ordering = ['created_time', 'price']

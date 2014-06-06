@@ -63,6 +63,9 @@ class UserProfile(models.Model):
 	info_object_id = models.PositiveIntegerField(null = True, blank = True)
 	info_object = generic.GenericForeignKey('info_type', 'info_object_id')
 	
+	def __unicode__(self):
+		return u"%s 的个人信息" % self.user.username
+	
 	def create_info(self, class_name, save = True, **kwargs):
 		if self.info_object is None:
 			self.info_object = globals()[class_name].objects.create(**kwargs)
@@ -88,6 +91,9 @@ class Account(models.Model):
 			content_type_field = 'info_type',
 			object_id_field = 'info_object_id'
 	)
+	
+	def __unicode__(self):
+		return self.display_name
 	
 	@property
 	def profile(self):
@@ -123,10 +129,16 @@ class Section(models.Model):
 
 	display_name = models.CharField(max_length = 20, default = '')
 	
+	def __unicode__(self):
+		return self.display_name
+	
 class Industry(models.Model):
 
 	section = models.ForeignKey(Section, related_name = 'industries')
 	display_name = models.CharField(max_length = 20, default = '')		
+	
+	def __unicode__(self):
+		return self.display_name
 		
 class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 
