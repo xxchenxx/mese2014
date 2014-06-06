@@ -16,11 +16,11 @@ except:
 			fund_type = Fund.OPEN
 	)
 			
-#person = Person.objects.get(pk=1)
-#person.buy_fund(fund, 100)
-#fund.share_profits()
-#fund.publish(False)
-fund.finish()
+person = Person.objects.get(pk=1)
+person.buy_fund(fund, 100)
+fund.share_profits()
+fund.publish(False)
+#fund.finish()
 #from django.db import connection
 #print connection.queries
 	#print i['sql']
