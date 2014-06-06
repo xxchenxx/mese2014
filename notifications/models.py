@@ -29,15 +29,46 @@ class NotificationQuerySet(models.query.QuerySet):
 			
 		qs.update(unread=True)
 		
-class NotificationManager(managers.PassThroughManager):
-	
-	def create_notification(self, recipient, verb, actor = None, target = None):
+	def process_message(self, verb, actor = None, target = None, **kwargs):
 		_actor = u'有人' if actor is None else actor
 		if target is None:
 			msg = u"%s %s" % (_actor, verb)
 		else:
 			msg = u"%s %s %s" % (_actor, verb, target)
-		return self.create(message = msg, recipient = recipient, actor = actor, verb = verb, target = target)
+			
+		return msg		
+	
+	def create_notifications(self, instances = []):
+		objects = []
+		for data in instances:
+			msg = self.process_message(**data)
+			data['message'] = msg
+			if 'actor' in data and (not data['actor'] or isinstance(data['actor'], (unicode,str))):
+				data.pop('actor')
+			if 'target' in data and (not data['target'] or isinstance(data['target'], (unicode,str))):
+				data.pop('target')
+			objects.append(Notification(**data))
+			
+		return self.bulk_create(objects)
+	
+	def create_notification(self, recipient, verb, actor = None, target = None):
+		msg = self.process_message(verb, actor, target)
+		print msg
+		args = {
+			'recipient': recipient,
+			'verb': verb,
+			'actor': actor,
+			'target': target,
+			'message': msg,
+		}
+		if not args['actor'] or isinstance(actor, (str, unicode)):
+			args.pop('actor')
+		if not args['target'] or isinstance(target, (str, unicode)):
+			args.pop('target')
+		return self.create(**args)
+		
+class NotificationManager(managers.PassThroughManager):
+	pass
 		
 class Notification(models.Model):
 
@@ -47,8 +78,8 @@ class Notification(models.Model):
 	)
 	unread = models.BooleanField(default = True)
 	
-	actor_content_type = models.ForeignKey(ContentType, related_name='notify_actor')
-	actor_object_id = models.CharField(max_length=255)
+	actor_content_type = models.ForeignKey(ContentType, related_name='notify_actor', blank = True, null = True)
+	actor_object_id = models.CharField(max_length=255, blank = True, null = True)
 	actor = generic.GenericForeignKey('actor_content_type', 'actor_object_id')
 	
 	verb = models.CharField(max_length=255)
@@ -67,3 +98,5 @@ class Notification(models.Model):
 	
 	class Meta:
 		ordering = ['-created_time']
+		
+print Notification.objects

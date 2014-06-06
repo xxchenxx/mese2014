@@ -14,6 +14,8 @@ from signals import application_updated
 
 from decimal import Decimal
 
+from notifications import send_notifications
+
 class Stock(models.Model):
 	
 	display_name = models.CharField(max_length = 255, default = '', editable = False)
@@ -125,7 +127,7 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 		else:
 			action = u'买入'
 			
-		return u'股票 %s 的%s申请' % (self.stock, action) 
+		return u'股票 %s 的%s申请' % (self.stock.display_name, action) 
 	
 	class Meta:
 		ordering = ['created_time', 'price']
@@ -149,7 +151,6 @@ class Share(get_inc_dec_mixin(['shares'])):
 	
 def process_application_updated(sender, **kwargs):
 	application = kwargs.get('application', None)
-	assert isinstance(application, Application), "There must be an application argument."
 	stock = application.stock
 	price = application.price
 	
@@ -163,13 +164,28 @@ def process_application_updated(sender, **kwargs):
 	if not application_sets:
 		return
 	print application_sets
+
+	notifications = [{
+			'recipient': application.applicant.profile.user,
+			'verb': u'处理了',
+			'actor': u'系统',
+			'target': application
+	}]
 		
 	for _application, share in application_sets:
 		if application.command == Application.BUY:
 			seller, buyer = _application, application
 		else:
 			seller, buyer = application, _application
+		notifications.append({
+				'actor': u'系统',
+				'verb': u'处理了',
+				'recipient': _application.applicant.profile.user,
+				'target': _application
+		})
 		stock.transfer(seller, buyer, share)	
+		
+	send_notifications(notifications)	
 		
 	if quantity < 0:
 		application_sets.pop()

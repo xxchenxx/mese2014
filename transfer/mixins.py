@@ -1,6 +1,8 @@
+#encoding=utf8
 from .models import TransferLog, Deposit
 from common.mixins import *
 from decimal import Decimal
+from notifications import send_notification
 
 __all__ = ['CanStoreMixin', 'CanTransferMixin']
 
@@ -49,6 +51,7 @@ class CanTransferMixin(models.Model):
 		self.check_assets(dec_money)
 		self.dec_assets(dec_money)
 		transfer_to.inc_assets(money)
+		send_notification(transfer_to.profile.user, u'转帐给了', self, u'你')
 		return TransferLog.objects.create(
 				transfer_to = transfer_to,
 				transfer_by = self,
