@@ -203,7 +203,7 @@ def filter_accounts(**kwargs):
 				args.append((key, '"%s"' % value))
 			else:
 				args.append((key, value))
-		condition = 'AND'.join(map(lambda x,y:'%s=%s'%(x,y), args))
+		condition = 'AND'.join(map(lambda x:'%s=%s'%(x[0],x[1]), args))
 		sql = '%s WHERE %s' % (sql, condition)
 		
 	cursor = connection.cursor()

@@ -20,6 +20,7 @@ class HasFundMixin(models.Model):
 	
 	def buy_fund(self, fund, money):
 		assert fund.can_buy()
+		print money
 		self.check_assets(money)
 		fund.apply_money(self, money)
 		self.dec_assets(money)

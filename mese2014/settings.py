@@ -209,6 +209,10 @@ REST_FRAMEWORK = {
 	'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+	'DEFAULT_PARSER_CLASSES': (
+		'rest_framework.parsers.FormParser',
+		'rest_framework.parsers.JSONParser',
+	),
 	'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
 	'DATETIME_FORMAT': '%m-%d %H:%M:%S',
 }
