@@ -10,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from common.permissions import HasReport, IsAdminUser, HasFile
+from common.permissions import HasReport, IsAdminUser, HasFile, IsSubClass
 
 from django.http import Http404
 
@@ -33,7 +33,6 @@ class PublicFileAPIViewSet(ModelViewSet):
 
 	model = PublicFile
 	serializer_class = PublicFileSerializer
-	permission_classes = ()#(IsAdminUser, )
 	
 	def create(self, request, *args, **kwargs):
 		request.DATA['file_type'] = File.PUBLIC

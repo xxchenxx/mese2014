@@ -26,7 +26,7 @@ class ShareSerializer(serializers.ModelSerializer):
 		
 class ApplicationSerializer(serializers.ModelSerializer):
 	
-	stock = StockSerializer()
+	stock = StockSerializer(fields = ['id', 'display_name'])
 	
 	class Meta:
 		model = Application
