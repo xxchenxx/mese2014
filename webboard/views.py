@@ -3,10 +3,15 @@ from rest_framework.generics import get_object_or_404
 import models, serializers
 import json
 from django.shortcuts import render_to_response
+from annoying.decorators import render_to
 
 def test(a):
 	return render_to_response('p_test.html')
 
+@render_to('wb/write.html')
+def write(request):
+	return {}
+	
 class BasePassageViewSet(viewsets.GenericViewSet):
 
 	model = models.Passage
@@ -26,16 +31,6 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.C
 	def list(self, *args, **kwargs):
 		response = super(PassageRetrieveViewSet, self).list(*args, **kwargs)
 		response.template_name = 'wb/passages.html'
-		return response
-		
-	@decorators.action(methods = ['POST', 'GET'])	
-	def write(self, request, *args, **kwargs):
-		response = super(PassageRetrieveViewSet, self).create(*args, **kwargs)
-		if request.method == 'GET':
-			response = response.Response({})
-			response.template_name = 'wb/write.html'
-		else:
-			response = super(PassageRetrieveViewSet, self).create(request, *args, **kwargs)
 		return response
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):

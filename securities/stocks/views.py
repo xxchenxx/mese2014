@@ -8,6 +8,31 @@ from .exceptions import ParamError
 from decimal import Decimal
 from rest_framework.response import Response
 
+class ShareAPIViewSet(GenericViewSet, mixins.ListModelMixin):
+	
+	model = models.Share
+	serializer_class = serializers.ShareSerializer
+	
+	def get_queryset(self):
+		stock_pk = self.kwargs.get('stock_pk', None)
+		qs = self.request.user.profile.info.stock_shares.all()
+		if stock_pk is not None:
+			qs = qs.filter(stock_id = stock_pk)
+		return qs
+		
+class ApplicationAPIViewSet(GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+	
+	model = models.Application
+	serializer_class = serializers.ApplicationSerializer
+	
+	def get_queryset(self):
+		stock_pk = self.kwargs.get('stock_pk', None)
+		qs = self.request.user.profile.info.stock_applications.all()
+		if stock_pk is not None:
+			qs = qs.filter(stock_id = stock_pk)
+			
+		return qs
+
 class StockAPIViewSet(ModelViewSet):
 	
 	serializer_class = serializers.StockSerializer
@@ -21,30 +46,27 @@ class StockAPIViewSet(ModelViewSet):
 		
 		shares = request.DATA.pop('shares', None)
 		owner = filter_accounts(display_name = owner)[0]
-		owner = account_classes_map[owner.account_type](id = owner.id)
+		owner = account_classes_map[owner['account_type']](id = owner['id'])
 		
 		response = super(StockAPIViewSet, self).create(request, *args, **kwargs)
-		Share.objects.create(stock = self.object, shares = shares, owner = owner)
+		models.Share.objects.create(stock = self.object, shares = shares, owner = owner)
 		return response
 		
-	@action(methods = ['POST'])
-	def buy(self, request, *args, **kwargs):
-		price = request.DATA.pop('price', None)
-		shares = request.DATA.pop('shares', None)
+	def apply(self, request, type, *args, **kwargs):
+		price = request.DATA.get('price', None)
+		shares = request.DATA.get('shares', None)
 		if price is None or shares is None:
 			raise ParamError("Shares and money must be set.")
 		shares = Decimal(shares)
 		price = Decimal(price)
+		res = request.user.profile.info._apply(type, self.get_object(), price, shares)
 			
-		return Response(serializers.ApplicationSerializer(request.user.profile.info.buy_stock(self.get_object(), price, shares)).data)
+		return Response(serializers.ApplicationSerializer(res).data)		
+		
+	@action(methods = ['POST'])
+	def buy(self, request, *args, **kwargs):
+		return self.apply(request, models.Application.BUY, *args, **kwargs)
 		
 	@action(methods = ['POST'])
 	def sell(self, request, *args, **kwargs):
-		price = request.DATA.pop('price', None)
-		shares = request.DATA.pop('shares', None)
-		if shares is None or price is None:
-			raise ParamError("Shares and money must be set.")
-		shares = Decimal(shares)
-		price = Decimal(price)
-			
-		return Response(serializers.ApplicationSerializer(request.user.profile.info.sell_stock(self.get_object(), price, shares)).data)
+		return self.apply(request, models.Application.SELL, *args, **kwargs)

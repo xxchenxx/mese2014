@@ -8,7 +8,7 @@ from .core import cache
 
 extra_list = []
 router = DefaultRouter()
-for pattern, obj in cache.get_routers().iteritems():
+for pattern, obj in cache.get_routers():
 	print pattern
 	if issubclass(obj, ViewSetMixin):
 		router.register(pattern, obj)

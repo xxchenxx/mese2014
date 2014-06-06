@@ -7,5 +7,6 @@ router.register(r'passages', views.PassageRetrieveViewSet)
 
 urlpatterns = patterns('webboard.views',
 	url(r'test/', 'test'),
+	url(r'write/', 'write'),
 	url(r'^', include(router.urls)),
 )

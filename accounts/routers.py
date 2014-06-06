@@ -1,5 +1,5 @@
 import views
 
-routes = {
-	r'users': views.UserAPIViewSet
-}
+routes = (
+	(r'users', views.UserAPIViewSet),
+)

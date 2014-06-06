@@ -67,9 +67,9 @@ class AppCache(object):
 		return app_mod.__name__.split('.')[-2]
 
 	def get_routers(self):
-		res = {}
+		res = []
 		for app in self.get_apps():
-			res.update(getattr(app, 'routes', {}))
+			res.extend(getattr(app, 'routes', []))
 		return res
 		
 	def load_app(self, app_name, can_postpone=True):

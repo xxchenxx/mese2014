@@ -4,7 +4,7 @@ from accounts.serializers import AccountField
 
 class StockSerializer(serializers.ModelSerializer):
 
-	publisher = AccountField()
+	publisher = AccountField(required = False)
 
 	class Meta:
 		model = Stock
@@ -18,7 +18,7 @@ class LogSerializer(serializers.ModelSerializer):
 		
 class ShareSerializer(serializers.ModelSerializer):
 	
-	stock = StockSerializer()
+	stock = serializers.Field(source = 'stock.display_name')
 	
 	class Meta:
 		model = Share

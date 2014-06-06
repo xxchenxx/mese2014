@@ -1,5 +1,5 @@
 import views
 
-routes = {
-	r'timeline/$': views.TimelineAPIView
-}
+routes = (
+	(r'timeline/$', views.TimelineAPIView),
+)

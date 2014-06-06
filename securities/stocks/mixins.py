@@ -12,6 +12,12 @@ class HasStockMixin(models.Model):
 			object_id_field = 'owner_object_id'
 	)
 	
+	stock_applications = generic.GenericRelation(
+			'stocks.Application',
+			content_type_field = 'applicant_type',
+			object_id_field = 'applicant_object_id'
+	)
+	
 	def get_stock_share(self, stock, create = False, **kwargs):
 		try:
 			return self.stock_shares.get(stock = stock)
@@ -19,7 +25,7 @@ class HasStockMixin(models.Model):
 			if create:
 				return Share(owner = self, stock = stock, **kwargs)
 				
-	def __apply(self, command, stock, price, shares):
+	def _apply(self, command, stock, price, shares):
 		application = Application(stock = stock, applicant = self, price = price, command = command, shares = shares)
 		application.clean()
 		application.save()
@@ -28,10 +34,10 @@ class HasStockMixin(models.Model):
 		return application
 		
 	def buy_stock(self, stock, price, shares):
-		self.__apply(Application.BUY, stock, price, shares)
+		return self._apply(Application.BUY, stock, price, shares)
 		
 	def sell_stock(self, stock, price, shares):
-		self.__apply(Application.SELL, stock, price, shares)
+		return self._apply(Application.SELL, stock, price, shares)
 	
 	class Meta:
 		abstract = True

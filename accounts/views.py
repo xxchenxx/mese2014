@@ -15,6 +15,13 @@ class UserAPIViewSet(viewsets.ModelViewSet):
 	serializer_class = serializers.UserSerializer
 	model = auth.models.User
 	
+	def get_object(self):
+		pk = self.kwargs.get('pk', None)
+		if pk == 'my':
+			return self.request.user
+		else:
+			super(UserAPIViewSet, self).get_object()
+	
 	@action(methods=['GET', 'PATCH'])
 	def profile(self, *args, **kwargs):
 		profile = self.get_object().profile.info
