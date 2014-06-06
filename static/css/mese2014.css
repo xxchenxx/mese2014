@@ -289,7 +289,10 @@ font-size: 0.87em;
 width:100%;
 border-bottom: 1px dashed #aaa;
 }
-.feeds-details-text {
+div.feeds-details-text {
+padding:10px;
+}
+.feeds-details-text p{
 color:#E7E7E7;
 text-indent: 2.2em;
 font-size:1.2em;

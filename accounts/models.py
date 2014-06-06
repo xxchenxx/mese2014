@@ -22,6 +22,8 @@ from transfer.mixins import *
 
 # Abstract logical interfaces.
 
+__accounts__ = ['Bank', 'Company', 'Fund', 'FundCompany', 'Government', 'Media', 'Person']
+
 class HasReportsMixin(object):
 	
 	@classmethod
@@ -185,3 +187,27 @@ class Bank(Enterprise, OwnFundMixin):
 class Fund(Account, HasAssetsMixin):
 
 	pass
+	
+__account_classes = map(lambda x: globals()[x], __accounts__)
+account_classes_map = {x.__name__.lower(): x for x in __account_classes}
+__tables = [(cls.__name__.lower(), cls._meta.db_table) for cls in __account_classes]
+from django.db import connection
+	
+def filter_accounts(**kwargs):
+	sql = 'SELECT * FROM (%s) as t ' % ' UNION '.join('(SELECT "%s" as account_type, id, display_name FROM %s)' % (data[0], data[1]) for data in __tables)
+	print sql
+	if kwargs:
+		args = []
+		for key, value in kwargs.iteritems():
+			if isinstance(value, (str, unicode)):
+				args.append((key, '"%s"' % value))
+			else:
+				args.append((key, value))
+		condition = 'AND'.join(map(lambda x,y:'%s=%s'%(x,y), args))
+		sql = '%s WHERE %s' % (sql, condition)
+		
+	cursor = connection.cursor()
+	cursor.execute(sql)
+	res = cursor.fetchall()
+	res = map(lambda a:{"account_type": a[0], "id": a[1], "display_name": a[2]}, res)
+	return res

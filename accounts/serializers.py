@@ -121,7 +121,7 @@ class UserSerializer(serializers.ModelSerializer):
 def get_serializer_by_object(obj):
 	return globals()['%sSerializer' % obj.__class__.__name__]
 	
-class EnterpriseField(serializers.WritableField):
+class AccountField(serializers.WritableField):
 	
 	def field_to_native(self, obj, field_name):
 		enterprise = getattr(obj, field_name)

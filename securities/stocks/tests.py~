@@ -35,8 +35,8 @@ except:
 	
 if user1.get_stock_share(stk) is None:
 	Share.objects.create(stock = stk, owner = user1, shares = 10000)
-user1.sell_stock(stk, 0.9, 10)
-user2.buy_stock(stk, 0.9, 10)
+user1.sell(stk, 0.9, 10)
+user2.buy(stk, 0.9, 10)
 
 from django.db import connection
 print len(connection.queries)
