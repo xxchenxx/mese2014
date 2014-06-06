@@ -38,10 +38,8 @@ function MESEIO(){}
 					var f_back = "<li class='active'>新闻正文</li>"
 					$('.breadcrumb-mese2014').children('.active').removeClass('active').html("<a href='?type="+data.type+"'>信息中心</a>");
 					$('.breadcrumb-mese2014').append(f_back);
-					var f_title = "<h3 class='text-center feeds-details-title'>" + data.title + "</h3>";
-					var f_info = "<div class='text-center feeds-details-info'>" + data.create_time +"by @" +data.author.profile.display_name + "</div>"
-					var f_detail = data.content;
-					$("#feeds-container").append(f_title+f_info+f_detail);
+					var text=("<h3 class='text-center feeds-details-title'>{title}</h3><div class='text-center feeds-details-info'>{created_time} by @{author.profile.display_name}</div><div class='feeds-details-text'>{content}</div>").render(data);
+					$("#feeds-container").append(text);	
 				},
 			})			
 		}

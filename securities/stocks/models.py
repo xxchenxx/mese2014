@@ -15,7 +15,7 @@ from decimal import Decimal
 
 class Stock(models.Model):
 	
-	display_name = models.CharField(max_length = 255, default = '')
+	display_name = models.CharField(max_length = 255, default = '', editable = False)
 	
 	publisher_type = models.ForeignKey(ContentType, null = True, blank = True)
 	publisher_object_id = models.PositiveIntegerField(null = True, blank = True)
@@ -160,8 +160,5 @@ def process_application_updated(sender, **kwargs):
 		
 	if quantity < 0:
 		application_sets.pop()	
-
-	#Application.objects.filter(id__in = (app[0].id for app in application_sets)).delete()
-	#stock.update_price(application.price)
 	
 application_updated.connect(process_application_updated)
