@@ -1,0 +1,35 @@
+{% extends "wb/passages.html" %}
+{% block passage_main %}
+  <script src="/static/ckeditor/ckeditor.js"></script>
+  <script src="/static/ckeditor/config.js"></script>
+  <script src="/static/js/uploadify.js"></script>
+  <form id="p_new">
+    <div class="input-group" style="margin-top:10px;">
+     <span class="input-group-addon">标题：</span>
+    <input class="form-control" type="text" id="p_title" name="title"></input>
+    </div>
+  <div style="margin-top:10px">
+    <textarea rows="30" cols="50" id="text"></textarea>
+  </div>
+  <div id="queue"><input type="file" name="file" id="file" class="p-file-button"></div>
+  <ul id="list">
+    <p>已上传：</p>
+  </ul>
+  </form>
+  <script type="text/javascript">
+    CKEDITOR.replace('text',{
+    upload:{
+      queueId:'queue', /*required*/
+		 fileId:'file',   /*required*/
+		 uploader:{       /*optional*/
+		 buttonClass: "red",
+		 callback:function(data){
+		   /* data may look like this: {id:1, url:xxxx, name:xxx}*/
+			 $("#list").append('<li>{name}</li>'.render(data));
+		 }
+    }
+
+}});	
+</script>
+<button type="button" class="btn btn-mese2014" onClick="sendfeeds()">提交</button>
+{% endblock %}
