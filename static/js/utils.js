@@ -53,3 +53,12 @@ $.fn.serializeObject = function() {
 	});
 	return o;
 };
+
+(function(){
+	function ajax(url, data， method) {
+		return $.ajax();
+	}
+	function API(data){
+	
+	}
+})();
