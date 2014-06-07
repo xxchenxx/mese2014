@@ -302,3 +302,9 @@ padding:0px 10px;
 .f-back:hover,
 .f-back:active,
 .f-back:focus {color:#CCC;}
+.btn-mese2014 {background-color:transparent;
+color:#CCC;font-size: 1.2em;}
+.btn-mese2014:hover,
+.btn-mese2014:active,
+.btn-mese2014:focus {color:#FFF;background-color: transparent;}
+.form-control {border-radius:0px;}
