@@ -19,7 +19,7 @@ except:
 person = Person.objects.get(pk=1)
 person.buy_fund(fund, 100)
 fund.share_profits()
-fund.publish(False)
+fund.publish(True)
 #fund.finish()
 #from django.db import connection
 #print connection.queries

@@ -6,11 +6,13 @@ from rest_framework.response import Response
 import models, serializers
 from common.exceptions import *
 from decimal import Decimal
+from common.permissions import IsSubClass
 
 class ShareAPIViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
 	
 	model = models.Share
 	serializer_class = serializers.ShareSerializer
+	permission_classes = [IsSubClass('HasFundMixin')]
 	
 	def get_queryset(self):
 		fund_pk = self.kwargs.get('fund_pk', None)
@@ -25,7 +27,7 @@ class FundAPIViewSet(ModelViewSet):
 	model = models.Fund
 	serializer_class = serializers.FundSerializer
 	
-	@action(methods = ['POST'])
+	@action(methods = ['POST'], permission_classes = [IsSubClass('HasFundMixin')])
 	def buy(self, request, *args, **kwargs):
 		money = request.DATA.get('money', None)
 		if money is None:

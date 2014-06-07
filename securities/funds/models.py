@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 
 from django.contrib.contenttypes.models import ContentType
@@ -9,6 +10,8 @@ from common.mixins import get_inc_dec_mixin
 from django.db import connection
 
 from decimal import Decimal
+
+from notifications import send_notification
 
 class FundManager(models.Manager):
 	
@@ -45,6 +48,13 @@ class Fund(models.Model):
 	
 	created_time = models.DateTimeField(auto_now_add = True)
 	
+	def __unicode__(self):
+		if self.fund_type == self.OPEN:
+			_type = u'开放'
+		else:
+			_type = u'封闭'
+		return u'%s式基金 %s' % (_type, self.display_name)
+	
 	def __init__(self, *args, **kwargs):
 		self.__total_money = None
 		return super(Fund, self).__init__(*args, **kwargs)
@@ -78,6 +88,7 @@ class Fund(models.Model):
 		for share in self.shares.all():
 			share.owner.inc_assets(share.money)
 		shares.delete()
+		send_notification(self.publisher.profile.user, u'结束了', self)
 		self._end()
 	
 	def publish(self, delete_on_failed = True, username = 'fundd', password = None):
@@ -86,9 +97,13 @@ class Fund(models.Model):
 			assert self.total_money >= self.initial_money
 		except AssertionError:
 			if delete_on_failed:
+				send_notification(self.publisher.profile.user, u'被取消了', self)
 				self._end()
+				return 
 			else:
 				raise
+				
+		send_notification(self.publisher.profile.user, u'发布了', self)
 				
 		User = ContentType.objects.get(app_label = 'auth', model = 'user').model_class()
 		user = User.objects.create_user(username = username, password = password or User.objects.make_random_password(6))

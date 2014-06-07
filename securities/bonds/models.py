@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 from django.db.models import F
 
@@ -11,6 +12,7 @@ from exceptions import BondPublished
 from decimal import Decimal
 
 from django.conf import settings
+from notifications import send_notification
 
 class BondManager(models.Manager):
 	
@@ -40,9 +42,19 @@ class Bond(models.Model):
 	published_time = models.DateTimeField()
 	created_time = models.DateTimeField(auto_now_add = True)
 	
+	def __unicode__(self):
+		if self.type == self.GOVERNMENT:
+			_type = u'政府'
+		else:
+			_type = u'公司'
+			
+		return u'%s债券 %s' % (_type, self.display_name)
+	
 	def publish(self):
 		self.published = True
 		self.save()
+		send_notification(self.publisher.profile.user, u'已经发布了', self) 
+		
 		
 	def check_published(self):
 		if self.published:
@@ -58,6 +70,7 @@ class Bond(models.Model):
 			share.owner.inc_assets(money)
 		if self.type == self.ENTERPRISE:
 			self.publisher.dec_assets(total)
+		send_notification(self.publisher.profile.user, u'已经结束了', self) 
 		shares.delete()
 		self.delete()
 	

@@ -1,5 +1,15 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from accounts.models import HasReportsMixin, Person
+from .utils import check_base_class_by_name
+
+def IsSubClass(cls_name):
+	
+	class P(BasePermission):
+		
+		def has_permission(self, request, view):
+			return request.user and request.user.profile and check_base_class_by_name(request.user.profile.info, cls_name)
+			
+	return P
 
 class HasReport(BasePermission):
 

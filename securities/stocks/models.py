@@ -1,3 +1,4 @@
+#encoding=utf8
 from __future__ import division
 from django.db import models
 from django.db.models import F
@@ -12,6 +13,8 @@ from exceptions import SharesNotEnough
 from signals import application_updated
 
 from decimal import Decimal
+
+from notifications import send_notifications
 
 class Stock(models.Model):
 	
@@ -49,6 +52,9 @@ class Stock(models.Model):
 			self.current_price = price
 			self.save()
 	
+	def __unicode__(self):
+		return u"股票 %s" % self.display_name
+	
 	class Meta:
 		ordering = ['-current_price', '-created_time']
 	
@@ -71,8 +77,8 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 	SELL = 'sell'
 	BUY  = 'buy'
 	COMMAND_CHOICE = (
-		(SELL, 'sell'),
-		(BUY,  'buy'),
+		(SELL, u'卖出'),
+		(BUY,  u'买入'),
 	)
 
 	applicant_type = models.ForeignKey(ContentType, null = True, blank = True)
@@ -115,6 +121,14 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 		
 		super(Application, self).save(*args, **kwargs)
 	
+	def __unicode__(self):
+		if self.command == self.SELL:
+			action = u'卖出'
+		else:
+			action = u'买入'
+			
+		return u'股票 %s 的%s申请' % (self.stock.display_name, action) 
+	
 	class Meta:
 		ordering = ['created_time', 'price']
 		
@@ -137,8 +151,8 @@ class Share(get_inc_dec_mixin(['shares'])):
 	
 def process_application_updated(sender, **kwargs):
 	application = kwargs.get('application', None)
-	assert isinstance(application, Application), "There must be an application argument."
 	stock = application.stock
+	price = application.price
 	
 	application_sets = []
 	quantity = application.shares
@@ -150,15 +164,32 @@ def process_application_updated(sender, **kwargs):
 	if not application_sets:
 		return
 	print application_sets
+
+	notifications = [{
+			'recipient': application.applicant.profile.user,
+			'verb': u'处理了',
+			'actor': u'系统',
+			'target': application
+	}]
 		
 	for _application, share in application_sets:
 		if application.command == Application.BUY:
 			seller, buyer = _application, application
 		else:
 			seller, buyer = application, _application
+		notifications.append({
+				'actor': u'系统',
+				'verb': u'处理了',
+				'recipient': _application.applicant.profile.user,
+				'target': _application
+		})
 		stock.transfer(seller, buyer, share)	
 		
+	send_notifications(notifications)	
+		
 	if quantity < 0:
-		application_sets.pop()	
+		application_sets.pop()
+		
+	stock.update_price(price)
 	
 application_updated.connect(process_application_updated)

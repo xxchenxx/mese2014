@@ -7,11 +7,24 @@ from common.permissions import IsAdminUser
 from .exceptions import ParamError
 from decimal import Decimal
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from common.permissions import IsSubClass
+
+class LogAPIViewSet(GenericViewSet, mixins.ListModelMixin):
+	
+	model = models.Log
+	serializer_class = serializers.LogSerializer
+	
+	def get_queryset(self):
+		pk = self.kwargs.get('stock_pk', None)
+		stock = get_object_or_404(models.Stock, pk = pk)
+		return stock.logs.all()
 
 class ShareAPIViewSet(GenericViewSet, mixins.ListModelMixin):
 	
 	model = models.Share
 	serializer_class = serializers.ShareSerializer
+	permission_classes = [IsSubClass('HasStockMixin')]
 	
 	def get_queryset(self):
 		stock_pk = self.kwargs.get('stock_pk', None)
@@ -24,6 +37,7 @@ class ApplicationAPIViewSet(GenericViewSet, mixins.ListModelMixin, mixins.Retrie
 	
 	model = models.Application
 	serializer_class = serializers.ApplicationSerializer
+	permission_classes = [IsSubClass('HasStockMixin')]
 	
 	def get_queryset(self):
 		stock_pk = self.kwargs.get('stock_pk', None)
@@ -50,7 +64,7 @@ class StockAPIViewSet(ModelViewSet):
 		
 		response = super(StockAPIViewSet, self).create(request, *args, **kwargs)
 		models.Share.objects.create(stock = self.object, shares = shares, owner = owner)
-		return response
+		return response	
 		
 	def apply(self, request, type, *args, **kwargs):
 		price = request.DATA.get('price', None)
@@ -63,10 +77,10 @@ class StockAPIViewSet(ModelViewSet):
 			
 		return Response(serializers.ApplicationSerializer(res).data)		
 		
-	@action(methods = ['POST'])
+	@action(methods = ['POST'],permission_classes = [IsSubClass('HasStockMixin')])
 	def buy(self, request, *args, **kwargs):
 		return self.apply(request, models.Application.BUY, *args, **kwargs)
 		
-	@action(methods = ['POST'])
+	@action(methods = ['POST'],permission_classes = [IsSubClass('HasStockMixin')])
 	def sell(self, request, *args, **kwargs):
 		return self.apply(request, models.Application.SELL, *args, **kwargs)

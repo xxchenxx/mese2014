@@ -1,6 +1,9 @@
+#encoding=utf8
 from django.db import models
 from django.conf import settings
 from common.storage import SAEStorage
+
+import os
 
 class File(models.Model):
 	
@@ -17,6 +20,9 @@ class File(models.Model):
 			storage = SAEStorage(settings.SAE_FILE_STORAGE_DOMAIN_NAME)
 	)
 	file_type = models.CharField(max_length = 7, choices = FILE_TYPE_CHOICES)
+	
+	def __unicode__(self):
+		return u"文件 %s" % os.path.basename(self.file.name)
 	
 	class Meta:
 		ordering = ['-created_time']
