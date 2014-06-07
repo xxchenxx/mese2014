@@ -47,7 +47,9 @@ class CreateModelMixin(object):
     Create a model instance.
     """
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+        data = dict(request.DATA)
+        data.update(**kwargs)
+        serializer = self.get_serializer(data=data, files=request.FILES)
 
         if serializer.is_valid():
             self.pre_save(serializer.object)
