@@ -55,10 +55,55 @@ $.fn.serializeObject = function() {
 };
 
 (function(){
-	function ajax(url, data， method) {
-		return $.ajax();
+	function ajax(url, data, method) {
+		return $.ajax({
+			url: url,
+			type: method,
+			data: data,
+			dataType: 'json'
+		});
+	};
+	function Resource(name, _url, type) {
+		this.type = (type&&type==='id')?'id':'action';
+		this.name = name;
+		this.noSupport = [];
+		this.url = (_url||'/api/')+name+'/';
 	}
-	function API(data){
-	
-	}
+	Resource.prototype.url = function (name) {
+		if (this.hasOwnProperty(name)) return this[name];
+		return this[name] = new Resource(name, this.url);
+	};
+	Resource.prototype.id = function (id) {
+		return new Resource(id, this.url, 'id');
+	};
+	methods = ['get', 'post', 'delete', 'patch'];
+	for (var i=0;i<methods.length;i++)
+		(function(method) {
+			Resource.prototype[method] = function (data) {
+				var self = this, res = ajax(this.url, data, method).statusCode({
+						404: function (data) {
+							if (self.type !== 'id') self.noFound = true;
+							alert(res._noFound);
+							//res._noFound(data);
+						},
+						405: function (data) {
+							self.noSupport.push(method);
+						},
+						403: function (data) {
+						
+						},
+						400: function (data) {
+						
+						}
+					});
+				res.noFound = function (data) {
+					this._noFound = data;
+					return this;
+				};
+				return res;
+			}
+		})(methods[i]);
+	API = {
+		url: function (name) {return new Resource(name); }
+	};
 })();
