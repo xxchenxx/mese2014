@@ -20,7 +20,7 @@ class UserAPIViewSet(viewsets.ModelViewSet):
 		if pk == 'my':
 			return self.request.user
 		else:
-			super(UserAPIViewSet, self).get_object()
+			return super(UserAPIViewSet, self).get_object()
 	
 	@action(methods=['GET', 'PATCH'])
 	def profile(self, *args, **kwargs):
