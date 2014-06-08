@@ -2,34 +2,52 @@
 {% block passage_main %}
   <script src="/static/ckeditor/ckeditor.js"></script>
   <script src="/static/ckeditor/config.js"></script>
-  <script src="/static/js/uploadify.js"></script>
+  <script src="/static/js/jquery.ui.widget.js"></script>
+	<script src="/static/js/jquery.iframe-transport.js"></script>
+	<script src="/static/js/jquery.fileupload.js"></script>
   <form id="p_new">
     <div class="input-group" style="margin-top:10px;">
      <span class="input-group-addon">标题：</span>
     <input class="form-control" type="text" id="p_title" name="title"></input>
     </div>
   <div style="margin-top:10px">
-    <textarea rows="30" cols="50" id="text"></textarea>
+    <textarea rows="30" cols="50" id="text" name="content"></textarea>
   </div>
-  <div id="queue"><input type="file" name="file" id="file" class="p-file-button"></div>
-  <ul id="list">
-    <p>已上传：</p>
+  <ul id="list" class="list-group hidden">
+    
   </ul>
+  <input class="btn btn-mese2014" type="submit" value="提交"/>
   </form>
+  <form id="uploadForm"><input type="file" name="file" id="file" class="p-file-button"></form>
   <script type="text/javascript">
     CKEDITOR.replace('text',{
     upload:{
-      queueId:'queue', /*required*/
-		 fileId:'file',   /*required*/
-		 uploader:{       /*optional*/
-		 buttonClass: "red",
+      formId:'uploadForm', 
+		 fileId:'file',   
 		 callback:function(data){
-		   /* data may look like this: {id:1, url:xxxx, name:xxx}*/
-			 $("#list").append('<li>{name}</li>'.render(data));
+			 $("#list").append('<input type="text" name="attachments" value="{id}"></input>'.render(data));
 		 }
-    }
-
-}});	
+	}})
+	$(function(){
+		$("#p_new").submit(function(e){
+			e.preventDefault();
+			var data = $(this).serializeObject();
+			data.content = CKEDITOR.instances['text'].getData();
+			if (!(data.title&&data.content)) {
+				//Blank, do something
+				return false;
+			}
+			API.url("passages").post(data).
+			ok(function(data){
+				console.log('ok');
+				// If success, do something
+			})
+			.paramError(function(data){
+				console.log(data);
+				// If error, do something
+			});
+			return false;
+		});
+	});	
 </script>
-<button type="button" class="btn btn-mese2014" onClick="sendfeeds()">提交</button>
 {% endblock %}
