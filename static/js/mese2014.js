@@ -3,6 +3,16 @@ $(document).ready(function(){
 	  dataType:"json"	
 	})
 })
+function sendfeeds(){
+	var p = $("#p_new").serializeObject();
+	p['content'] = CKEDITOR.instances['text'].getData();
+	console.log(p);
+	$.ajax({
+		url:"/api/passages/",
+		type:"POST",
+		data:p,
+	})
+}
 function MESEIO(){}
 (function(){
 		MESEIO.prototype.loadfeeds = function(type){
@@ -26,7 +36,7 @@ function MESEIO(){}
 						$("#feeds-container").append("<div class='feeds'><div class='feeds-title'>"+pk 
 						+ "<a href='?id=" + this.id + "'>" + pt + "</a>" + pi);
 					})
-				},
+				}
 			})
 		}
 		MESEIO.prototype.loadfdetails = function(id){

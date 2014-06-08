@@ -1,29 +1,25 @@
 CKEDITOR.plugins.add('file', {
 	init: function(editor){
-		var config = editor.config.upload, fileId=config.fileId, queueId = config.queueId, $file=$("#"+fileId), $queue=$("#"+queueId), insertion="<a src='{url}' >{name}</a>",
-		uploaderConfig=clone(config.uploader)||{};
-		console.log(uploaderConfig);
-		uploaderConfig.buttonText=uploaderConfig.buttonText||"选择上传文件";
-		uploaderConfig.uploader = '/api/files/public/';
-		uploaderConfig.fileObjName='file';
-		uploaderConfig.swf='/static/img/uploadify.swf';
-		uploaderConfig.auto=true;
-		uploaderConfig.queueId=queueId;
-		uploaderConfig.onUploadSuccess=function (file, data) {
-				var data = decodeJSON(data);
+		var config = editor.config.upload, fileId=config.fileId, formId=config.formId, queueId = config.queueId, $file=$("#"+fileId), $queue=$("#"+queueId), $form=$("#"+formId), insertion="<a href='{url}'>{name}</a>", callback = config.callback||function(){};
+		$form.hide();
+		$form.fileupload({
+			url: "/api/files/public/",
+			autoUpload: true,
+			dataType: 'json',
+			formAcceptCharset: "unicode",
+			done: function (e, xhr) {
+				var data = xhr.result;
 				editor.insertHtml(window.uploadInsertion.replace('{url}', data.url).replace('{name}', data.name));
-				uploaderConfig.callback&&uploaderConfig.callback(data);
-		};
-		uploaderConfig.onUploadComplete=function (){ $queue.hide();};
-		console.log(uploaderConfig);
-		$queue.hide();
-		$file.uploadify(uploaderConfig);
+				callback(data);
+				$form.hide();
+			}
+		});
 		editor.addCommand( 'file',
 		{
 			exec : function( editor )
 			{    
 				window.uploadInsertion=insertion;
-				$queue.show();
+				$form.show();
 			}
 		});
 	editor.ui.addButton( 'file',

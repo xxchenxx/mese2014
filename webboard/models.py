@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from common.fields import FinancialYearField
 from common.utils import check_base_class_by_name
 from files.models import PublicFile
+from django.core.exceptions import ValidationError
 
 class Passage(models.Model):
 	
@@ -31,7 +32,8 @@ class Passage(models.Model):
 	def clean_fields(self, *args, **kwargs):
 		if not self.type and self.author:
 			res = filter(lambda x:check_base_class_by_name(self.author.profile.info, x), self.TYPE_MAP.iterkeys())
-			assert res
+			if not res:
+				raise ValidationError("No permission")
 			self.type = self.TYPE_MAP[res[0]]
 			
 		super(Passage, self).clean_fields(*args, **kwargs)

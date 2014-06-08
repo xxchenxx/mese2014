@@ -31,12 +31,14 @@ def upload_view(request):
 
 class PublicFileAPIViewSet(ModelViewSet):
 
-	model = PublicFile
+	model = File
 	serializer_class = PublicFileSerializer
 	
 	def create(self, request, *args, **kwargs):
-		request.DATA['file_type'] = File.PUBLIC
-		return super(PublicFileAPIViewSet, self).create(request, *args, **kwargs)	
+		#request.DATA['file_type'] = File.PUBLIC
+		print request.DATA, File.PUBLIC
+		print request.FILES
+		return super(PublicFileAPIViewSet, self).create(request, file_type = File.PUBLIC, *args, **kwargs)	
 	
 class PrivateFileAPIViewSet(ModelViewSet):
 	

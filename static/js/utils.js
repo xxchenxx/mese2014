@@ -80,30 +80,38 @@ $.fn.serializeObject = function() {
 	for (var i=0;i<methods.length;i++)
 		(function(method) {
 			Resource.prototype[method] = function (data) {
-				var self = this, res = ajax(this.url, data, method).statusCode({
+				var errors = {
+						404: "notFound", 
+						403: "forbidden", 
+						400:"paramError", 
+						405:"methodNotAllowed", 
+						200: "ok"
+				}, callbacks = {};
+				var self = this,
+			  res = ajax(this.url, data, method).statusCode({
 						404: function (data) {
-							if (self.type !== 'id') self.noFound = true;
-							alert(res._noFound);
-							//res._noFound(data);
+							callbacks[404].fire(decodeJSON(data.responseText));
 						},
 						405: function (data) {
-							self.noSupport.push(method);
+							callbacks[405].fire(decodeJSON(data.responseText));
 						},
 						403: function (data) {
-						
+							callbacks[403].fire(decodeJSON(data.responseText));
 						},
 						400: function (data) {
-						
+							callbacks[400].fire(decodeJSON(data.responseText));
 						}
+					}).done(function(data) {
+							callbacks[200].fire(data);
 					});
-				res.noFound = function (data) {
-					this._noFound = data;
-					return this;
-				};
+				for (var i in errors) {
+					var callback = callbacks[i] = $.Callbacks("once memory");
+					res[errors[i]] = callback.add;
+				}
 				return res;
 			}
 		})(methods[i]);
 	API = {
-		url: function (name) {return new Resource(name); }
+		url: function (name) {return this[name]?this[name]:this[name] = new Resource(name); }
 	};
 })();
