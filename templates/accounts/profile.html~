@@ -1,0 +1,18 @@
+{% extends "index.html" %}
+{% block main_content %}
+  <div class="col-md-3 hidden-xs hidden-sm">
+    <div class="panel panel-default utinfo">
+      <div class="panel-body">
+        用户名：{{user.display_name}}
+        性别 : 
+        所属公司：
+      </div>
+    </div>
+    <ul class="nav nav-pills">
+      <li><a href="#aa" data-toggle="pill">资产分析</a></li>
+      <li><a href="#pr" data-toggle="pill">个人报告</a></li>
+    </ul>
+  </div>
+  <div class="col-md-9 hidden-xs hidden-sm">
+  </div>
+{% endblock %}
