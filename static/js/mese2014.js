@@ -4,7 +4,7 @@ $(document).ready(function(){
 	})
 })
 function sendfeeds(){
-	var p = $("p_new").serializeObject();
+	var p = $("#p_new").serializeObject();
 	p['content'] = CKEDITOR.instances['text'].getData();
 	console.log(p);
 	$.ajax({
