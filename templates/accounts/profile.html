@@ -1,14 +1,15 @@
 {% extends "index.html" %}
 {% block main_content %}
+<div class="container">
   <div class="col-md-3 hidden-xs hidden-sm">
     <div class="panel panel-default utinfo">
       <div class="panel-body">
-        用户名：{{user.display_name}}
-        性别 : 
-        所属公司：
+        用户名：{{user.profile.info.display_name}}<br>
+        性别 : {{user.profile.info.sex}}<br>
+        所属公司：<br>
       </div>
     </div>
-    <ul class="nav nav-pills">
+    <ul class="nav nav-pills nav-stacked">
       <li><a href="#aa" data-toggle="pill">资产分析</a></li>
       <li><a href="#pr" data-toggle="pill">个人报告</a></li>
     </ul>
@@ -19,4 +20,5 @@
       <div class="tab-pane fade" id="pr">..</div>
     </div>
   </div>
+</div>
 {% endblock %}
