@@ -67,14 +67,14 @@ $.fn.serializeObject = function() {
 		this.type = (type&&type==='id')?'id':'action';
 		this.name = name;
 		this.noSupport = [];
-		this.url = (_url||'/api/')+name+'/';
+		this._url = (_url||'/api/')+name+'/';
 	}
 	Resource.prototype.url = function (name) {
 		if (this.hasOwnProperty(name)) return this[name];
-		return this[name] = new Resource(name, this.url);
+		return this[name] = new Resource(name, this._url);
 	};
 	Resource.prototype.id = function (id) {
-		return new Resource(id, this.url, 'id');
+		return new Resource(id, this._url, 'id');
 	};
 	methods = ['get', 'post', 'delete', 'patch'];
 	for (var i=0;i<methods.length;i++)
@@ -88,7 +88,7 @@ $.fn.serializeObject = function() {
 						200: "ok"
 				}, callbacks = {};
 				var self = this,
-			  res = ajax(this.url, data, method).statusCode({
+			  res = ajax(this._url, data, method).statusCode({
 						404: function (data) {
 							callbacks[404].fire(decodeJSON(data.responseText));
 						},
