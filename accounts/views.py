@@ -4,11 +4,16 @@ from annoying.decorators import ajax_by_method
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import views, generics, mixins, viewsets, permissions, status, renderers
-from rest_framework.decorators import action, link, api_view
+from rest_framework.decorators import *
 from rest_framework.response import Response
 
 import models, serializers
 import json
+
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
+def profile(request):
+	return Response({}, template_name = 'accounts/profile.html')
 
 class UserAPIViewSet(viewsets.ModelViewSet):
 	
