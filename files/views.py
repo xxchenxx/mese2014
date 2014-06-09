@@ -17,17 +17,6 @@ from django.http import Http404
 @render_to('upload_test.html')
 def index(request):
 	return {}
-	
-@ajax_request
-@csrf_exempt
-def upload_view(request):
-	file = request.FILES['file']
-	
-	return_value={}
-	
-	storage = DefaultStorage()
-	return_value.update({'url': storage.url(storage.save(file.name, file)), 'name': file.name})
-	return return_value
 
 class PublicFileAPIViewSet(ModelViewSet):
 
@@ -35,9 +24,6 @@ class PublicFileAPIViewSet(ModelViewSet):
 	serializer_class = PublicFileSerializer
 	
 	def create(self, request, *args, **kwargs):
-		#request.DATA['file_type'] = File.PUBLIC
-		print request.DATA, File.PUBLIC
-		print request.FILES
 		return super(PublicFileAPIViewSet, self).create(request, file_type = File.PUBLIC, *args, **kwargs)	
 	
 class PrivateFileAPIViewSet(ModelViewSet):
@@ -65,7 +51,6 @@ class PrivateFileAPIViewSet(ModelViewSet):
 		return super(PrivateFileAPIViewSet, self).get_object(*args, **kwargs)
 	
 	def create(self, request, *args, **kwargs):
-		request.DATA['file_type'] = File.PRIVATE
-		response = super(PrivateFileAPIViewSet, self).create(request, *args, **kwargs)
+		response = super(PrivateFileAPIViewSet, self).create(request, file_type = FILE.PRIVATE, *args, **kwargs)
 		self.request.user.profile.info.upload_reports(self.object,field_name = self.field_name)
 		return response

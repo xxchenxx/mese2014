@@ -180,12 +180,18 @@ class BaseSerializer(WritableField):
 
     _options_class = SerializerOptions
     _dict_class = SortedDictWithMetadata
+    safe_fields = []
+    safe_exclude = []
 
     def __init__(self, instance=None, data=None, files=None,
                  context=None, partial=False, many=None,
                  allow_add_remove=False, **kwargs):
-        fields = kwargs.pop('fields', None)
-        exclude = kwargs.pop('exclude', None)
+        safe_fields = kwargs.pop('safe_fields', False)  
+        fields = kwargs.pop('fields', [])
+        exclude = kwargs.pop('exclude', [])        
+        if safe_fields:
+        	fields.extend(self.safe_fields)
+        	exclude.extend(self.safe_exclude)
 
         super(BaseSerializer, self).__init__(**kwargs)
         self.opts = self._options_class(self.Meta)

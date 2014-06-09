@@ -157,7 +157,13 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 SAE_DEFAULT_STORAGE_DOMAIN_NAME = 'mese2014storage'
 SAE_FILE_STORAGE_DOMAIN_NAME = 'mese2014file'
 
-DEFAULT_FILE_STORAGE = 'common.storage.SAEStorage'
+DEFAULT_FILE_STORAGE = 'files.storage.SAEStorage'
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20971520 # 20Mega bytes
+FILE_UPLOAD_TEMP_DIR = '/s/mese2014file/tmp/'
+FILE_UPLOAD_HANDLERS = (
+		"django.core.files.uploadhandler.MemoryFileUploadHandler",
+		"files.uploadhandler.SAETemporaryFileUploadHandler",
+)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

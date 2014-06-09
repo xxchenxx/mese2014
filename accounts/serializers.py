@@ -16,10 +16,12 @@ def get_industry_serializer(field_name = 'industry'):
 		
 	return HasIndustrySerializer
 
-class AccountSerializer(serializers.ModelSerializer):
+class AccountSerializer(serializers.HyperlinkedModelSerializer):
 
 	account_type = serializers.CharField(read_only = True)
 	url = serializers.SerializerMethodField('get_url')
+	
+	safe_exclude = ['assets']
 	
 	def get_url(self, obj):
 		return reverse('user-profile', kwargs = {'pk':obj.profile.user.pk})
@@ -51,6 +53,7 @@ class PersonSerializer(PersonalSerializer, get_industry_serializer()):
 	company = serializers.SerializerMethodField('get_company')
 	debt_files = FileField(many = True, required = False)
 	consumption_reports = FileField(required = False, many = True)
+	safe_exclude = ['assets', 'debt_files', 'consumption_reports', 'company']
 	
 	def get_company(self, obj):
 		if obj.company is None:
@@ -60,8 +63,7 @@ class PersonSerializer(PersonalSerializer, get_industry_serializer()):
 				'members',
 				'financial_reports',
 				'assets',
-				
-		]).data
+		], safe_fields = True).data
 	
 	class Meta:
 		model = models.Person	
@@ -73,8 +75,10 @@ class EnterpriseSerializer(AccountSerializer):
 			'company',
 			'consumption_reports',
 			'debt_files',
-	])
+	], safe_fields = True)
 	financial_reports = FileField(many = True, required = False)
+	
+	safe_exclude = ['financial_reports', 'assets']
 	
 	class Meta:
 		model = models.Enterprise
@@ -112,7 +116,7 @@ class UserSerializer(serializers.ModelSerializer):
 			return {}
 		cls_name = '%sSerializer' % profile.__class__.__name__
 		a = globals()
-		return globals()[cls_name](obj.profile.info).data
+		return globals()[cls_name](obj.profile.info, safe_fields = True).data
 		
 	class Meta:
 		model = User
@@ -123,9 +127,19 @@ def get_serializer_by_object(obj):
 	
 class AccountField(serializers.WritableField):
 	
+	def __init__(self, *args, **kwargs):
+		self.exclude = kwargs.pop('exclude',[])
+		self.fields = kwargs.pop('fields', [])
+		return super(AccountField, self).__init__(*args, **kwargs)
+	
 	def field_to_native(self, obj, field_name):
 		enterprise = getattr(obj, field_name)
-		return get_serializer_by_object(enterprise)(enterprise).data
+		return get_serializer_by_object(enterprise)(
+				enterprise, 
+				safe_fields = True, 
+				exclude = self.exclude,
+				fields = self.fields
+		).data
 		
 	def field_from_native(self, data, files, field_name, into):
 		enter_data = data[field_name]

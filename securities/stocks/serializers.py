@@ -2,9 +2,9 @@ from rest_framework import serializers, pagination
 from .models import Stock, Share, Application, Log
 from accounts.serializers import AccountField
 
-class StockSerializer(serializers.ModelSerializer):
+class StockSerializer(serializers.HyperlinkedModelSerializer):
 
-	publisher = AccountField(required = False)
+	publisher = AccountField(read_only = True, exclude = ['members'])
 
 	class Meta:
 		model = Stock

@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from common.storage import SAEStorage
+from files.storage import SAEStorage
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -19,6 +19,7 @@ import managers
 from common.mixins import HasAssetsMixin
 from securities.mixins import *
 from transfer.mixins import *
+from webboard.mixins import *
 
 # Abstract logical interfaces.
 
@@ -121,7 +122,7 @@ class PersonalModel(Account, HasAssetsMixin, HasFundMixin, CanTransferMixin):
 	class Meta:
 		abstract = True
 	
-class Media(Account):
+class Media(Account, CanWriteMixin):
 	
 	contact = models.CharField(max_length = 20, default = '')	
 		
@@ -156,11 +157,11 @@ class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 			self.industry = self.company.industry
 		super(Person, self).save(*args, **kwargs)
 	
-class Government(PersonalModel, HasStockBondMixin):
+class Government(PersonalModel, HasStockBondMixin, CanWriteMixin):
 
 	pass
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin, CanWriteMixin):
 
 	description = models.CharField(max_length = 255, default = '', blank = True)
 	contact = models.CharField(max_length = 20, default = '', blank = True)
