@@ -39,13 +39,10 @@ class SAEStorage(Storage):
 			return None
 			
 	def _save(self, name, content):
-		self.__bucket.put_object(name, content.read())
+		self.__bucket.put_object(name, content)
 		return name
 		
 	def listdir(self, path):
 		r = re.compile('^%s' % path)
 		remove_prefix = lambda name: r.sub('', name)
 		return [(remove_prefix(attr['name']), None) for attr in self.__bucket.list(path = path)] 
-		
-	
-		

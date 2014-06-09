@@ -192,7 +192,6 @@ class BaseSerializer(WritableField):
         if safe_fields:
         	fields.extend(self.safe_fields)
         	exclude.extend(self.safe_exclude)
-        print fields, exclude, safe_fields
 
         super(BaseSerializer, self).__init__(**kwargs)
         self.opts = self._options_class(self.Meta)

@@ -10,6 +10,8 @@ import sys
 reload(sys)
 sys.setdefaultencoding('gbk')
 
+from sae.ext.storage import monkey
+monkey.patch_all()
 
 import sae
 from mese2014 import wsgi
