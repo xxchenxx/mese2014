@@ -43,7 +43,6 @@ String.prototype.render = function(context) {
 
 $.fn.serializeObject = function() {
 	var o={}, a=this.serializeArray();
-	console.log(a);
 	$.each(a, function(){
 		var value=this.hasOwnProperty('value')?this.value:'';
 		if (typeof o[this.name]==="Array") {
@@ -56,9 +55,13 @@ $.fn.serializeObject = function() {
 
 (function(){
 	function ajax(url, data, method) {
+		if (typeof data === 'object') data = encodeJSON(data);
+		console.log(data);
+		console.log(typeof data);
 		return $.ajax({
 			url: url,
 			type: method,
+			contentType:"application/json",
 			data: data,
 			dataType: 'json'
 		});

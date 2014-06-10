@@ -41,7 +41,10 @@ class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	permission_classes = (CanWrite,)
 
 	def create(self, request, *args, **kwargs):
-		return super(PassageAPIViewSet, self).create(request, author = request.user.id, *args, **kwargs)	
+		print request.POST, request.DATA
+		super(PassageAPIViewSet, self).create(request, author = request.user.id, *args, **kwargs)	
+		obj = self.object
+		return response.Response({'url': '/webboard/passages/?id=%d' % obj.id})
 		
 	def list(self, request, *args, **kwargs):
 		self.serializer_options = {'exclude':['content']}

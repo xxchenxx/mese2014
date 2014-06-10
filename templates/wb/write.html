@@ -73,6 +73,7 @@
 		$("#p_new").submit(function(e){
 			e.preventDefault();
 			var data = $(this).serializeObject();
+			console.log(data);
 			data.content = CKEDITOR.instances['text'].getData();
 			if (!(data.title&&data.content)) {
 				//Blank, do something
@@ -81,7 +82,7 @@
 			API.url("passages").post(data).
 			ok(function(data){
 				console.log('ok');
-				// If success, do something
+				//window.location.href = data.url;
 			})
 			.paramError(function(data){
 				console.log(data);
