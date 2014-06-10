@@ -37,7 +37,7 @@ color:#C2A900;}
 	border-radius:0px;
 }
 .list-group-item {line-height:0.9;font-size:14px;}
-#mFUR > table {color:#C2A900;}
+.row > table {color:#C2A900;}
 .mese-header .navbar-header .navbar-brand,
 .mese-header .nav > li > a {
   color:#E9E9E9;
@@ -332,7 +332,8 @@ color:#CCC;font-size: 1.2em;}
 }
 .nav-utinfo > li > a {
 	border-radius:0px;
-	color:#CCC;
+	color:#AAA;
+	
 }
 .nav-utinfo > li > a:hover,
 .nav-utinfo > li > a:active,
@@ -345,5 +346,6 @@ color:#CCC;font-size: 1.2em;}
 .nav-utinfo > li.active > a:active,
 .nav-utinfo > li.active > a:checked {
 		color:#FFF;
-	background-color: #563D7C!important;
+	background-color: transparent!important;
 }
+.row {padding:0px 10px;}
