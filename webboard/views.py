@@ -6,7 +6,7 @@ import json
 from django.shortcuts import render_to_response
 from annoying.decorators import render_to
 
-from common.permissions import IsSubClass
+from .permissions import CanWrite
 
 def test(a):
 	return render_to_response('p_test.html')
@@ -38,7 +38,7 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.C
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	
-	permission_classes = (IsSubClass('CanWriteMixin', True),)
+	permission_classes = (CanWrite,)
 
 	def create(self, request, *args, **kwargs):
 		return super(PassageAPIViewSet, self).create(request, author = request.user.id, *args, **kwargs)	
