@@ -5,31 +5,72 @@
   <script src="/static/js/jquery.ui.widget.js"></script>
 	<script src="/static/js/jquery.iframe-transport.js"></script>
 	<script src="/static/js/jquery.fileupload.js"></script>
-  <form id="p_new">
+	<link href="/static/css/jquery.fileupload.css" rel="stylesheet">
+  <form id="p_new" role="form">
     <div class="input-group" style="margin-top:10px;">
      <span class="input-group-addon">标题：</span>
     <input class="form-control" type="text" id="p_title" name="title"></input>
     </div>
-  <div style="margin-top:10px">
-    <textarea rows="30" cols="50" id="text" name="content"></textarea>
+  <div class="input-group col-md-12" style="padding:0;margin-top:10px">
+    <textarea class = "form-control col-md-12" rows="30" cols="50" id="text" name="content"></textarea>
   </div>
-  <ul id="list" class="list-group hidden">
-    
-  </ul>
   <input class="btn btn-mese2014" type="submit" value="提交"/>
   <a class="btn btn-mese2014">取消</a>
   </form>
-  <form id="uploadForm"><input type="file" name="file" id="file" class="p-file-button"></form>
+        <form id="uploadForm" role="form">
+  	<div class="fileinput-button btn">
+  		<span>添加附件...</span>
+  		<input type="file" name="file" id="file" />
+  	</div>
+  	<ul id="list" class="list-group">
+    
+  	</ul>
+  </form>
   <script type="text/javascript">
     CKEDITOR.replace('text',{
     upload:{
       formId:'uploadForm', 
-		 fileId:'file',   
+		 fileId:'file', 
+		 queueId: 'list',  
 		 callback:function(data){
 			 $("#list").append('<input type="text" name="attachments" value="{id}"></input>'.render(data));
+		 },
+		 progress:function(data){
+		 	console.log(data);
 		 }
 	}})
 	$(function(){
+		var editor = CKEDITOR.instances['text'];
+		$("#list").delegate('a.main', 'click', function(){
+				var data = $(this).parent().data();
+				editor.insertHtml(data.insertion);
+			});
+		$("#list").delegate('a.del', 'click', function(){
+				var data = $(this).parent().data();
+				API.url('files').url('public').id(data.id).delete();
+				$(this).parent().remove();
+			});
+		$("#uploadForm").fileupload({
+			url: "/api/files/public/",
+			autoUpload: true,
+			dataType: 'json',
+			formAcceptCharset: "unicode",
+			done: function (e, xhr) {
+				var data = xhr.result, 
+				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<img src='{url}'></img>":"<a href='{url}'>{name}</a>"; 
+				insertion = insertion.replace('{url}', data.url).replace('{name}', data.name);
+				editor.insertHtml(insertion);
+				data.insertion=insertion;
+				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));
+			},
+			progressall: function(e, data) {
+				var p=parseInt(data.loaded / data.total * 100, 10);
+				console.log(p);
+			}
+		});
+		$("#file").change(function(){
+			$("#uploadForm").fileupload("send");
+		});
 		$("#p_new").submit(function(e){
 			e.preventDefault();
 			var data = $(this).serializeObject();
