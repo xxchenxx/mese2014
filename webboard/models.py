@@ -19,6 +19,7 @@ class Passage(models.Model):
 		'Enterprise': ENTERPRISE,
 		'Fund': FUND
 	}
+	
 	TYPE_CHOICES = map(lambda x:(x[1], x[0]), TYPE_MAP.iteritems())
 	
 	type = models.CharField(max_length = 3, editable = False, choices = TYPE_CHOICES)

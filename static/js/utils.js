@@ -56,8 +56,6 @@ $.fn.serializeObject = function() {
 (function(){
 	function ajax(url, data, method) {
 		if (typeof data === 'object') data = encodeJSON(data);
-		console.log(data);
-		console.log(typeof data);
 		return $.ajax({
 			url: url,
 			type: method,
