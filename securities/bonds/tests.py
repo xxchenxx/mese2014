@@ -25,3 +25,4 @@ except Bond.DoesNotExist:
 	bond = Bond.objects.create(publisher = Bank.objects.get(pk=1), lasted_time = timedelta(seconds=12), published_time = datetime.now(), profit_rate = '0.6')
 person = Person.objects.get(pk=1)
 person.buy_bond(bond, 12)
+bond.publish()

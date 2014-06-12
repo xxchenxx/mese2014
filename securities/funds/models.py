@@ -88,8 +88,14 @@ class Fund(models.Model):
 		for share in self.shares.all():
 			share.owner.inc_assets(share.money)
 		shares.delete()
-		send_notification(self.publisher.profile.user, u'结束了', self)
+		self._send_notification(u'结束了', action = 'delete')
 		self._end()
+	
+	def _send_notification(self, verb, recipient = None, **kwargs):
+		if recipient is None:
+			recipient = self.publisher.profile.user
+		
+		return send_notification(recipient = recipient, verb = verb, actor = u'系统', target = self, **kwargs)
 	
 	def publish(self, delete_on_failed = True, username = 'fundd', password = None):
 		try:
@@ -97,13 +103,13 @@ class Fund(models.Model):
 			assert self.total_money >= self.initial_money
 		except AssertionError:
 			if delete_on_failed:
-				send_notification(self.publisher.profile.user, u'被取消了', self)
+				self._send_notification(u'被取消了')
 				self._end()
 				return 
 			else:
 				raise
 				
-		send_notification(self.publisher.profile.user, u'发布了', self)
+		send_notification(u'发布了')
 				
 		User = ContentType.objects.get(app_label = 'auth', model = 'user').model_class()
 		user = User.objects.create_user(username = username, password = password or User.objects.make_random_password(6))

@@ -29,14 +29,14 @@ class NotificationQuerySet(models.query.QuerySet):
 			
 		qs.update(unread=True)
 		
-	def process_message(self, verb, actor = None, target = None, **kwargs):
-		_actor = u'有人' if actor is None else actor
-		if target is None:
-			msg = u"%s %s" % (_actor, verb)
-		else:
-			msg = u"%s %s %s" % (_actor, verb, target)
+	# def process_message(self, verb, actor = None, target = None, **kwargs):
+		# _actor = u'有人' if actor is None else actor
+		# if target is None:
+			# msg = u"%s %s" % (_actor, verb)
+		# else:
+			# msg = u"%s %s %s" % (_actor, verb, target)
 			
-		return msg		
+		# return msg		
 	
 	def create_notifications(self, instances = []):
 		objects = []
@@ -56,7 +56,10 @@ class NotificationQuerySet(models.query.QuerySet):
 			
 		obj.message = fmt % {'actor': obj.actor, 'target': obj.target, 'verb': obj.verb}
 		if obj.target_object and url is None:
-			obj.url = obj.target_object.get_absolute_url()
+			try:
+				obj.url = obj.target_object.get_absolute_url()
+			except AttributeError:
+				obj.url = ''
 		elif url is not None:
 			obj.url = url
 		
@@ -80,6 +83,14 @@ class Notification(models.Model):
 			related_name = 'notifications'
 	)
 	unread = models.BooleanField(default = True)
+	confirmed = models.BooleanField(default = False)
+	
+	DELETE = 'delete'
+	NULL = 'null'
+	ACTION_CHOICES = (
+		(DELETE, 'delete'),
+		(NULL, 'null'),
+	)
 	
 	actor_text = models.CharField(max_length=255, blank=True, null=True)
 	actor_content_type = models.ForeignKey(ContentType, related_name='notify_actor', blank = True, null = True)
@@ -101,12 +112,18 @@ class Notification(models.Model):
 	
 	url = models.URLField(max_length=255, null=True, blank = True)
 	
-	action = models.CharField(max_length=255, null=True, blank = True)
+	action = models.CharField(max_length=30, choices = ACTION_CHOICES, default = NULL, blank = True)
 	
 	objects = NotificationManager.for_queryset_class(NotificationQuerySet)()
 	
 	class Meta:
 		ordering = ['-created_time']
+		
+	def confirm(self):
+		self.confirmed = True
+		self.save()
+		if self.action == self.DELETE:
+			self.target_object.delete()
 		
 	@property
 	def actor(self):
@@ -125,7 +142,7 @@ class Notification(models.Model):
 	@actor.setter
 	def actor(self, value):
 		if isinstance(value, (str, unicode)):
-			self.actor_object = value
+			self.actor_text = value
 		else:
 			self.actor_object = value
 			
