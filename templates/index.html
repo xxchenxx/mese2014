@@ -25,7 +25,7 @@
 		  <div class="collapse navbar-collapse" id="mese-navbar-collapse" style="height :50px;">
 	        <ul class="nav">
 		      <li><a href="/">首页</a></li>
-		      <li><a href="#">交易大厅</a></li>
+		      <li><a href="/securities/">交易大厅</a></li>
 		      <li><a href="/webboard/passages">新闻中心</a></li>
 		      {% if user.is_authenticated %}
 		      <li><a href="/accounts/profile/">{{user.porfile.info.display_name}}</a>
@@ -88,13 +88,11 @@
           </div>
           <table class="table">
             <thead>
-              <th>#</th>
-              <th data-dynatable-column="display_name">名称</th>
-              <th data-dynatable-column="current_prize">价格</th>
+              <th>名称</th>
+              <th>价格</th>
               <th></th>
             </thead>
             <tbody>
-              <th>1</th>
               <th>ID1</th>
               <th><i class="fa fa-cny"> l2</i></th>
               <th><i class="fa fa-caret-down fa-lg"></i></th>
