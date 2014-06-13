@@ -32,8 +32,8 @@ class Stock(models.Model):
 		buyer = app_buyer.applicant
 		price = app_seller.price
 		shares = Decimal(shares)
-		app_seller.decrease_or_delete(shares)
-		app_buyer.decrease_or_delete(shares)
+		app_seller.dec_shares(shares)
+		app_buyer.dec_shares(shares)
 		print """
 			Seller: %s
 			Buyer: %s
@@ -70,7 +70,7 @@ class Log(models.Model):
 class ApplicationManager(models.Manager):
 
 	def fetch_suitable_applications(self, application):
-		return self.filter(stock = application.stock, price = application.price).exclude(command = application.command)
+		return self.filter(stock = application.stock, price = application.price, shares__gt = Decimal(0)).exclude(command = application.command)
 		
 class Application(get_inc_dec_mixin(['shares', 'price'])):
 
@@ -91,12 +91,12 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 	shares = DecimalField()
 	created_time = models.DateTimeField(auto_now_add = True)
 	
-	def decrease_or_delete(self, shares):
-		self.dec_shares(shares, commit = False)
-		if self.shares == Decimal(0) and self.id:
-			self.delete()
-		else:
-			self.save()
+	# def decrease_or_delete(self, shares):
+		# self.dec_shares(shares, commit = False)
+		# if self.shares == Decimal(0) and self.id:
+			# self.delete()
+		# else:
+			# self.save()
 	
 	def get_share(self):
 		if not hasattr(self, '_share'):
@@ -169,7 +169,8 @@ def process_application_updated(sender, **kwargs):
 			'recipient': application.applicant.profile.user,
 			'verb': u'处理了',
 			'actor': u'系统',
-			'target': application
+			'target': application,
+			'action': 'delete',
 	}]
 		
 	for _application, share in application_sets:
@@ -181,14 +182,16 @@ def process_application_updated(sender, **kwargs):
 				'actor': u'系统',
 				'verb': u'处理了',
 				'recipient': _application.applicant.profile.user,
-				'target': _application
+				'target': _application,
+				'action': 'delete',
 		})
 		stock.transfer(seller, buyer, share)	
 		
-	send_notifications(notifications)	
-		
 	if quantity < 0:
-		application_sets.pop()
+		notifications[-1]['action'] = 'null'
+	elif quantity > 0:
+		notifications[0]['action'] = 'null'
+	send_notifications(notifications)
 		
 	stock.update_price(price)
 	

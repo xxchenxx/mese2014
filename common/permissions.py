@@ -7,8 +7,11 @@ def IsSubClass(cls_name, safe_methods = False):
 	class P(BasePermission):
 		
 		def has_permission(self, request, view):
-			print request.user.profile.info
-			return safe_methods and (request.method in SAFE_METHODS) or request.user and request.user.profile and check_base_class_by_name(request.user.profile.info, cls_name)
+			if isinstance(cls_name, type):
+				condition = isinstance(request.user.profile.info, cls_name)
+			else:
+				condition = check_base_class_by_name(request.user.profile.info, cls_name)
+			return safe_methods and (request.method in SAFE_METHODS) or request.user and request.user.profile and condition
 			
 	return P
 

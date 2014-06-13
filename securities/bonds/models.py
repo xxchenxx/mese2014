@@ -53,7 +53,7 @@ class Bond(models.Model):
 	def publish(self):
 		self.published = True
 		self.save()
-		send_notification(self.publisher.profile.user, u'已经发布了', self) 
+		send_notification(recipient = self.publisher.profile.user, verb = u'已经发布了', actor = self) 
 		
 		
 	def check_published(self):
@@ -70,7 +70,7 @@ class Bond(models.Model):
 			share.owner.inc_assets(money)
 		if self.type == self.ENTERPRISE:
 			self.publisher.dec_assets(total)
-		send_notification(self.publisher.profile.user, u'已经结束了', self) 
+		send_notification(recipient = self.publisher.profile.user, verb = u'已经结束了', actor = self) 
 		shares.delete()
 		self.delete()
 	

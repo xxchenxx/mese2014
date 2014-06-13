@@ -1,5 +1,5 @@
 from django.contrib import auth
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from annoying.decorators import ajax_by_method
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -13,7 +13,15 @@ import json
 @api_view(['GET'])
 @renderer_classes([renderers.TemplateHTMLRenderer])
 def profile(request):
-	return Response({}, template_name = 'accounts/profile.html')
+	uid = request.REQUEST.get('uid', None)
+	if uid is not None:
+		user_obj = get_object_or_404(auth.models.User, id = uid)
+		is_self = False
+	else:
+		uid = request.user.id
+		user_obj = request.user
+		is_self = True
+	return Response({'user_object':user_obj, 'uid':uid, 'is_self':is_self}, template_name = 'accounts/profile.html')
 
 class UserAPIViewSet(viewsets.ModelViewSet):
 	
