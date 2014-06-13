@@ -1,0 +1,92 @@
+<script src="/static/ckeditor/ckeditor.js"></script>
+  <script src="/static/ckeditor/config.js"></script>
+  <script src="/static/js/jquery.ui.widget.js"></script>
+	<script src="/static/js/jquery.iframe-transport.js"></script>
+	<script src="/static/js/jquery.fileupload.js"></script>
+	<link href="/static/css/jquery.fileupload.css" rel="stylesheet">
+  <form id="p_new" role="form">
+    <div class="input-group" style="margin-top:10px;">
+     <span class="input-group-addon">标题</span>
+    <input class="form-control" type="text" id="p_title" name="title"></input>
+    </div>
+  <div class="input-group col-md-12" style="padding:0;margin-top:10px">
+    <textarea class = "form-control col-md-12" rows="30" cols="50" id="text" name="content"></textarea>
+  </div>
+  <input class="btn btn-mese2014" type="submit" value="提交"/>
+  <a class="btn btn-mese2014">取消</a>
+  </form>
+        <form id="uploadForm" role="form">
+  	<div class="fileinput-button btn">
+  		<span>添加附件...</span>
+  		<input type="file" name="file" id="file" />
+  	</div>
+  	<ul id="list" class="list-group">
+    
+  	</ul>
+  </form>
+  <script type="text/javascript">
+    CKEDITOR.replace('text',{
+    upload:{
+      formId:'uploadForm', 
+		 fileId:'file', 
+		 queueId: 'list',  
+		 callback:function(data){
+			 $("#list").append('<input type="text" name="attachments" value="{id}"></input>'.render(data));
+		 },
+		 progress:function(data){
+		 	console.log(data);
+		 }
+	}})
+	$(function(){
+		var editor = CKEDITOR.instances['text'];
+		$("#list").delegate('a.main', 'click', function(){
+				var data = $(this).parent().data();
+				editor.insertHtml(data.insertion);
+			});
+		$("#list").delegate('a.del', 'click', function(){
+				var data = $(this).parent().data();
+				API.url('files').url('public').id(data.id).delete();
+				$(this).parent().remove();
+			});
+		$("#uploadForm").fileupload({
+			url: "/api/files/public/",
+			autoUpload: true,
+			dataType: 'json',
+			formAcceptCharset: "unicode",
+			done: function (e, xhr) {
+				var data = xhr.result, 
+				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<img src='{url}'></img>":"<a href='{url}'>{name}</a>"; 
+				insertion = insertion.replace('{url}', data.url).replace('{name}', data.name);
+				editor.insertHtml(insertion);
+				data.insertion=insertion;
+				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));
+			},
+			progressall: function(e, data) {
+				var p=parseInt(data.loaded / data.total * 100, 10);
+				console.log(p);
+			}
+		});
+		$("#file").change(function(){
+			$("#uploadForm").fileupload("send");
+		});
+		$("#p_new").submit(function(e){
+			e.preventDefault();
+			var data = $(this).serializeObject();
+			data.content = CKEDITOR.instances['text'].getData();
+			if (!(data.title&&data.content)) {
+				//Blank, do something
+				return false;
+			}
+			API.url("passages").post(data).
+			ok(function(data){
+				console.log('ok');
+				// If success, do something
+			})
+			.paramError(function(data){
+				console.log(data);
+				// If error, do something
+			});
+			return false;
+		});
+	});	
+</script>

@@ -16,7 +16,6 @@ font-size:16px;}
   overflow:visible;
   
 }
-.mese-header .container{  }
 .mese-header .nav {
   position:relative;
   left:0;
@@ -29,7 +28,24 @@ font-size:16px;}
 }
 .panel {box-shadow:none;border-radius:0px;}
 .panel-heading {border-bottom:0;}
+.panel-mese2014,
+.panel-mese2014 > .list-group,
+.panel-mese2014 > .list-group > .list-group-item {background-color: transparent;
+color:#d1a900;}
+.panel-mese2014 > .panel-heading {
+	border-radius:0px;
+	background-color: transparent;
+	border-bottom: 1px gainsboro solid;
+	color:gainsboro;
+}
+.panel-mese2014 > .panel-heading > a {color:gainsboro;}
 .list-group-item {line-height:0.9;font-size:14px;}
+.row > table {color:#d1a900;margin-top: -20px;}
+.row > table > * {line-height: 0.9!important;font-size: 14px;}
+.table thead > tr > th, .table tbody > tr > th, .table tfoot > tr > th, 
+.table thead > tr > td, 
+.table tbody > tr > td, .table tfoot > tr > td {
+padding:6px;}
 .mese-header .navbar-header .navbar-brand,
 .mese-header .nav > li > a {
   color:#E9E9E9;
@@ -48,6 +64,7 @@ font-size:16px;}
 @media (max-width: 767px) {
   
   .mese-header .nav {
+
     float:none!important;
     width:100%!important;
   }
@@ -257,8 +274,8 @@ background-color: #606060;border-bottom: 0px;border-radius:0px}
 }
 .feeds:last-child {border-bottom:none;}
 .feeds-title ,
-.feeds-title > a {color: #F2C102;}
-.feeds-info {;font-size:0.83em;color:#999;margin-top:5px;margin-bottom:3px;}
+.feeds-title > a {color: #d1a900;}
+.feeds-info {font-size:0.83em;color:#999;margin-top:5px;margin-bottom:3px;}
 .feeds-details {color:#E5E5E5;}
 .feeds-details > a{color:#A9A9A9;}
 #feeds-container {background-color: #111111;}
@@ -281,7 +298,7 @@ left:auto;
 top:100px;
 box-shadow:0px 4px 4px rgba(0,0,0,0.6);}
 .feeds-red {margin-left:2px;font-size:0.85em;color:#FF0022!important;}
-.feeds-details-title {color:#F2C102;margin-top:0px;padding-top:20px;}
+.feeds-details-title {color:#d1a900;margin-top:0px;padding-top:20px;}
 .feeds-details-info {margin-top:15px;
 color:#999;
 padding-bottom: 10px;
@@ -302,3 +319,41 @@ padding:0px 10px;
 .f-back:hover,
 .f-back:active,
 .f-back:focus {color:#CCC;}
+.btn-mese2014 {background-color:transparent;
+color:#CCC;font-size: 1.2em;}
+.btn-mese2014:hover,
+.btn-mese2014:active,
+.btn-mese2014:focus {color:#FFF;background-color: transparent;}
+.form-control {border-radius:0px;}
+
+
+.utinfo {
+	border-left-color: transparent;
+	border-right-color:transparent;
+	border-bottom-color: #EEE;
+	border-top-color:transparent;
+	border-bottom-style: dashed;	  
+	background-color:transparent;
+	color:#CCC;
+	word-wrap: break-word;
+	height: auto;
+}
+.nav-utinfo > li > a {
+	border-radius:0px;
+	color:#AAA;
+	
+}
+.nav-utinfo > li > a:hover,
+.nav-utinfo > li > a:active,
+.nav-utinfo > li > a:focus {
+		color:#FFF;
+	background-color: transparent!important;}
+.nav-utinfo > li.active > a,
+.nav-utinfo > li.active > a:hover,
+.nav-utinfo > li.acitve > a:focus,
+.nav-utinfo > li.active > a:active,
+.nav-utinfo > li.active > a:checked {
+		color:#FFF;
+	background-color: transparent!important;
+}
+.row {padding:0px 10px;}
