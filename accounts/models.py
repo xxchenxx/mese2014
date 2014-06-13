@@ -1,7 +1,7 @@
 #coding=utf-8
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.exceptions import ObjectDoesNotExist
 from files.storage import SAEStorage
 
@@ -70,6 +70,10 @@ class UserProfile(models.Model):
 	def create_info(self, class_name, save = True, **kwargs):
 		if self.info_object is None:
 			self.info_object = globals()[class_name].objects.create(**kwargs)
+			group_names = []
+			if class_name == 'Person':
+				group_names.append('writer')
+			self.user.groups.add(*Group.objects.filter(name__in = group_names))
 			if save:
 				self.save()
 		return self.info_object
