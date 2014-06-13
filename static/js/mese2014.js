@@ -24,12 +24,12 @@ function MESEIO(){}
 				type:"GET",
 				success:function(data){
 					$.each(data.results,function(){
-						var pt=this.title;
+						var pt=this.title, pk='';
 						if((this.type=="GOV")||(this.type=="CON")){
-							var pk = "<i class='fa fa-bank' />";
+							pk = "<i class='fa fa-bank' />";
 						}
 						else if (this.type=="MED"){
-							var pk = "<i class='fa fa-rss' />";
+							pk = "<i class='fa fa-rss' />";
 						}
 						var pi = "<em class='pull-right feeds-info'>"+this.author.profile.display_name  
 						+"@"+this.year + "</em>";
