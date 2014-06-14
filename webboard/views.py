@@ -1,4 +1,5 @@
 from rest_framework import viewsets, renderers, response, mixins
+from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 import models, serializers
@@ -27,13 +28,19 @@ class BasePassageViewSet(viewsets.GenericViewSet):
 			queryset = queryset.filter(type = _type)
 		return queryset	
 
-class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
+class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
 
 	renderer_classes = (renderers.TemplateHTMLRenderer,renderers.JSONRenderer)
 	
 	def list(self, *args, **kwargs):
 		response = super(PassageRetrieveViewSet, self).list(*args, **kwargs)
 		response.template_name = 'wb/passages.html'
+		return response
+		
+	def retrieve(self, *args, **kwargs):
+		super(PassageRetrieveViewSet, self).retrieve(*args, **kwargs)
+		response = Response({'object':self.object})
+		response.template_name = 'wb/detail.html'
 		return response
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):

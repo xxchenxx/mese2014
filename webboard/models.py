@@ -44,6 +44,9 @@ class Passage(models.Model):
 		
 	class Meta:
 		ordering = ['-created_time', 'title']
+		permissions = [
+			['publish_passage', 'Publish passage.']
+		]
 		
 class Comment(models.Model):
 	

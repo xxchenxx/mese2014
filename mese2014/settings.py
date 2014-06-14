@@ -197,6 +197,7 @@ LOGGING = {
 PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
 TIME_INTERVAL_SECONDS = 300
 PATH_DATETIME_FORMAT = '%Y_%m_%d_%H_%M_%S'
+DATETIME_FORMAT = 'm-d H:i:s'
 
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.

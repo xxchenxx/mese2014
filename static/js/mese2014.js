@@ -2,7 +2,7 @@ $(document).ready(function(){
 	$.ajaxSetup({
 	  dataType:"json"	
 	})
-})
+})/*
 function sendfeeds(){
 	var p = $("#p_new").serializeObject();
 	p['content'] = CKEDITOR.instances['text'].getData();
@@ -12,7 +12,7 @@ function sendfeeds(){
 		type:"POST",
 		data:p,
 	})
-}
+}*/
 function MESEIO(){}
 (function(){
 		MESEIO.prototype.loadfeeds = function(type){
@@ -34,7 +34,7 @@ function MESEIO(){}
 						var pi = "<em class='pull-right feeds-info'>"+this.author.profile.display_name  
 						+"@"+this.year + "</em>";
 						$("#feeds-container").append("<div class='feeds'><div class='feeds-title'>"+pk 
-						+ "<a href='?id=" + this.id + "'>" + pt + "</a>" + pi);
+						+ "<a href='"+this.id+"/'>" + pt + "</a>" + pi);
 					})
 				}
 			})
@@ -45,7 +45,7 @@ function MESEIO(){}
 				url:api_url,
 				type:"GET",
 				success:function(data){
-					var f_back = "<li class='active'>新闻正文</li>"
+					var f_back = "<li class='active'>新闻正文</li>";
 					$('.breadcrumb-mese2014').children('.active').removeClass('active').html("<a href='?type="+data.type+"'>信息中心</a>");
 					$('.breadcrumb-mese2014').append(f_back);
 					var text=("<h3 class='text-center feeds-details-title'>{title}</h3><div class='text-center feeds-details-info'>{created_time} by @{author.profile.display_name}</div><div class='feeds-details-text'>{content}</div>").render(data);

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group, Permission
 group,created = Group.objects.get_or_create(name = 'writer')
 if not created:
 	group.permissions.add(Permission.objects.get(codename = 'add_passage'))
+	group.save()
 
 section,_ = Section.objects.get_or_create(display_name = 'A')
 industry,_ = Industry.objects.get_or_create(section = section, display_name = 'B')

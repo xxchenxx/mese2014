@@ -70,10 +70,8 @@ class UserProfile(models.Model):
 	def create_info(self, class_name, save = True, **kwargs):
 		if self.info_object is None:
 			self.info_object = globals()[class_name].objects.create(**kwargs)
-			group_names = []
-			if class_name == 'Person':
-				group_names.append('writer')
-			self.user.groups.add(*Group.objects.filter(name__in = group_names))
+			self.user.groups.add(*Group.objects.filter(name__in = self.info_object.get_groups()))
+			self.user.save()
 			if save:
 				self.save()
 		return self.info_object
@@ -99,6 +97,9 @@ class Account(models.Model):
 	
 	def __unicode__(self):
 		return self.display_name
+		
+	def get_groups(self):
+		return []
 	
 	@property
 	def profile(self):
@@ -129,6 +130,9 @@ class PersonalModel(Account, HasAssetsMixin, HasFundMixin, CanTransferMixin):
 class Media(Account, CanWriteMixin):
 	
 	contact = models.CharField(max_length = 20, default = '')	
+	
+	def get_groups(self):
+		return ['writer']
 		
 class Section(models.Model):
 
@@ -178,6 +182,9 @@ class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, Ha
 	)	
 	
 	report_field = 'financial_reports'
+	
+	def get_groups(self):
+		return ('writer',)
 	
 	class Meta:
 		abstract = True

@@ -1,0 +1,50 @@
+{% extends "wb/passages.html" %}
+{%block breadcrumb%}
+<li><a href="/">首页</a></li>
+<li><a href="/webboard/passages/?type={{object.type}}">信息中心</a></li>
+<li class='active'>新闻正文</li>
+{%endblock%}
+{% block passage_main %}
+<div id="feeds-container">
+	<h3 class='text-center feeds-details-title'>{{object.title}}</h3>
+	<div class='text-center feeds-details-info'>
+		{{object.created_time}} by @{{object.author.profile.info.display_name}}
+	</div>
+	<div class='feeds-details-text'>
+		{{object.content|safe}}
+	<div>
+</div>
+<br/>
+<form id="cmtForm" role="form">
+	<div class="col-md-12 input-group">
+		<input class="form-control col-md-4" name="content"/>
+		<input type="submit" class="btn btn-success" value="评论"/>
+	</div>
+</form>
+<ul class="list-group" id="cmtList">
+
+</ul>
+<script type="text/javascript">
+$(function(){
+	var passageId = {{object.id}}, apiPassage = API.url('passages').id(passageId);
+	function updateComments(){
+		$("#cmtList").html("");
+		apiPassage.url('comments').get().ok(function(data){
+			$(data.results).each(function(){
+				$('<li class="list-group-item">{content}<span class="pull-right">{created_time}@{author.profile.display_name}</span></li>'.render(this)).appendTo($("#cmtList"));
+			});
+		});
+	}
+	updateComments();
+	$("#cmtForm").submit(function(e){
+		e.preventDefault();
+		var data = $(this).serializeObject();
+		if (!data.content){
+			return false;
+		}
+		apiPassage.url('comments').post(data).ok(updateComments);
+		return false;
+	});
+});
+</script>
+{% endblock %}
