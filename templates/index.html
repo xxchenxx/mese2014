@@ -28,7 +28,7 @@
 		      <li><a href="/securities/">交易大厅</a></li>
 		      <li><a href="/webboard/passages">新闻中心</a></li>
 		      {% if user.is_authenticated %}
-		      <li><a href="/accounts/profile/">{{user.porfile.info.display_name}}</a>
+		      <li><a href="/accounts/profile/">{{user.profile.info.display_name}}</a>
 		      <li><a href="/accounts/logout/">退出登录</a></li>
 		      {% else %}
 		      <li><a href="/accounts/login/">登录</a></li>

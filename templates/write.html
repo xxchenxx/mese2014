@@ -12,17 +12,22 @@
   <div class="input-group col-md-12" style="padding:0;margin-top:10px">
     <textarea class = "form-control col-md-12" rows="30" cols="50" id="text" name="content"></textarea>
   </div>
+  <div id="attachments" class="hidden">
+  
+  </div>
+  <div class="input-group col-md-12">
   <input class="btn btn-mese2014" type="submit" value="提交"/>
   <a class="btn btn-mese2014">取消</a>
+  </div>
   </form>
-        <form id="uploadForm" role="form">
-  	<div class="fileinput-button btn">
+    <form id="uploadForm" role="form">
+		<div class="fileinput-button btn">
   		<span>添加附件...</span>
   		<input type="file" name="file" id="file" />
-  	</div>
-  	<ul id="list" class="list-group">
+		</div>
+		<ul id="list" class="list-group">
     
-  	</ul>
+		</ul>
   </form>
   <script type="text/javascript">
     CKEDITOR.replace('text',{
@@ -60,6 +65,7 @@
 				editor.insertHtml(insertion);
 				data.insertion=insertion;
 				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));
+				$('<input type="text" value="{id}" name="attachments" />'.render(data)).appendTo($("#attachments"));
 			},
 			progressall: function(e, data) {
 				var p=parseInt(data.loaded / data.total * 100, 10);
@@ -73,13 +79,19 @@
 			e.preventDefault();
 			var data = $(this).serializeObject();
 			data.content = CKEDITOR.instances['text'].getData();
+			if (data.attachments&&typeof data.attachments === 'string') {
+				data.attachments = [data.attachments];
+			}
 			if (!(data.title&&data.content)) {
 				//Blank, do something
 				return false;
 			}
+			console.log(data);
+			//return false;
 			API.url("passages").post(data).
 			ok(function(data){
 				console.log('ok');
+				window.location.href = data.url;
 				// If success, do something
 			})
 			.paramError(function(data){
