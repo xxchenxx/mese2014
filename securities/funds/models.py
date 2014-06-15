@@ -147,6 +147,15 @@ class ShareManager(models.Manager):
 		else:
 			return 0
 		
+class RansomApplication(models.Model):
+	
+	fund = models.ForeignKey(Fund)
+	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'fund_ransoms')
+	owner_object_id = models.PositiveIntegerField(null = True, blank = True)
+	owner = generic.GenericForeignKey('owner_type', 'owner_object_id')
+	money = DecimalField()
+	created_time = models.DateTimeField(auto_now_add = True)			
+		
 class Share(get_inc_dec_mixin(['money'])):
 
 	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'fund_shares')
