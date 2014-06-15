@@ -12,7 +12,7 @@ class BondSerializer(serializers.ModelSerializer):
 		
 class ShareSerializer(serializers.ModelSerializer):
 	
-	fund = BondSerializer(exclude = ['publisher'])
+	bond = BondSerializer(exclude = ['publisher'])
 	
 	class Meta:
 		exclude = ('owner_type', 'owner_object_id', 'owner')

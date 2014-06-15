@@ -2,9 +2,24 @@ from common.mixins import *
 from models import Share, Application
 from signals import application_updated
 
-__all__ = ['HasStockMixin']
+__all__ = ['HasStockMixin', 'OwnStockMixin']
+
+class OwnStockMixin(models.Model):
+	
+	permission = 'own_stock'
+	
+	stocks = generic.GenericRelation(
+			'stocks.Stock',
+			content_type_field = 'publisher_type',
+			object_id_field = 'publisher_object_id'
+	)	
+	
+	class Meta:
+		abstract = True
 
 class HasStockMixin(models.Model):
+
+	permission = 'has_stock'
 
 	stock_shares = generic.GenericRelation(
 			'stocks.Share',

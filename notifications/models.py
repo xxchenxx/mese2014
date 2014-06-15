@@ -27,16 +27,7 @@ class NotificationQuerySet(models.query.QuerySet):
 		if recipient:
 			qs = qs.filter(recipient=recipient)
 			
-		qs.update(unread=True)
-		
-	# def process_message(self, verb, actor = None, target = None, **kwargs):
-		# _actor = u'有人' if actor is None else actor
-		# if target is None:
-			# msg = u"%s %s" % (_actor, verb)
-		# else:
-			# msg = u"%s %s %s" % (_actor, verb, target)
-			
-		# return msg		
+		qs.update(unread=True)	
 	
 	def create_notifications(self, instances = []):
 		objects = []
@@ -49,10 +40,11 @@ class NotificationQuerySet(models.query.QuerySet):
 		obj = Notification(recipient = recipient, verb = verb)
 		obj.actor = actor
 		obj.target = target
+		print actor, target, verb
 		if fmt is None:
-			fmt = '%(actor)s%(verb)s'
+			fmt = u'%(actor)s%(verb)s'
 			if obj.target is not None:
-				fmt+='%(target)s'
+				fmt+=u'%(target)s'
 			
 		obj.message = fmt % {'actor': obj.actor, 'target': obj.target, 'verb': obj.verb}
 		if obj.target_object and url is None:

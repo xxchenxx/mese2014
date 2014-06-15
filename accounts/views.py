@@ -7,8 +7,15 @@ from rest_framework import views, generics, mixins, viewsets, permissions, statu
 from rest_framework.decorators import *
 from rest_framework.response import Response
 
+from common.exceptions import ParamError
+
 import models, serializers
 import json
+
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
+def set_password(request):
+	return Response(template_name = 'accounts/set_password.html')
 
 @api_view(['GET'])
 @renderer_classes([renderers.TemplateHTMLRenderer])
@@ -34,6 +41,16 @@ class UserAPIViewSet(viewsets.ModelViewSet):
 			return self.request.user
 		else:
 			return super(UserAPIViewSet, self).get_object()
+	
+	@action(methods=['POST'])
+	def set_password(self, request, *args, **kwargs):
+		old_password = request.DATA.get('old_password','')
+		new_password = request.DATA.get('new_password','')
+		if not request.user.check_password(old_password):
+			raise ParamError
+		request.user.set_password(new_password)
+		request.user.save()
+		return Response("OK")
 	
 	@action(methods=['GET', 'PATCH'])
 	def profile(self, *args, **kwargs):

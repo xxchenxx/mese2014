@@ -42,7 +42,7 @@ Object.extend = function(tObj,sObj){
 		for(var i in sObj){   
 			if(typeof sObj[i] !== "object"){   
 				tObj[i] = sObj[i];   
-			} else if (sObj[i].constructor == Array){   
+			} else if (sObj[i]&&sObj[i].constructor == Array){   
 				tObj[i] = Object.clone(sObj[i]);   
 			} else {   
 				tObj[i] = tObj[i] || {};   

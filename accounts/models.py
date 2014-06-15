@@ -1,7 +1,7 @@
 #coding=utf-8
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ObjectDoesNotExist
 from files.storage import SAEStorage
 
@@ -15,6 +15,7 @@ from annoying.fields import AutoOneToOneField
 from django.db import connection
 
 import managers
+from inspect import getmro
 
 from common.mixins import HasAssetsMixin
 from securities.mixins import *
@@ -69,8 +70,11 @@ class UserProfile(models.Model):
 	
 	def create_info(self, class_name, save = True, **kwargs):
 		if self.info_object is None:
-			self.info_object = globals()[class_name].objects.create(**kwargs)
-			self.user.groups.add(*Group.objects.filter(name__in = self.info_object.get_groups()))
+			cls = globals()[class_name]
+			self.info_object = cls.objects.create(**kwargs)
+			permission_names = [getattr(cls, 'permission', '') for cls in filter(lambda cls:cls.__name__.endswith('Mixin'), getmro(cls))]
+			permissions = Permission.objects.filter(codename__in = permission_names)
+			self.user.user_permissions.add(*permissions)
 			self.user.save()
 			if save:
 				self.save()
@@ -161,7 +165,7 @@ class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 	report_field = 'consumption_reports'
 	
 	def save(self, *args, **kwargs):
-		if self.id is None:
+		if self.id is None or not self.industry:
 			self.industry = self.company.industry
 		super(Person, self).save(*args, **kwargs)
 	
@@ -170,7 +174,8 @@ class Government(PersonalModel, HasStockBondMixin, CanWriteMixin):
 	def get_groups(self):
 		return ('writer',)
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin, CanWriteMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, 
+		HasStockBondMixin, HasFundMixin, CanTransferMixin, CanWriteMixin, OwnBondMixin, OwnStockMixin):
 
 	description = models.CharField(max_length = 255, default = '', blank = True)
 	contact = models.CharField(max_length = 20, default = '', blank = True)

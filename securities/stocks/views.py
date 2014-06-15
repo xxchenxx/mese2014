@@ -3,12 +3,11 @@ from rest_framework import mixins
 from rest_framework.decorators import action
 import models, serializers
 from accounts.models import filter_accounts, account_classes_map
-from common.permissions import IsAdminUser
 from .exceptions import ParamError
 from decimal import Decimal
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from common.permissions import IsSubClass
+from .permissions import HasStock
 
 class LogAPIViewSet(GenericViewSet, mixins.ListModelMixin):
 	
@@ -24,7 +23,7 @@ class ShareAPIViewSet(GenericViewSet, mixins.ListModelMixin):
 	
 	model = models.Share
 	serializer_class = serializers.ShareSerializer
-	permission_classes = [IsSubClass('HasStockMixin')]
+	permission_classes = [HasStock]
 	
 	def get_queryset(self):
 		stock_pk = self.kwargs.get('stock_pk', None)
@@ -37,7 +36,7 @@ class ApplicationAPIViewSet(GenericViewSet, mixins.ListModelMixin, mixins.Retrie
 	
 	model = models.Application
 	serializer_class = serializers.ApplicationSerializer
-	permission_classes = [IsSubClass('HasStockMixin')]
+	permission_classes = [HasStock]
 	
 	def get_queryset(self):
 		stock_pk = self.kwargs.get('stock_pk', None)
@@ -51,7 +50,6 @@ class StockAPIViewSet(ModelViewSet):
 	
 	serializer_class = serializers.StockSerializer
 	model = models.Stock
-	#permission_classes = (IsAdminUser,)
 	
 	def create(self, request, *args, **kwargs):
 		owner = request.DATA.pop('owner', None)
@@ -77,10 +75,10 @@ class StockAPIViewSet(ModelViewSet):
 			
 		return Response(serializers.ApplicationSerializer(res).data)		
 		
-	@action(methods = ['POST'],permission_classes = [IsSubClass('HasStockMixin')])
+	@action(methods = ['POST'],permission_classes = [HasStock])
 	def buy(self, request, *args, **kwargs):
 		return self.apply(request, models.Application.BUY, *args, **kwargs)
 		
-	@action(methods = ['POST'],permission_classes = [IsSubClass('HasStockMixin')])
+	@action(methods = ['POST'],permission_classes = [HasStock])
 	def sell(self, request, *args, **kwargs):
 		return self.apply(request, models.Application.SELL, *args, **kwargs)

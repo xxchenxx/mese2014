@@ -2,6 +2,21 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 from accounts.models import HasReportsMixin, Person
 from .utils import check_base_class_by_name
 
+def HasObject(field_name):
+	
+	class P(BasePermission):
+		
+		def has_object_permission(self, request, view, obj):
+			user = obj
+			for attr_name in field_name.split('.'):
+				user = getattr(user, attr_name, None)
+				if user is None:
+					break
+
+			return request.user and request.user == user
+	
+	return P
+
 def IsSubClass(cls_name, safe_methods = False):
 	
 	class P(BasePermission):

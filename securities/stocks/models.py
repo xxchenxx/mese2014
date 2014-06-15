@@ -57,6 +57,10 @@ class Stock(models.Model):
 	
 	class Meta:
 		ordering = ['-current_price', '-created_time']
+		permissions = (
+			('has_stock', 'Has Stock'),
+			('own_stock', 'Own stock'),
+		)
 	
 class Log(models.Model):
 	

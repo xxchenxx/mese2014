@@ -7,5 +7,7 @@ class NotificationAPIViewSet(GenericViewSet, DestroyModelMixin, RetrieveModelMix
 	model = models.Notification
 	serializer_class = serializers.NotificationSerializer
 	
+#	def confirm(
+	
 	def get_queryset(self):
 		return self.request.user.notifications.all()

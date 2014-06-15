@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 from django.contrib.auth.models import User
 from common.fields import FinancialYearField
@@ -23,11 +24,11 @@ class Passage(models.Model):
 	TYPE_CHOICES = map(lambda x:(x[1], x[0]), TYPE_MAP.iteritems())
 	
 	type = models.CharField(max_length = 3, editable = False, choices = TYPE_CHOICES)
-	title = models.CharField(max_length = 255)
+	title = models.CharField(max_length = 255, verbose_name = u'标题')
 	created_time = models.DateTimeField(auto_now_add = True)
 	year = FinancialYearField()
-	author = models.ForeignKey(User, related_name = 'passages')
-	content = models.TextField()
+	author = models.ForeignKey(User, related_name = 'passages', verbose_name = u'作者')
+	content = models.TextField(verbose_name = u'内容')
 	attachments = models.ManyToManyField(PublicFile, related_name = 'passages')
 	
 	def clean_fields(self, *args, **kwargs):
@@ -40,10 +41,14 @@ class Passage(models.Model):
 		super(Passage, self).clean_fields(*args, **kwargs)
 	
 	def __unicode__(self):
-		return "Passage: %s" % self.title
+		return u"%s" % self.title
 		
 	class Meta:
 		ordering = ['-created_time', 'title']
+		verbose_name = u'文章'
+		verbose_name_plural = verbose_name
+		app_label = u'新闻中心'
+		db_table = 'webboard_passage'
 		permissions = [
 			['publish_passage', 'Publish passage.']
 		]

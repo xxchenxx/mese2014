@@ -108,9 +108,9 @@ class Fund(models.Model):
 			else:
 				raise ValidationError("")
 				
-		send_notification(u'发布了')
+		self._send_notification(u'发布了')
 		
-	def create_user(username, password):
+	def create_user(self, username, password):
 		User = ContentType.objects.get(app_label = 'auth', model = 'user').model_class()
 		user = User.objects.create_user(username = username, password = password)
 		account = user.profile.create_info('Fund', display_name = self.display_name, assets = self.total_money)
@@ -131,6 +131,10 @@ class Fund(models.Model):
 	
 	class Meta:
 		ordering = ['-created_time']
+		permissions = (
+			('has_fund', 'Has fund'),
+			('own_fund', 'Own fund'),
+		)
 		
 	objects = FundManager()
 		
@@ -154,7 +158,22 @@ class RansomApplication(models.Model):
 	owner_object_id = models.PositiveIntegerField(null = True, blank = True)
 	owner = generic.GenericForeignKey('owner_type', 'owner_object_id')
 	money = DecimalField()
-	created_time = models.DateTimeField(auto_now_add = True)			
+	created_time = models.DateTimeField(auto_now_add = True)		
+	
+	def clean_fields(self, *args, **kwargs):
+		if not self.fund.published:
+			raise ValidationError("The fund hasn't been published!")
+		try:
+			share = self.owner.fund_shares.get(fund = fund)
+		except Share.DoesNotExist:
+			raise ValidationError("You have no shares of this fund!")
+		if share.money < self.money:
+			raise ValidationError("There is not enough money in your fund!")
+			
+	def delete(self, *args, **kwargs):
+		self.fund.apply_money(self.owner, -self.money)
+		print 2
+		super(RansomApplication, self).delete(*args, **kwargs)
 		
 class Share(get_inc_dec_mixin(['money'])):
 
