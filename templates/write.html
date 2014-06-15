@@ -7,10 +7,10 @@
   <form id="p_new" role="form">
     <div class="input-group" style="margin-top:10px;">
      <span class="input-group-addon">标题</span>
-    <input class="form-control" type="text" id="p_title" name="title"></input>
+    <input class="form-control" type="text" id="title" name="title"></input>
     </div>
   <div class="input-group col-md-12" style="padding:0;margin-top:10px">
-    <textarea class = "form-control col-md-12" rows="30" cols="50" id="text" name="content"></textarea>
+    <textarea class = "form-control col-md-12" rows="30" cols="50" id="content" name="content"></textarea>
   </div>
   <div id="attachments" class="hidden">
   
@@ -30,7 +30,7 @@
 		</ul>
   </form>
   <script type="text/javascript">
-    CKEDITOR.replace('text',{
+    CKEDITOR.replace('content',{
     upload:{
       formId:'uploadForm', 
 		 fileId:'file', 
@@ -43,7 +43,7 @@
 		 }
 	}})
 	$(function(){
-		var editor = CKEDITOR.instances['text'];
+		var editor = CKEDITOR.instances['content'];
 		$("#list").delegate('a.main', 'click', function(){
 				var data = $(this).parent().data();
 				editor.insertHtml(data.insertion);
@@ -60,12 +60,12 @@
 			formAcceptCharset: "unicode",
 			done: function (e, xhr) {
 				var data = xhr.result, 
-				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br/><img src='{url}' style='max-width:100%;'></img>":"<br/><a href='{url}'>{name}</a>"; 
+				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br><img src='{url}' style='max-width:100%;'></img>":"<br><a href='{url}'>{name}</a>"; 
 				insertion = insertion.replace('{url}', data.url).replace('{name}', data.name);
 				editor.insertHtml(insertion);
 				data.insertion=insertion;
 				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));
-				$('<input type="text" value="{id}" name="attachments" />'.render(data)).appendTo($("#attachments"));
+				$('<input type="text" value="{id}" name="attachments">'.render(data)).appendTo($("#attachments"));
 			},
 			progressall: function(e, data) {
 				var p=parseInt(data.loaded / data.total * 100, 10);
@@ -78,12 +78,13 @@
 		$("#p_new").submit(function(e){
 			e.preventDefault();
 			var data = $(this).serializeObject();
-			data.content = CKEDITOR.instances['text'].getData();
+			data.content = CKEDITOR.instances['content'].getData();
 			if (data.attachments&&typeof data.attachments === 'string') {
 				data.attachments = [data.attachments];
 			}
 			if (!(data.title&&data.content)) {
-				//Blank, do something
+				!data.title&&$("#title").error();
+				!data.content&&$("#content").error();
 				return false;
 			}
 			console.log(data);

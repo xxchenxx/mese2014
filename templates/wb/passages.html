@@ -21,14 +21,41 @@
     {% block passage_main %}
     <div class="list-group" id="feeds-container">
     </div>
+    <div class="pager">
+			<button class="btn btn-link pull-left" id="prevBtn">上一页</button>
+			<button class="btn btn-link pull-right" id="nextBtn">下一页</button>
+		</div>
   </div>
   <div class="col-md-4 hidden-xs hidden-sm">
   </div>
   <script>
     $(document).ready(function(){
-      var passage = new MESEIO();
+      var $feeds = $("#feeds-container"), icons = {
+      	'MED': 'fa-rss',
+      	'GOV': 'fa-bank',
+      	'CON': 'fa-bank'
+      },	$prevBtn = $("#prevBtn"), $nextBtn = $("#nextBtn");
+			$("#prevBtn, #nextBtn").click(function () {
+				API.raw($(this).data('url')).get().ok(updateComments);
+			});
+    	function updateFeeds(data) {
+				var elements = [];
+				adjustPager($prevBtn, data.previous);
+      	adjustPager($nextBtn, data.next);
+      	$(data.results).each(function(){
+      		this.icon = "<i class='fa {icon}'></i>".render({icon:icons[data.type]});
+      		elements.push("<div class='feeds'><div class='feeds-title'>{icon}<a href='{id}/'>{title}</a><em class='pull-right feeds-info'>{author.profile.display_name}@{created_time}</em></div></div>".render(this));
+      	});
+      	$(elements.join('')).appendTo($feeds);
+    	}
+			function adjustPager($btn, data) {
+				if (data) {
+					$btn.show();
+					$btn.data('url', data);
+				} else $btn.hide();
+			}
       utype=$.getUrlParam("type");
-      passage.loadfeeds(utype);
+      API.url("passages").param("type", utype).get().ok(updateFeeds);
     })
   </script>
   {% endblock %}

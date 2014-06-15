@@ -18,31 +18,52 @@
 <ul class="list-group mese2014-list-group" id="cmtList">
 
 </ul>
+<div class="pager">
+	<button class="btn btn-link pull-left" id="prevBtn">上一页</button>
+	<button class="btn btn-link pull-right" id="nextBtn">下一页</button>
+</div>
 <form id="cmtForm" role="form">
 	<div class="col-md-12 input-group">
-		<input class="form-control form-login col-md-4" name="content"/>
+		<input class="form-control form-login col-md-4" name="content" id="content"/>
 		<input type="submit" class="btn btn-mese2014-success btn-mese2014" value="评论"/>
 	</div>
 </form>
 <script type="text/javascript">
 $(function(){
-	var passageId = {{object.id}}, apiPassage = API.url('passages').id(passageId);
-	function updateComments(){
-		$("#cmtList").html("");
-		apiPassage.url('comments').get().ok(function(data){
-			$(data.results).each(function(){
-				$('<li class="list-group-item">{content}<span class="pull-right">{created_time}@{author.profile.display_name}</span></li>'.render(this)).appendTo($("#cmtList"));
-			});
-		});
+	var passageId = {{object.id}}, apiPassage = API.url('passages').id(passageId), $cmts = $("#cmtList"),
+	$prevBtn = $("#prevBtn"), $nextBtn = $("#nextBtn");
+	$("#prevBtn, #nextBtn").click(function () {
+		API.raw($(this).data('url')).get().ok(updateComments);
+	});
+	function adjustPager($btn, data) {
+		if (data) {
+			$btn.show();
+			$btn.data('url', data);
+		} else $btn.hide();
 	}
-	updateComments();
+	function updateComments(data){
+		var elements=[];
+		adjustPager($prevBtn, data.previous);
+		adjustPager($nextBtn, data.next);
+		$(data.results).each(function(){
+			elements.push('<li class="list-group-item">{content}<span class="pull-right">{created_time}@{author.profile.display_name}</span></li>'.render(this));
+		});
+		$cmts.html("");
+		$(elements.join("")).appendTo($cmts);
+	}
+	function loadComments() {
+		apiPassage.url('comments').get().ok(updateComments);
+	}
+	loadComments();
 	$("#cmtForm").submit(function(e){
 		e.preventDefault();
 		var data = $(this).serializeObject();
 		if (!data.content){
+			$("#content").error();
 			return false;
 		}
-		apiPassage.url('comments').post(data).ok(updateComments);
+		$("#content").val("");
+		apiPassage.url('comments').post(data).ok(loadComments);
 		return false;
 	});
 });
