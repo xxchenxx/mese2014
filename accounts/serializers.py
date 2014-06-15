@@ -24,7 +24,7 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
 	safe_exclude = ['assets']
 	
 	def get_url(self, obj):
-		return reverse('user-profile', kwargs = {'pk':obj.profile.user.pk})
+		return '%s?uid=%d' % (reverse('accounts.profile'), obj.profile.user.id)
 		
 class MediaSerializer(AccountSerializer):
 	
@@ -109,18 +109,21 @@ class UserSerializer(serializers.ModelSerializer):
 
 	is_admin = serializers.Field(source = 'is_staff')
 	profile  = serializers.SerializerMethodField('get_profile')
+	url = serializers.SerializerMethodField('get_url')
+	
+	def get_url(self, obj):
+		return '%s?uid=%d' % (reverse('accounts.profile'), obj.id)
 
 	def get_profile(self, obj):
 		profile = obj.profile.info
 		if profile is None:
 			return {}
 		cls_name = '%sSerializer' % profile.__class__.__name__
-		a = globals()
-		return globals()[cls_name](obj.profile.info, safe_fields = True).data
+		return globals()[cls_name](obj.profile.info, safe_fields = self.safe_fields).data
 		
 	class Meta:
 		model = User
-		fields = ('is_admin', 'username', 'profile', 'id')
+		fields = ('is_admin', 'username', 'profile', 'id', 'url')
 		
 def get_serializer_by_object(obj):
 	return globals()['%sSerializer' % obj.__class__.__name__]

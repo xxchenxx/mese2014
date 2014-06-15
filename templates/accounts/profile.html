@@ -1,13 +1,14 @@
 {% extends "index.html" %}
 {% block main_content %}
+{% with info=user_object.profile %}
 <div class="container">
   <div class="col-md-3 hidden-xs hidden-sm">
-  {% ifequal user.profile.info.account_type "person" %}
+  {% ifequal info.account_type "person" %}
     <div class="panel panel-default utinfo">
       <div class="panel-body">
-        用户名：{{user.profile.info.display_name}}<br>
-        性别：{{user.profile.info.sex}}<br>
-        所属公司：{{user.profile.info.company.display_name}}<br>
+        用户名：{{info.display_name}}<br>
+        性别：{{info.gender}}<br>
+        所属公司：<a href="{{info.company.url}}">{{info.company.display_name}}</a><br>
       </div>
     </div>
     <ul class="nav nav-pills nav-stacked">
@@ -15,12 +16,12 @@
       <li><a href="#pr" data-toggle="pill">个人报告</a></li>
     </ul>
   {% endifequal %}
-  {% ifequal user.profile.info.account_type "company" %}
+  {% ifequal info.account_type "company" %}
     <div class="panel panel-default utinfo">
       <div class="panel-body">
-        公司名：{{user.profile.info.display_name}}<br>
-        简介：{{user.profile.info.description}}<br>
-        联系方式：{{user.profile.info.contact}}<br>
+        公司名：{{info.display_name}}<br>
+        简介：{{info.description}}<br>
+        联系方式：{{info.contact}}<br>
       </div>
     </div>
     <ul class="nav nav-pills nav-stacked nav-utinfo">
@@ -37,4 +38,5 @@
   </div>
   {% endifequal %}
 </div>
+{% endwith %}
 {% endblock %}

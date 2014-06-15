@@ -28,7 +28,7 @@ def profile(request):
 		uid = request.user.id
 		user_obj = request.user
 		is_self = True
-	return Response({'user_object':user_obj, 'uid':uid, 'is_self':is_self}, template_name = 'accounts/profile.html')
+	return Response({'user_object':serializers.UserSerializer(user_obj, safe_fields = False).data, 'uid':uid, 'is_self':is_self}, template_name = 'accounts/profile.html')
 
 class UserAPIViewSet(viewsets.ModelViewSet):
 	

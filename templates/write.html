@@ -7,10 +7,10 @@
   <form id="p_new" role="form">
     <div class="input-group" style="margin-top:10px;">
      <span class="input-group-addon">标题</span>
-    <input class="form-control" type="text" id="title" name="title"></input>
+    <input class="form-control" type="text" id="title" name="title">
     </div>
   <div class="input-group col-md-12" style="padding:0;margin-top:10px">
-    <textarea class = "form-control col-md-12" rows="30" cols="50" id="content" name="content"></textarea>
+    <textarea class = "form-control col-md-12" rows="30" cols="50" id="content" name="content">{{object.content}}</textarea>
   </div>
   <div id="attachments" class="hidden">
   
@@ -26,29 +26,35 @@
   		<input type="file" name="file" id="file" />
 		</div>
 		<ul id="list" class="list-group">
-    
+
 		</ul>
   </form>
   <script type="text/javascript">
-    CKEDITOR.replace('content',{
-    upload:{
-      formId:'uploadForm', 
-		 fileId:'file', 
-		 queueId: 'list',  
-		 callback:function(data){
-			 $("#list").append('<input type="text" name="attachments" value="{id}"></input>'.render(data));
-		 },
-		 progress:function(data){
-		 	console.log(data);
-		 }
-	}})
+    CKEDITOR.replace('content');
 	$(function(){
-		var editor = CKEDITOR.instances['content'];
+		function insertAttachment(data) {
+				var  
+				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br/><img src='{url}' style='max-width:100%;'></img>":"<br/><a href='{url}'>{name}</a>"; 
+				insertion = insertion.render(data);
+				data.insertion=insertion;
+				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));
+				$('<input type="text" value="{id}" name="attachments">'.render(data)).appendTo($("#attachments"));		
+				return insertion;
+		};
+		var objectId = "{{object.id}}";
+		objectId&&API.url('passages').id(objectId).get()
+		.ok(function(data){
+			$(data.attachments).each(function () {insertAttachment(this);});
+		});
+		window.submit||(window.submit = function (data) {
+		return API.url("passages").post(data);
+		});
+		window.editor = CKEDITOR.instances['content'];
 		$("#list").delegate('a.main', 'click', function(){
 				var data = $(this).parent().data();
 				editor.insertHtml(data.insertion);
-			});
-		$("#list").delegate('a.del', 'click', function(){
+			})
+		.delegate('a.del', 'click', function(){
 				var data = $(this).parent().data();
 				API.url('files').url('public').id(data.id).delete();
 				$(this).parent().remove();
@@ -59,13 +65,7 @@
 			dataType: 'json',
 			formAcceptCharset: "unicode",
 			done: function (e, xhr) {
-				var data = xhr.result, 
-				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br><img src='{url}' style='max-width:100%;'></img>":"<br><a href='{url}'>{name}</a>"; 
-				insertion = insertion.replace('{url}', data.url).replace('{name}', data.name);
-				editor.insertHtml(insertion);
-				data.insertion=insertion;
-				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));
-				$('<input type="text" value="{id}" name="attachments">'.render(data)).appendTo($("#attachments"));
+				editor.insertHtml(insertAttachment(xhr.result));
 			},
 			progressall: function(e, data) {
 				var p=parseInt(data.loaded / data.total * 100, 10);
@@ -78,7 +78,7 @@
 		$("#p_new").submit(function(e){
 			e.preventDefault();
 			var data = $(this).serializeObject();
-			data.content = CKEDITOR.instances['content'].getData();
+			data.content = editor.getData();
 			if (data.attachments&&typeof data.attachments === 'string') {
 				data.attachments = [data.attachments];
 			}
@@ -87,17 +87,13 @@
 				!data.content&&$("#content").error();
 				return false;
 			}
-			console.log(data);
-			//return false;
-			API.url("passages").post(data).
+			window.submit(data).
 			ok(function(data){
 				console.log('ok');
 				window.location.href = data.url;
-				// If success, do something
 			})
 			.paramError(function(data){
 				console.log(data);
-				// If error, do something
 			});
 			return false;
 		});

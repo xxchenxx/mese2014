@@ -5,8 +5,8 @@ import os.path
 class FileField(serializers.FileField):
 
 	encode_file = lambda self, obj:{
-			"file_name": os.path.basename(obj.file.name),
-			"file_url":obj.file.url,
+			"name": os.path.basename(obj.file.name),
+			"url":obj.file.url,
 			"id": obj.id,
 	}
 

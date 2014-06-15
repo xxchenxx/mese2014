@@ -168,6 +168,40 @@ $.fn.error = function () {
 			var res = new Resource('', url, 'raw');
 			res._url = url;
 			return res;
+		},
+		list: function (config) {
+			function adjustPager($btn, url) {
+				if (url===null) {
+					$btn.hide();
+				} else {
+					$btn.show().data('url', url);
+				}
+			}
+			function loadData(data) {
+				var elements = [];
+				adjustPager($next, data.next);
+				adjustPager($prev, data.previous);
+				$(data.results).each(function(){
+					var context = this;
+					processData(context);
+					elements.push(template.render(context));
+				});
+				$container.html("");
+				$(elements.join('')).appendTo($container);			
+			}
+			function click() {
+				API.raw($(this).data('url')).get(loadData);
+			}
+			function execute() {
+				apiUrl.get().ok(loadData);
+			}
+			var apiUrl = config.apiUrl, 
+				$next = $("#"+config.next), $prev = $("#"+config.prev), $container= $("#"+config.container), 
+				processData = config.processData||function(){}, template = config.template||'';
+			$next.hide().click(click);
+			$prev.hide().click(click);
+			execute();
+			return execute;
 		}
 	};
 })();
