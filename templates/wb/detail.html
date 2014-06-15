@@ -15,15 +15,15 @@
 	<div>
 </div>
 <br/>
-<form id="cmtForm" role="form">
-	<div class="col-md-12 input-group">
-		<input class="form-control col-md-4" name="content"/>
-		<input type="submit" class="btn btn-success" value="评论"/>
-	</div>
-</form>
-<ul class="list-group" id="cmtList">
+<ul class="list-group mese2014-list-group" id="cmtList">
 
 </ul>
+<form id="cmtForm" role="form">
+	<div class="col-md-12 input-group">
+		<input class="form-control form-login col-md-4" name="content"/>
+		<input type="submit" class="btn btn-mese2014-success btn-mese2014" value="评论"/>
+	</div>
+</form>
 <script type="text/javascript">
 $(function(){
 	var passageId = {{object.id}}, apiPassage = API.url('passages').id(passageId);
