@@ -60,7 +60,7 @@
 			formAcceptCharset: "unicode",
 			done: function (e, xhr) {
 				var data = xhr.result, 
-				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<img src='{url}'></img>":"<a href='{url}'>{name}</a>"; 
+				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br/><img src='{url}' style='max-width:100%;'></img>":"<br/><a href='{url}'>{name}</a>"; 
 				insertion = insertion.replace('{url}', data.url).replace('{name}', data.name);
 				editor.insertHtml(insertion);
 				data.insertion=insertion;

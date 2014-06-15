@@ -167,7 +167,8 @@ class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 	
 class Government(PersonalModel, HasStockBondMixin, CanWriteMixin):
 
-	pass
+	def get_groups(self):
+		return ('writer',)
 	
 class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin, CanWriteMixin):
 

@@ -1,5 +1,8 @@
+#encoding=utf8
 from common.mixins import *
 from models import Share
+from notification import send_notification
+from django.core.exceptions import ValidationError
 
 __all__ = ['OwnFundMixin', 'HasFundMixin']
 
@@ -10,6 +13,16 @@ class HasFundMixin(models.Model):
 			content_type_field = 'owner_type',
 			object_id_field = 'owner_object_id',
 	)
+
+	def ransom(self, fund, money):
+		try:
+			share = self.shares.get(fund = fund)
+		except Share.DoesNotExist:
+			raise ValidationError("You have no shares of this fund!")
+		if share.money < money:
+			raise ValidationError("There is not enough money in your fund!")
+			
+		send_notification(recipient = fund.account
 
 	def get_fund_share(self, fund, create = False, **kwargs):
 		try:

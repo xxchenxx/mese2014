@@ -46,12 +46,19 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	
 	permission_classes = (CanWrite,)
+	filter_fields = ('type', )
+
+	def get_queryset(self):
+		queryset = models.Passage.objects.all()
+		if self.request.QUERY_PARAMS.get('type','') == '':
+			queryset = queryset.exclude(type = 'ENT')
+		return queryset
 
 	def create(self, request, *args, **kwargs):
 		print request.POST, request.DATA
 		super(PassageAPIViewSet, self).create(request, author = request.user.id, *args, **kwargs)	
 		obj = self.object
-		return response.Response({'url': '/webboard/passages/?id=%d' % obj.id})
+		return response.Response({'url': '/webboard/passages/%d/' % obj.id})
 		
 	def list(self, request, *args, **kwargs):
 		self.serializer_options = {'exclude':['content']}

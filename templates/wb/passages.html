@@ -10,9 +10,9 @@
       {% endblock %}
     </ol></div>
     <div id="ncon"><div class="nav nav-tabs nav-mese2014">
-      <li><a href="?type="><i class="fa fa-circle fa-fw"></i>所有新闻</a></li>
-      <li><a href="?type=GOV"><i class="fa fa-bank fa-fw"></i>政府&会务</a></li>
-      <li><a href="?type=MED"><i class="fa fa-rss fa-fw"></i>媒体信息</a></li>
+      <li><a href="/webboard/passages/?type="><i class="fa fa-circle fa-fw"></i>所有新闻</a></li>
+      <li><a href="/webboard/passages/?type=GOV"><i class="fa fa-bank fa-fw"></i>政府&会务</a></li>
+      <li><a href="/webboard/passages/?type=MED"><i class="fa fa-rss fa-fw"></i>媒体信息</a></li>
       {%if perms.webboard.publish_passage %}
       <li class="pull-right"><a href="write"><i class="fa fa-pencil fa-fw"></i> 发布新信息</li></a>
       {% endif %}
@@ -28,12 +28,6 @@
     $(document).ready(function(){
       var passage = new MESEIO();
       utype=$.getUrlParam("type");
-      //feedid=$.getUrlParam("id");
-      //console.log(utype+","+feedid);
-      /*if(!feedid){ passage.loadfeeds(utype)}
-      else {
-        passage.loadfdetails(feedid)
-      }*/
       passage.loadfeeds(utype);
     })
   </script>

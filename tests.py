@@ -1,10 +1,11 @@
+#encoding=utf8
 from accounts.models import *
 from django.contrib.auth.models import User, Group, Permission
 
-group,created = Group.objects.get_or_create(name = 'writer')
-if not created:
-	group.permissions.add(Permission.objects.get(codename = 'add_passage'))
-	group.save()
+#group,created = Group.objects.get_or_create(name = 'writer')
+#if not created:
+#	group.permissions.add(Permission.objects.get(codename = 'add_passage'))
+#	group.save()
 
 section,_ = Section.objects.get_or_create(display_name = 'A')
 industry,_ = Industry.objects.get_or_create(section = section, display_name = 'B')
@@ -26,3 +27,7 @@ user,_ = User.objects.get_or_create(username = 'bank')
 user.set_password('bank')
 user.save()
 bank = user.profile.create_info(class_name = 'Bank', assets = 10000)
+user,_ = User.objects.get_or_create(username = 'zf')
+user.set_password('zf')
+user.save()
+user.profile.create_info('Government', display_name = u'政府', assets = 10000)
