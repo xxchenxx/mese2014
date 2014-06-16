@@ -28,6 +28,8 @@ __accounts__ = ['Bank', 'Company', 'Fund', 'FundCompany', 'Government', 'Media',
 
 class HasReportsMixin(object):
 	
+	permission = 'has_report'
+	
 	@classmethod
 	def has_field(cls, field_name):
 		try:
@@ -138,27 +140,12 @@ class Media(Account, CanWriteMixin):
 	def get_groups(self):
 		return ['writer']
 		
-class Section(models.Model):
-
-	display_name = models.CharField(max_length = 20, default = '')
-	
-	def __unicode__(self):
-		return self.display_name
-	
-class Industry(models.Model):
-
-	section = models.ForeignKey(Section, related_name = 'industries')
-	display_name = models.CharField(max_length = 20, default = '')		
-	
-	def __unicode__(self):
-		return self.display_name
-		
 class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 
 	company_type = models.ForeignKey(ContentType, null = True, blank = True)
 	company_object_id = models.PositiveIntegerField(null = True, blank = True)
 	company = generic.GenericForeignKey('company_type', 'company_object_id')
-	industry = models.ForeignKey(Industry, related_name = 'persons')
+	industry = models.CharField(max_length = 255, default = '')
 	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
 	
@@ -197,7 +184,8 @@ class Enterprise(Account, HasAssetsMixin, HasReportsMixin,
 		
 class Company(Enterprise,CanStoreMixin):
 
-	industry = models.ForeignKey(Industry, related_name = 'companies', null = True)
+	industry = models.CharField(max_length = 255, default = '')
+	section = models.CharField(max_length = 255, default = '')
 	
 class FundCompany(Enterprise, OwnFundMixin):
 

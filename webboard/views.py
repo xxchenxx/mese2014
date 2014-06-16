@@ -52,7 +52,7 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	
 	permission_classes = (CanWrite,)
-	filter_fields = ('type', )
+	filter_fields = ('type', "author")
 
 	def get_queryset(self):
 		queryset = models.Passage.objects.all()
@@ -69,7 +69,7 @@ class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 		return response.Response({'url': '/webboard/passages/%d/' % self.object.id})
 		
 	def list(self, request, *args, **kwargs):
-		self.serializer_options = {'exclude':['content']}
+		#self.serializer_options = {'exclude':['content']}
 		return super(PassageAPIViewSet,self).list(self,request,*args,**kwargs)
 	
 class CommentAPIViewSet(viewsets.ModelViewSet):

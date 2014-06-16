@@ -1,20 +1,13 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 import models
 from django.contrib.contenttypes.models import ContentType
 
 from django.http import Http404
 
 from common.serializers import FileField 
-
-def get_industry_serializer(field_name = 'industry'):
-
-	class HasIndustrySerializer(serializers.Serializer):
-		
-		industry = serializers.Field(source = '%s.display_name' % field_name)
-		
-	return HasIndustrySerializer
 
 class AccountSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -48,7 +41,7 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 		fields = ('url', 'display_name')
 		lookup_field = 'pk'
 	
-class PersonSerializer(PersonalSerializer, get_industry_serializer()):
+class PersonSerializer(PersonalSerializer):
 	
 	company = serializers.SerializerMethodField('get_company')
 	debt_files = FileField(many = True, required = False)
@@ -83,7 +76,7 @@ class EnterpriseSerializer(AccountSerializer):
 	class Meta:
 		model = models.Enterprise
 		
-class CompanySerializer(EnterpriseSerializer, get_industry_serializer()):
+class CompanySerializer(EnterpriseSerializer):
 	
 	financial_reports = FileField(many = True, required = False)
 	
@@ -146,6 +139,15 @@ class AccountField(serializers.WritableField):
 		
 	def field_from_native(self, data, files, field_name, into):
 		enter_data = data[field_name]
+		if isinstance(enter_data, (str, unicode)):
+			data = models.filter_accounts(display_name = enter_data)
+			if not data:
+				raise ValidationError("account")
+				into[field_name] = None
+				return None
+			else:
+				data = data[0]
+				enter_data = {'type': data['account_type'], 'id': data['id']}
 		cls = ContentType.objects.get(app_label = 'accounts', model = enter_data['type'])
 		
 		try:

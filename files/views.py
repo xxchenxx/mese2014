@@ -51,6 +51,6 @@ class PrivateFileAPIViewSet(ModelViewSet):
 		return super(PrivateFileAPIViewSet, self).get_object(*args, **kwargs)
 	
 	def create(self, request, *args, **kwargs):
-		response = super(PrivateFileAPIViewSet, self).create(request, file_type = FILE.PRIVATE, *args, **kwargs)
+		response = super(PrivateFileAPIViewSet, self).create(request, file_type = File.PRIVATE, *args, **kwargs)
 		self.request.user.profile.info.upload_reports(self.object,field_name = self.field_name)
 		return response

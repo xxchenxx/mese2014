@@ -47,8 +47,8 @@ class Passage(models.Model):
 		ordering = ['-created_time', 'title']
 		verbose_name = u'文章'
 		verbose_name_plural = verbose_name
-		app_label = u'新闻中心'
-		db_table = 'webboard_passage'
+		#app_label = u'新闻中心'
+		#db_table = 'webboard_passage'
 		permissions = [
 			['publish_passage', 'Publish passage.']
 		]

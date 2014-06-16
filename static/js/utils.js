@@ -84,6 +84,43 @@ $.fn.error = function () {
 	.focus();
 };
 
+$.fn.captcha = function() {
+	var $this = $(this);
+	function change(){
+		$this.attr("src", "/captcha/");
+	}
+	change();
+	$this.click(change);
+};
+
+$.fn.render = function(data) {
+	var $this = $(this), template;
+	if (!$this.data("rawtext")){
+		template = $this.text();
+		$this.data("rawtext", template);
+	} else template = $this.data("rawtext");
+	$this.text(template.render(data));
+};
+
+$.fn.clearForm = function() {
+	$(':input', '#'+$(this).attr("id"))  
+	 .not(':button, :submit, :reset, :hidden')  
+	 .val('')  
+	 .removeAttr('checked')  
+	 .removeAttr('selected'); 
+};
+
+$.fn.formAjaxSubmit = function(config) {
+	var $form = $(this), 
+		apiUrl = config.apiUrl, verifyFunc = config.verfiy||function(){return true}, callback = config.callback||function(){};
+	$form.submit(function(e){
+		e.preventDefault();
+		if (!verifyFunc()) return false;
+		callback(apiUrl.post($form.serializeObject()));
+		return false;
+	});
+};
+
 (function(){
 	function ajax(url, data, method) {
 		if (typeof data === 'object') data = encodeJSON(data);
@@ -127,6 +164,7 @@ $.fn.error = function () {
 						403: "forbidden", 
 						400:"paramError", 
 						405:"methodNotAllowed", 
+						420:"captchaError",
 						200: "ok"
 				}, callbacks = {};
 				if (this.paramStr===undefined) {
@@ -138,21 +176,19 @@ $.fn.error = function () {
 						this.paramStr = '?'+encodeURI(params.join('&'));
 					}
 				}
-				var self = this,
-			  res = ajax(this._url+this.paramStr, data, method).statusCode({
-						404: function (data) {
-							callbacks[404].fire(decodeJSON(data.responseText));
-						},
-						405: function (data) {
-							callbacks[405].fire(decodeJSON(data.responseText));
-						},
-						403: function (data) {
-							callbacks[403].fire(decodeJSON(data.responseText));
-						},
-						400: function (data) {
-							callbacks[400].fire(decodeJSON(data.responseText));
+				
+				var statusActions = {};
+				for (var i in errors)
+					if (i != 200)
+					(function(code){ 
+						statusActions[code] = function (data) {
+							callbacks[code].fire(decodeJSON(data.responseText));
 						}
-					}).done(function(data) {
+					})(i);
+				
+				var self = this,
+			  res = ajax(this._url+this.paramStr, data, method).statusCode(statusActions)
+			  .done(function(data) {
 							callbacks[200].fire(data);
 					});
 				for (var i in errors) {
@@ -190,7 +226,7 @@ $.fn.error = function () {
 				$(elements.join('')).appendTo($container);			
 			}
 			function click() {
-				API.raw($(this).data('url')).get(loadData);
+				API.raw($(this).data('url')).get().ok(loadData);
 			}
 			function execute() {
 				apiUrl.get().ok(loadData);
@@ -198,8 +234,8 @@ $.fn.error = function () {
 			var apiUrl = config.apiUrl, 
 				$next = $("#"+config.next), $prev = $("#"+config.prev), $container= $("#"+config.container), 
 				processData = config.processData||function(){}, template = config.template||'';
-			$next.hide().click(click);
-			$prev.hide().click(click);
+			$next.click(click).hide();
+			$prev.click(click).hide();
 			execute();
 			return execute;
 		}

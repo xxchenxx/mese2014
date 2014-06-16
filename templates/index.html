@@ -7,6 +7,7 @@
 	 {% include "cdn.html" %}
 	 <script src="/static/js/jquery.dynatable.js"></script>
 	 <link href="/static/css/jquery.dynatable.css" type="text/css" />
+	 {% block extra_head %}{% endblock %}
 </script>
   </head>
   <body style="height:100%">
@@ -113,5 +114,6 @@
 	  })
 	</script>
     {% endblock %}
+   {% block extra_script %}{%endblock%}
   </body>
 </html>

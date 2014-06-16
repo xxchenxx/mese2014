@@ -1,0 +1,27 @@
+{% extends "accounts/profile/base-profile.html" %}
+{% block sidebar %}
+<div class="panel panel-default utinfo">
+  <div class="panel-body">
+    用户名：{{info.display_name}}<br>
+    性别：{{info.gender}}<br>
+    职位：{{info.position}}<br>
+    行业：{{info.industry}}<br>
+    所属公司：<a href="{{info.company.url}}">{{info.company.display_name}}</a><br>
+  </div>
+</div>
+<ul class="nav nav-pills nav-stacked nav-utinfo">
+  <li><a href="#aa" data-toggle="pill"><i class="fa fa-2x fa-bar-chart-o"></i> 资产分析</a></li>
+  {{block.super}}
+</ul>
+{% endblock %}
+
+{% block tabs %}
+	<div class="tab-pane fade in" id="aa">
+    	
+	</div>
+{{block.super}}
+{% endblock %}
+	
+{% block extra_script %}
+{{block.super}}
+{% endblock %}

@@ -1,0 +1,163 @@
+<div class="col-md-3 hidden-xs hidden-sm"> 
+	{% block sidebar %}
+	{% if permissions.can_transfer %}
+	<li><a href="#tm" data-toggle="pill"><i class="fa fa-2x fa-money"></i> 转帐 </a></li>
+	{% endif %}
+	{% if permissions.has_report %}
+	<li><a href="#pr" data-toggle="pill"><i class="fa fa-2x fa-file-archive-o"></i> {{reports_title}}</a></li>
+	{% endif %}
+	{% if permissions.publish_passage %}
+	<li><a href="#pl" data-toggle="pill"><i class="fa fa-2x fa-file-text-o"></i> 新闻 </a></li>
+	{% endif %}
+	{% endblock %}
+</div>
+<div class="col-md-9 hidden-xs hidden-sm">
+  <div class="tab-content">
+{% block tabs %}
+	{% if permissions.can_transfer %}
+		<div class="tab-pane fade" id="tm">
+			<h4>
+				转帐规则：每转帐一次需从账户中扣除千分之一的手续费。
+			</h4>
+			<form id="transferForm" role="form" class="form-horizontal col-md-8">
+				<div class="form-group">
+					<label for="money" class="control-label col-sm-4">请输入转帐金额</label>
+					<div class="col-sm-8">
+						<input type="text" id="money" name="money" class="form-control">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="to" class="control-label col-sm-4">请输入转帐对象名称</label>
+					<div class="col-sm-8">
+						<input type="text" id="to" name="to" class="form-control">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="captcha" class="control-label col-sm-4">验证码</label>
+					<div class="col-sm-4">
+						<input type="text" id="captcha" name="captcha" class="form-control">
+					</div>
+					<div class="col-sm-4">
+						<img id="transferCaptchaImg" />
+					</div>
+				</div>
+				<div class="alert alert-danger alert-login" id="transferError">asgsad</div>
+				<div class="form-group">
+					<div class="col-sm-12">
+						<input type="submit" class="btn btn-login" value="开始转帐" >
+					</div>
+				</div>
+			</form>
+			<div id="transferResult">
+				<p id="transferText">转帐成功：您已将 ￥{money} 转给 {transfer_to.profile.display_name}。</p>
+				<button id="transferContinue" class="btn btn-link">继续转帐</button>
+			</div>
+		</div>
+	{% endif %}
+	{% if permissions.publish_passage %}
+		<div class="tab-pane fade" id="pl">
+			<div class="container" id="feedsContainer"></div>
+			<div class="pager">
+				<button id="feedsPrevBtn" class="btn btn-link pull-left">上一页</button>
+				<button id="feedsNextBtn" class="btn btn-link pull-right">下一页</button>
+			</div>
+		</div>
+	{% endif %}
+	{% if permissions.has_report %}
+		<div class="tab-pane fade" id="pr">
+		{% if is_self %}
+			<form id="uploadForm">
+				<div class="fileinput-button btn btn-primary">
+					<span>添加文件...</span>
+					<input type="file" name="file" id="file" />
+				</div>
+			</form>
+		{% endif %}
+			<ul id="filesList" class="list-group"></ul>
+		</div>
+	{% endif %}
+{% endblock %}
+  </div>
+</div>
+{% block extra_script %}
+{% if permissions.can_transfer %}
+<script type="text/javascript">
+$(function(){
+	$("#transferCaptchaImg").captcha();
+	var $form = $("#transferForm"), $result = $("#transferResult").hide(), $text = $("#transferText");
+	
+	$("#transferContinue").click(function(){
+		$result.hide();
+		$form.show();
+	});
+	
+	$form.formAjaxSubmit({
+		apiUrl: API.url('transfer'),
+		callback: function(xhr) {
+			xhr.done(function(data){
+				$form.clearForm();
+				$form.hide();
+				$result.show();
+				$text.render(data);
+			})
+			.paramError(function (data) {
+				for (var i in data) {
+					$form.find("[name="+i+']').error();
+				}
+			}).
+			captchaError(function(data) {
+				$("#captcha").error();
+			});
+		}
+	});
+});
+</script>
+{% endif %}
+{% if permissions.publish_passage %}
+<script type="text/javascript">
+$(function(){
+	API.list({
+		prev: "feedsPrevBtn",
+		next: "feedsNextBtn",
+		apiUrl: API.url("passages").param("author", data.id),
+		container: "feedsContainer",
+		template: "<h3 class='text-center feeds-details-title'><a href='{url}'>{title}</a></h3><div class='text-center feeds-details-info'>{created_time}</div><div class='feeds-details-text'>{content}</div>"
+	});
+});
+</script>
+{% endif %}
+
+{% if permissions.has_report %}
+<script type="text/javascript">
+$(function(){
+	function addFile(data) {
+		data.deleteTag = window.isSelf?'<a href="javascript:void(0);" class="del" data-id="{id}">删除</a>'.render(data):'';
+		$('<li class="list-group-item"><a href="{url}" target="_blank">{name}</a><span class="pull-right">{created_time}&nbsp;{deleteTag}</span></li>'.render(data)).appendTo($filesList);	
+	}
+
+	var $uploadForm = $("#uploadForm"), $filesList = $("#filesList");
+	
+	$(window.data.profile.{{reports_field}}).each(function(){
+		addFile(this);
+	});
+	
+	$("#filesList").delegate("a.del", 'click', function () {
+		var $this = $(this);
+		API.url("files").url("private").url("{{reports_field}}").id($this.attr("data-id")).delete()
+		.ok(function () {
+			$this.parent().parent().remove();
+		});
+	});
+	
+	$uploadForm.fileupload({
+		url: '/api/files/private/{{reports_field}}/',
+		autoUpload: true,
+		formAccecptCharset: 'unicode',
+		done: function(e, xhr) {
+			addFile(xhr.result);
+		}
+	});
+});
+</script>
+{% endif %}
+{%endblock%}
