@@ -15,11 +15,11 @@
 			{% include "accounts/profile/person.html" %}
 		{% endwith %}
   {% endifequal %}
-  {% ifequal info.account_type "company" %}
-	  {% with reports_field="consumption_reports" reports_title="财务报告"%}
+  {% if info.account_type == "company" or info.account_type == "bank" or info.account_type == "fundcompany" %}
+	  {% with reports_field="financial_reports" reports_title="财务报告"%}
 			{% include "accounts/profile/company.html" %}
 		{% endwith %}
-  {% endifequal %}
+  {% endif %}
   {% ifequal info.account_type "media" %}
   	{% include "accounts/profile/media.html" %}
   {% endifequal %}

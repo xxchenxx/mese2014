@@ -314,6 +314,8 @@ padding:10px;
 .feeds-details-text p{
 color:#E7E7E7;
 text-indent: 2.2em;
+word-wrap: break-word;
+word-break: normal;
 font-size:1.2em;
 padding:0px 10px; 
 }

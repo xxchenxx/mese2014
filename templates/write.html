@@ -34,7 +34,7 @@
 	$(function(){
 		function insertAttachment(data) {
 				var  
-				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br/><img src='{url}' style='max-width:100%;'></img>":"<br/><a href='{url}'>{name}</a>"; 
+				insertion=/^.+\.(jpg|gif|png)$/i.test(data.name)?"<br><img src='{url}' style='max-width:100%;'></img>":"<br><a href='{url}'>{name}</a>"; 
 				insertion = insertion.render(data);
 				data.insertion=insertion;
 				$('<li class="list-group-item"><a href="javascript:void(0);" class="main">{name}</a><a href="javascript:void(0);" class="pull-right del">删除</a></li>'.render(data)).data(data).appendTo($("#list"));

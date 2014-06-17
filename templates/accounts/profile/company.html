@@ -7,21 +7,37 @@
     联系方式：{{info.contact}}<br>
   </div>
 </div>
-<ul class="nav nav-pills nav-stacked nav-utinfo">
+<ul id="menu" class="nav nav-pills nav-stacked nav-utinfo">
   <li><a href="#mb" data-toggle="pill"><i class="fa fa-2x fa-users"></i> 成员名单</a></li>
   <li><a href="#aa" data-toggle="pill"><i class="fa fa-2x fa-bar-chart-o"></i> 资产分析</a></li>
   {{block.super}}
-  <li><a href="#nm" data-toggle="pill"><i class="fa fa-2x fa-pencil"></i>&nbsp;&nbsp;发布新闻</a></li>
+  <li><a href="/webboard/passages/write/" ><i class="fa fa-2x fa-pencil"></i>&nbsp;&nbsp;发布新闻</a></li>
 </ul>
 {% endblock %}
 
 {% block tabs %}
-<div class="tab-pane fade in" id="mb">
+<div class="tab-pane fade in active" id="mb">
 	{% for person in info.members %}
-		{{person.position}}：<a href="{{person.url}}">{{person.display_name}}</a><br>
+	<div class="container">
+		<div class="col-md-1">
+			{% if person.gender == "M" %}
+			<i class="fa fa-3x fa-male"></i>
+			{% else %}
+			<i class="fa fa-3x fa-female"></i>
+			{% endif %}
+		</div>
+		<div class="col-md-11">
+			<h3>
+				<a href="{{person.url}}">{{person.display_name}}</a> <span>{{person.position}}<span>
+			</h3>
+		</div>
+	</div><br>
 	{% endfor %}
 </div>
-<div class="tab-pane fade in" id="aa">..</div>
+
+{#<div class="tab-pane fade in" id="nm">
+	{% include "write.html" %}
+</div>#}
 {{block.super}}
 {% endblock %}
 

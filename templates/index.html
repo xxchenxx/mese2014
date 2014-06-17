@@ -27,7 +27,7 @@
 	        <ul class="nav">
 		      <li><a href="/">首页</a></li>
 		      <li><a href="/securities/">交易大厅</a></li>
-		      <li><a href="/webboard/passages">新闻中心</a></li>
+		      <li><a href="/webboard/passages/?type=all">新闻中心</a></li>
 		      {% if user.is_authenticated %}
 		      <li><a href="/accounts/profile/">{{user.profile.info.display_name}}</a>
 		      <li><a href="/accounts/setps/">修改密码</a></li>

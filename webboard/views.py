@@ -56,7 +56,7 @@ class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 
 	def get_queryset(self):
 		queryset = models.Passage.objects.all()
-		if self.request.QUERY_PARAMS.get('type','') == '':
+		if self.request.QUERY_PARAMS.get('type','') == 'all':
 			queryset = queryset.exclude(type = 'ENT')
 		return queryset
 

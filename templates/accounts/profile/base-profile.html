@@ -1,6 +1,6 @@
 <div class="col-md-3 hidden-xs hidden-sm"> 
 	{% block sidebar %}
-	{% if permissions.can_transfer %}
+	{% if permissions.can_transfer and is_self%}
 	<li><a href="#tm" data-toggle="pill"><i class="fa fa-2x fa-money"></i> 转帐 </a></li>
 	{% endif %}
 	{% if permissions.has_report %}
@@ -9,12 +9,15 @@
 	{% if permissions.publish_passage %}
 	<li><a href="#pl" data-toggle="pill"><i class="fa fa-2x fa-file-text-o"></i> 新闻 </a></li>
 	{% endif %}
+	{% if is_self %}
+	<li><a href="#cf" data-toggle="pill"><i class="fa fa-2x fa-wrench"></i> 设置 </a></li>
+	{% endif %}
 	{% endblock %}
 </div>
 <div class="col-md-9 hidden-xs hidden-sm">
   <div class="tab-content">
 {% block tabs %}
-	{% if permissions.can_transfer %}
+	{% if permissions.can_transfer and is_self %}
 		<div class="tab-pane fade" id="tm">
 			<h4>
 				转帐规则：每转帐一次需从账户中扣除千分之一的手续费。
@@ -66,21 +69,21 @@
 	{% if permissions.has_report %}
 		<div class="tab-pane fade" id="pr">
 		{% if is_self %}
-			<form id="uploadForm">
+			<form id="reportsUploadForm">
 				<div class="fileinput-button btn btn-primary">
 					<span>添加文件...</span>
 					<input type="file" name="file" id="file" />
 				</div>
 			</form>
 		{% endif %}
-			<ul id="filesList" class="list-group"></ul>
+			<ul id="reportsFilesList" class="list-group"></ul>
 		</div>
 	{% endif %}
 {% endblock %}
   </div>
 </div>
 {% block extra_script %}
-{% if permissions.can_transfer %}
+{% if permissions.can_transfer and is_self %}
 <script type="text/javascript">
 $(function(){
 	$("#transferCaptchaImg").captcha();
@@ -132,16 +135,16 @@ $(function(){
 $(function(){
 	function addFile(data) {
 		data.deleteTag = window.isSelf?'<a href="javascript:void(0);" class="del" data-id="{id}">删除</a>'.render(data):'';
-		$('<li class="list-group-item"><a href="{url}" target="_blank">{name}</a><span class="pull-right">{created_time}&nbsp;{deleteTag}</span></li>'.render(data)).appendTo($filesList);	
+		$('<li class="list-group-item"><a href="{url}" target="_blank">{name}</a><span class="pull-right">{created_time}&nbsp;{deleteTag}</span></li>'.render(data)).prependTo($filesList);	
 	}
 
-	var $uploadForm = $("#uploadForm"), $filesList = $("#filesList");
+	var $uploadForm = $("#reportsUploadForm"), $filesList = $("#reportsFilesList");
 	
 	$(window.data.profile.{{reports_field}}).each(function(){
 		addFile(this);
 	});
 	
-	$("#filesList").delegate("a.del", 'click', function () {
+	$filesList.delegate("a.del", 'click', function () {
 		var $this = $(this);
 		API.url("files").url("private").url("{{reports_field}}").id($this.attr("data-id")).delete()
 		.ok(function () {
@@ -152,6 +155,7 @@ $(function(){
 	$uploadForm.fileupload({
 		url: '/api/files/private/{{reports_field}}/',
 		autoUpload: true,
+		dataType: 'json',
 		formAccecptCharset: 'unicode',
 		done: function(e, xhr) {
 			addFile(xhr.result);
