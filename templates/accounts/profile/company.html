@@ -4,19 +4,35 @@
   <div class="panel-body">
     公司名：{{info.display_name}}<br>
     简介：{{info.description}}<br>
+    所属版块：{{info.section}}<br>
+    行业：{{info.industry}}<br>
     联系方式：{{info.contact}}<br>
   </div>
 </div>
 <ul id="menu" class="nav nav-pills nav-stacked nav-utinfo">
   <li><a href="#mb" data-toggle="pill"><i class="fa fa-2x fa-users"></i> 成员名单</a></li>
-  <li><a href="#aa" data-toggle="pill"><i class="fa fa-2x fa-bar-chart-o"></i> 资产分析</a></li>
   {{block.super}}
   <li><a href="/webboard/passages/write/" ><i class="fa fa-2x fa-pencil"></i>&nbsp;&nbsp;发布新闻</a></li>
 </ul>
 {% endblock %}
 
+{% block config_form %}
+<div class="form-group">
+	<input type="text" placeholder="版块" name="section" class="form-control">
+</div>
+<div class="form-group">
+	<input type="text" placeholder="行业" name="industry" class="form-control">
+</div>
+<div class="form-group">
+	<input type="text" placeholder="联系方式" name="contact" class="form-control">
+</div>
+<div class="form-group">
+	<textarea type="text" placeholder="简介" cols="3" rows="5" name="description" class="form-control"></textarea>
+</div>
+{% endblock %}
+
 {% block tabs %}
-<div class="tab-pane fade in active" id="mb">
+<div class="tab-pane fade" id="mb">
 	{% for person in info.members %}
 	<div class="container">
 		<div class="col-md-1">
@@ -34,10 +50,6 @@
 	</div><br>
 	{% endfor %}
 </div>
-
-{#<div class="tab-pane fade in" id="nm">
-	{% include "write.html" %}
-</div>#}
 {{block.super}}
 {% endblock %}
 

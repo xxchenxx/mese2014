@@ -145,7 +145,7 @@ class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 	company_type = models.ForeignKey(ContentType, null = True, blank = True)
 	company_object_id = models.PositiveIntegerField(null = True, blank = True)
 	company = generic.GenericForeignKey('company_type', 'company_object_id')
-	industry = models.CharField(max_length = 255, default = '')
+	industry = models.CharField(max_length = 255, default = '', blank = True)
 	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
 	
@@ -184,8 +184,8 @@ class Enterprise(Account, HasAssetsMixin, HasReportsMixin,
 		
 class Company(Enterprise,CanStoreMixin):
 
-	industry = models.CharField(max_length = 255, default = '')
-	section = models.CharField(max_length = 255, default = '')
+	industry = models.CharField(max_length = 255, default = '', blank = True)
+	section = models.CharField(max_length = 255, default = '', blank = True)
 	
 class FundCompany(Enterprise, OwnFundMixin):
 

@@ -26,3 +26,14 @@
 </div>
 {% endwith %}
 {% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+$(function(){
+	var a = $("a[href='"+$.getAnchor()+"']");
+	if (!a.length)
+		a = $("a[data-toggle='pill']").first();
+	a.tab('show');
+});
+</script>
+{% endblock %}

@@ -41,7 +41,8 @@
 				$('<input type="text" value="{id}" name="attachments">'.render(data)).appendTo($("#attachments"));		
 				return insertion;
 		};
-		var objectId = "{{object.id}}";
+		var objectId = "{{object.id}}",accountType = "{{user.profile.info.account_type}}";
+		console.log(accountType);
 		objectId&&API.url('passages').id(objectId).get()
 		.ok(function(data){
 			$(data.attachments).each(function () {insertAttachment(this);});
@@ -88,9 +89,10 @@
 				return false;
 			}
 			window.submit(data).
-			ok(function(data){
-				console.log('ok');
-				window.location.href = data.url;
+			ok(function(data){	
+				var url = data.url;
+				if (['company', 'fundcompany', 'bank'].indexOf(accountType)>=0) url = '/accounts/profile/#pl';
+				window.location.href = url;
 			})
 			.paramError(function(data){
 				console.log(data);
