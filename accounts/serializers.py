@@ -119,7 +119,18 @@ class UserSerializer(serializers.ModelSerializer):
 		fields = ('is_admin', 'username', 'profile', 'id', 'url')
 		
 def get_serializer_by_object(obj):
-	return globals()['%sSerializer' % obj.__class__.__name__]
+	return get_serializer_by_class(obj.__class__)
+	
+def get_serializer_by_class(cls):
+	return globals()['%sSerializer' % cls.__name__]
+	
+def get_enterprises():
+	res = []
+	for cls in (models.Company, models.FundCompany, models.Bank):
+		serializer = get_serializer_by_class(cls)
+		res.extend(serializer(cls.objects.all(), many = True).data)
+		
+	return res
 	
 class AccountField(serializers.WritableField):
 	

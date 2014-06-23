@@ -211,21 +211,30 @@ account_classes_map = {x.__name__.lower(): x for x in __account_classes}
 __tables = [(cls.__name__.lower(), cls._meta.db_table) for cls in __account_classes]
 from django.db import connection
 	
+
+def get_enterprises():
+	result = []
+	for cls in (Company, FundCompany, Bank):
+		result.extend(cls.objects.all())
+	
+	return result
+	
 def filter_accounts(**kwargs):
 	sql = 'SELECT * FROM (%s) as t ' % ' UNION '.join('(SELECT "%s" as account_type, id, display_name FROM %s)' % (data[0], data[1]) for data in __tables)
-	print sql
 	if kwargs:
 		args = []
 		for key, value in kwargs.iteritems():
 			if isinstance(value, (str, unicode)):
-				args.append((key, '"%s"' % value))
+				args.append('%s="%s"' % (key, value))#(key, '"%s"' % value))
+			elif isinstance(value, (tuple, list)):
+				args.append("%s IN (%s)" % (key, ",".join(map(lambda x:'"%s"' % x, value))))
 			else:
-				args.append((key, value))
-		condition = 'AND'.join(map(lambda x:'%s=%s'%(x[0],x[1]), args))
+				args.append('%s=%s' % (key, value))
+		condition = 'AND'.join(args)
 		sql = '%s WHERE %s' % (sql, condition)
 		
 	cursor = connection.cursor()
 	cursor.execute(sql)
 	res = cursor.fetchall()
-	res = map(lambda a:{"account_type": a[0], "id": a[1], "display_name": a[2]}, res)
+	res = map(lambda a:{"account_type": a[0], "id": a[1], "display_name": a[2], "class": account_classes_map[a[0]]}, res)
 	return res

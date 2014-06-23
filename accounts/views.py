@@ -20,6 +20,12 @@ def set_password(request):
 
 @api_view(['GET'])
 @renderer_classes([renderers.TemplateHTMLRenderer])
+def company_index(request):
+	res = serializers.get_enterprises()
+	return Response({'companies':res}, template_name = 'accounts/companies.html')
+	
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
 def profile(request):
 
 	class Perm(object):
