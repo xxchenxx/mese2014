@@ -33,22 +33,29 @@
 
 {% block tabs %}
 <div class="tab-pane fade" id="mb">
-	{% for person in info.members %}
-	<div class="container">
-		<div class="col-md-1">
+	<table class="table">
+		<thead>
+			<th>用户名</th>
+			<th>职位</th>
+		</thead>
+		<tbody>
+		{% for person in info.members %}
+		<tr>
+			<th>
 			{% if person.gender == "M" %}
-			<i class="fa fa-3x fa-male"></i>
+			<i class="fa fa-1x fa-male"></i>
 			{% else %}
-			<i class="fa fa-3x fa-female"></i>
-			{% endif %}
-		</div>
-		<div class="col-md-11">
-			<h3>
-				<a href="{{person.url}}">{{person.display_name}}</a> <span>{{person.position}}<span>
-			</h3>
-		</div>
-	</div><br>
-	{% endfor %}
+			<i class="fa fa-1x fa-female"></i>
+			{% endif %}	
+			<a href="{{person.url}}">{{person.display_name}}</a>
+			</th>
+			<th>
+				{{person.position}}
+			</th>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
 </div>
 {{block.super}}
 {% endblock %}

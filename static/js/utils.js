@@ -78,7 +78,7 @@ $.fn.error = function () {
 	var $this = $(this);
 	$this
 	.addClass('blank')
-	.one('keypress', function () {
+	.one('keypress onblur', function () {
 		$(this).removeClass('blank');
 	})
 	.focus();

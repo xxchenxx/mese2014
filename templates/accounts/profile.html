@@ -23,6 +23,9 @@
   {% ifequal info.account_type "media" %}
   	{% include "accounts/profile/media.html" %}
   {% endifequal %}
+	{% ifequal info.account_type "government" %}
+		{% include "accounts/profile/government.html" %}
+	{% endifequal %}
 </div>
 {% endwith %}
 {% endblock %}
