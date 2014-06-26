@@ -1,7 +1,7 @@
 #coding=utf-8
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ObjectDoesNotExist
 from files.storage import SAEStorage
 
@@ -15,6 +15,7 @@ from annoying.fields import AutoOneToOneField
 from django.db import connection
 
 import managers
+from inspect import getmro
 
 from common.mixins import HasAssetsMixin
 from securities.mixins import *
@@ -26,6 +27,8 @@ from webboard.mixins import *
 __accounts__ = ['Bank', 'Company', 'Fund', 'FundCompany', 'Government', 'Media', 'Person']
 
 class HasReportsMixin(object):
+	
+	permission = 'has_report'
 	
 	@classmethod
 	def has_field(cls, field_name):
@@ -69,8 +72,11 @@ class UserProfile(models.Model):
 	
 	def create_info(self, class_name, save = True, **kwargs):
 		if self.info_object is None:
-			self.info_object = globals()[class_name].objects.create(**kwargs)
-			self.user.groups.add(*Group.objects.filter(name__in = self.info_object.get_groups()))
+			cls = globals()[class_name]
+			self.info_object = cls.objects.create(**kwargs)
+			permission_names = [getattr(cls, 'permission', '') for cls in filter(lambda cls:cls.__name__.endswith('Mixin'), getmro(cls))]
+			permissions = Permission.objects.filter(codename__in = permission_names)
+			self.user.user_permissions.add(*permissions)
 			self.user.save()
 			if save:
 				self.save()
@@ -134,42 +140,29 @@ class Media(Account, CanWriteMixin):
 	def get_groups(self):
 		return ['writer']
 		
-class Section(models.Model):
-
-	display_name = models.CharField(max_length = 20, default = '')
-	
-	def __unicode__(self):
-		return self.display_name
-	
-class Industry(models.Model):
-
-	section = models.ForeignKey(Section, related_name = 'industries')
-	display_name = models.CharField(max_length = 20, default = '')		
-	
-	def __unicode__(self):
-		return self.display_name
-		
 class Person(PersonalModel, HasReportsMixin, HasStockBondMixin, CanStoreMixin):
 
 	company_type = models.ForeignKey(ContentType, null = True, blank = True)
 	company_object_id = models.PositiveIntegerField(null = True, blank = True)
 	company = generic.GenericForeignKey('company_type', 'company_object_id')
-	industry = models.ForeignKey(Industry, related_name = 'persons')
+	industry = models.CharField(max_length = 255, default = '', blank = True)
 	debt_files = models.ManyToManyField(PrivateFile, related_name = 'debt_files_owners')
 	consumption_reports = models.ManyToManyField(PrivateFile, related_name = 'consumption_reports_owners')
 	
 	report_field = 'consumption_reports'
 	
 	def save(self, *args, **kwargs):
-		if self.id is None:
+		if self.id is None or not self.industry:
 			self.industry = self.company.industry
 		super(Person, self).save(*args, **kwargs)
 	
 class Government(PersonalModel, HasStockBondMixin, CanWriteMixin):
 
-	pass
+	def get_groups(self):
+		return ('writer',)
 	
-class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, HasFundMixin, CanTransferMixin, CanWriteMixin):
+class Enterprise(Account, HasAssetsMixin, HasReportsMixin, 
+		HasStockBondMixin, HasFundMixin, CanTransferMixin, CanWriteMixin, OwnBondMixin, OwnStockMixin):
 
 	description = models.CharField(max_length = 255, default = '', blank = True)
 	contact = models.CharField(max_length = 20, default = '', blank = True)
@@ -191,7 +184,8 @@ class Enterprise(Account, HasAssetsMixin, HasReportsMixin, HasStockBondMixin, Ha
 		
 class Company(Enterprise,CanStoreMixin):
 
-	industry = models.ForeignKey(Industry, related_name = 'companies', null = True)
+	industry = models.CharField(max_length = 255, default = '', blank = True)
+	section = models.CharField(max_length = 255, default = '', blank = True)
 	
 class FundCompany(Enterprise, OwnFundMixin):
 
@@ -217,21 +211,30 @@ account_classes_map = {x.__name__.lower(): x for x in __account_classes}
 __tables = [(cls.__name__.lower(), cls._meta.db_table) for cls in __account_classes]
 from django.db import connection
 	
+
+def get_enterprises():
+	result = []
+	for cls in (Company, FundCompany, Bank):
+		result.extend(cls.objects.all())
+	
+	return result
+	
 def filter_accounts(**kwargs):
 	sql = 'SELECT * FROM (%s) as t ' % ' UNION '.join('(SELECT "%s" as account_type, id, display_name FROM %s)' % (data[0], data[1]) for data in __tables)
-	print sql
 	if kwargs:
 		args = []
 		for key, value in kwargs.iteritems():
 			if isinstance(value, (str, unicode)):
-				args.append((key, '"%s"' % value))
+				args.append('%s="%s"' % (key, value))#(key, '"%s"' % value))
+			elif isinstance(value, (tuple, list)):
+				args.append("%s IN (%s)" % (key, ",".join(map(lambda x:'"%s"' % x, value))))
 			else:
-				args.append((key, value))
-		condition = 'AND'.join(map(lambda x:'%s=%s'%(x[0],x[1]), args))
+				args.append('%s=%s' % (key, value))
+		condition = 'AND'.join(args)
 		sql = '%s WHERE %s' % (sql, condition)
 		
 	cursor = connection.cursor()
 	cursor.execute(sql)
 	res = cursor.fetchall()
-	res = map(lambda a:{"account_type": a[0], "id": a[1], "display_name": a[2]}, res)
+	res = map(lambda a:{"account_type": a[0], "id": a[1], "display_name": a[2], "class": account_classes_map[a[0]]}, res)
 	return res

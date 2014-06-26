@@ -11,6 +11,7 @@ from exceptions import BondPublished
 
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from notifications import send_notification
 
@@ -53,19 +54,18 @@ class Bond(models.Model):
 	def publish(self):
 		self.published = True
 		self.save()
-		send_notification(recipient = self.publisher.profile.user, verb = u'已经发布了', actor = self) 
-		
+		send_notification(recipient = self.publisher.profile.user, verb = u'已经发布了', actor = self, target = self) 
 		
 	def check_published(self):
 		if self.published:
 			raise BondPublished
 	
-	def finish(self):
+	def finish(self, times = 1):
 		rate = self.profit_rate / 100
 		total = Decimal(0)
 		shares = self.shares.prefetch_related()
 		for share in shares:
-			money = share.money * (1+rate)
+			money = share.money * (1+rate) ** times
 			total += money
 			share.owner.inc_assets(money)
 		if self.type == self.ENTERPRISE:
@@ -73,6 +73,12 @@ class Bond(models.Model):
 		send_notification(recipient = self.publisher.profile.user, verb = u'已经结束了', actor = self) 
 		shares.delete()
 		self.delete()
+	
+	def ransom(self):
+		if not self.published:
+			raise ValidationError("The bond hasn't been published.")
+		times = self.lasted_time // (5*60)+1
+		self.finish(times)
 	
 	def share_profits(self):
 		rate = self.profit_rate / 100
@@ -96,6 +102,10 @@ class Bond(models.Model):
 	
 	class Meta:
 		ordering = ['-created_time']
+		permissions = (
+			('has_bond', 'Has bond'),
+			('own_bond', 'Own bond'),
+		)
 		
 	objects = BondManager()
 	

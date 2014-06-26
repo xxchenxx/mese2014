@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 import models
 from django.contrib.contenttypes.models import ContentType
 
@@ -8,24 +9,20 @@ from django.http import Http404
 
 from common.serializers import FileField 
 
-def get_industry_serializer(field_name = 'industry'):
-
-	class HasIndustrySerializer(serializers.Serializer):
-		
-		industry = serializers.Field(source = '%s.display_name' % field_name)
-		
-	return HasIndustrySerializer
-
 class AccountSerializer(serializers.HyperlinkedModelSerializer):
 
 	account_type = serializers.CharField(read_only = True)
 	url = serializers.SerializerMethodField('get_url')
+	id = serializers.IntegerField(read_only = True)
 	
 	safe_exclude = ['assets']
 	
 	def get_url(self, obj):
-		return reverse('user-profile', kwargs = {'pk':obj.profile.user.pk})
+		return '%s?uid=%d' % (reverse('accounts.profile'), obj.profile.user.id)
 		
+	class Meta:
+		model = models.Account
+	
 class MediaSerializer(AccountSerializer):
 	
 	class Meta:
@@ -48,7 +45,7 @@ class HyperlinkedCompanySerializer(serializers.HyperlinkedModelSerializer):
 		fields = ('url', 'display_name')
 		lookup_field = 'pk'
 	
-class PersonSerializer(PersonalSerializer, get_industry_serializer()):
+class PersonSerializer(PersonalSerializer):
 	
 	company = serializers.SerializerMethodField('get_company')
 	debt_files = FileField(many = True, required = False)
@@ -83,7 +80,7 @@ class EnterpriseSerializer(AccountSerializer):
 	class Meta:
 		model = models.Enterprise
 		
-class CompanySerializer(EnterpriseSerializer, get_industry_serializer()):
+class CompanySerializer(EnterpriseSerializer):
 	
 	financial_reports = FileField(many = True, required = False)
 	
@@ -109,21 +106,35 @@ class UserSerializer(serializers.ModelSerializer):
 
 	is_admin = serializers.Field(source = 'is_staff')
 	profile  = serializers.SerializerMethodField('get_profile')
+	url = serializers.SerializerMethodField('get_url')
+	
+	def get_url(self, obj):
+		return '%s?uid=%d' % (reverse('accounts.profile'), obj.id)
 
 	def get_profile(self, obj):
 		profile = obj.profile.info
 		if profile is None:
 			return {}
 		cls_name = '%sSerializer' % profile.__class__.__name__
-		a = globals()
-		return globals()[cls_name](obj.profile.info, safe_fields = True).data
+		return globals()[cls_name](obj.profile.info, safe_fields = self.safe_fields).data
 		
 	class Meta:
 		model = User
-		fields = ('is_admin', 'username', 'profile', 'id')
+		fields = ('is_admin', 'username', 'profile', 'id', 'url')
 		
 def get_serializer_by_object(obj):
-	return globals()['%sSerializer' % obj.__class__.__name__]
+	return get_serializer_by_class(obj.__class__)
+	
+def get_serializer_by_class(cls):
+	return globals()['%sSerializer' % cls.__name__]
+	
+def get_enterprises():
+	res = []
+	for cls in (models.Company, models.FundCompany, models.Bank):
+		serializer = get_serializer_by_class(cls)
+		res.extend(serializer(cls.objects.all(), many = True).data)
+		
+	return res
 	
 class AccountField(serializers.WritableField):
 	
@@ -143,6 +154,15 @@ class AccountField(serializers.WritableField):
 		
 	def field_from_native(self, data, files, field_name, into):
 		enter_data = data[field_name]
+		if isinstance(enter_data, (str, unicode)):
+			data = models.filter_accounts(display_name = enter_data)
+			if not data:
+				raise ValidationError("account")
+				into[field_name] = None
+				return None
+			else:
+				data = data[0]
+				enter_data = {'type': data['account_type'], 'id': data['id']}
 		cls = ContentType.objects.get(app_label = 'accounts', model = enter_data['type'])
 		
 		try:

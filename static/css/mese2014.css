@@ -2,6 +2,7 @@
 html,body{
     min-height: 100%;
     width: 100%;
+		color:#fff;
 }
 body {background-color: #41034b;
   background:-moz-linear-gradient(top,#41034b,#000000);
@@ -314,6 +315,8 @@ padding:10px;
 .feeds-details-text p{
 color:#E7E7E7;
 text-indent: 2.2em;
+word-wrap: break-word;
+word-break: normal;
 font-size:1.2em;
 padding:0px 10px; 
 }
@@ -378,4 +381,7 @@ color:#CCC;font-size: 1em;border-radius:0px;margin-top:10px;}
 	border-left-color: transparent;
 	border-right-color: transparent;
 	border-radius:0px;
+}
+.blank {
+	background-color: red;
 }

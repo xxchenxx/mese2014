@@ -1,0 +1,11 @@
+{% extends "wb/write.html" %}
+{%block extra_passage%}
+<script type="text/javascript">
+window.submit = function (data) {
+	return API.url("passages").id("{{object.id}}").patch(data);
+};
+$(function(){
+	$("#title").val("{{object.title}}");
+});
+</script>
+{% endblock %}

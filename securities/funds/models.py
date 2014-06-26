@@ -13,6 +13,8 @@ from decimal import Decimal
 
 from notifications import send_notification
 
+from django.core.exceptions import ValidationError
+
 class FundManager(models.Manager):
 	
 	def published(self):
@@ -81,7 +83,7 @@ class Fund(models.Model):
 		if self.account:
 			self.account.profile.user.delete()
 			self.account.delete()
-		self.delete()
+		#self.delete()
 	
 	def finish(self):
 		shares = self.shares.prefetch_related()
@@ -97,22 +99,20 @@ class Fund(models.Model):
 		
 		return send_notification(recipient = recipient, verb = verb, actor = u'系统', target = self, **kwargs)
 	
-	def publish(self, delete_on_failed = True, username = 'fundd', password = None):
-		try:
-			print self.total_money
-			assert self.total_money >= self.initial_money
-		except AssertionError:
+	def publish(self, delete_on_failed = True):
+		print self.total_money
+		if self.total_money >= self.initial_money:
 			if delete_on_failed:
 				self._send_notification(u'被取消了')
 				self._end()
-				return 
 			else:
-				raise
+				raise ValidationError("")
 				
-		send_notification(u'发布了')
-				
+		self._send_notification(u'发布了')
+		
+	def create_user(self, username, password):
 		User = ContentType.objects.get(app_label = 'auth', model = 'user').model_class()
-		user = User.objects.create_user(username = username, password = password or User.objects.make_random_password(6))
+		user = User.objects.create_user(username = username, password = password)
 		account = user.profile.create_info('Fund', display_name = self.display_name, assets = self.total_money)
 		self.account = account
 		self.published = True
@@ -131,6 +131,10 @@ class Fund(models.Model):
 	
 	class Meta:
 		ordering = ['-created_time']
+		permissions = (
+			('has_fund', 'Has fund'),
+			('own_fund', 'Own fund'),
+		)
 		
 	objects = FundManager()
 		
@@ -146,6 +150,30 @@ class ShareManager(models.Manager):
 			return result[0]
 		else:
 			return 0
+		
+class RansomApplication(models.Model):
+	
+	fund = models.ForeignKey(Fund)
+	owner_type = models.ForeignKey(ContentType, null = True, blank = True, related_name = 'fund_ransoms')
+	owner_object_id = models.PositiveIntegerField(null = True, blank = True)
+	owner = generic.GenericForeignKey('owner_type', 'owner_object_id')
+	money = DecimalField()
+	created_time = models.DateTimeField(auto_now_add = True)		
+	
+	def clean_fields(self, *args, **kwargs):
+		if not self.fund.published:
+			raise ValidationError("The fund hasn't been published!")
+		try:
+			share = self.owner.fund_shares.get(fund = fund)
+		except Share.DoesNotExist:
+			raise ValidationError("You have no shares of this fund!")
+		if share.money < self.money:
+			raise ValidationError("There is not enough money in your fund!")
+			
+	def delete(self, *args, **kwargs):
+		self.fund.apply_money(self.owner, -self.money)
+		print 2
+		super(RansomApplication, self).delete(*args, **kwargs)
 		
 class Share(get_inc_dec_mixin(['money'])):
 

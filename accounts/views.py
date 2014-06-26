@@ -7,21 +7,50 @@ from rest_framework import views, generics, mixins, viewsets, permissions, statu
 from rest_framework.decorators import *
 from rest_framework.response import Response
 
+from common.exceptions import ParamError
+from captcha.decorators import check_captcha
+
 import models, serializers
 import json
 
 @api_view(['GET'])
 @renderer_classes([renderers.TemplateHTMLRenderer])
+def set_password(request):
+	return Response(template_name = 'accounts/set_password.html')
+
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
+def company_index(request):
+	res = serializers.get_enterprises()
+	return Response({'companies':res}, template_name = 'accounts/companies.html')
+	
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
 def profile(request):
+
+	class Perm(object):
+		def __init__(self, user):
+			self.__permissions = user.user_permissions.values_list('codename')
+			
+		def __getattr__(self, name):
+			print name
+			return (name,) in self.__permissions
+
 	uid = request.REQUEST.get('uid', None)
 	if uid is not None:
 		user_obj = get_object_or_404(auth.models.User, id = uid)
-		is_self = False
+		is_self = user_obj == request.user
 	else:
 		uid = request.user.id
 		user_obj = request.user
 		is_self = True
-	return Response({'user_object':user_obj, 'uid':uid, 'is_self':is_self}, template_name = 'accounts/profile.html')
+		
+	data = serializers.UserSerializer(user_obj, safe_fields = False).data
+	return Response({
+			'user_object': data, 
+			'permissions': Perm(user_obj),
+			'json': renderers.JSONRenderer().render(data),
+			'is_self':is_self}, template_name = 'accounts/profile.html')
 
 class UserAPIViewSet(viewsets.ModelViewSet):
 	
@@ -34,6 +63,17 @@ class UserAPIViewSet(viewsets.ModelViewSet):
 			return self.request.user
 		else:
 			return super(UserAPIViewSet, self).get_object()
+	
+	@action(methods=['POST'])
+	@check_captcha()
+	def set_password(self, request, *args, **kwargs):
+		old_password = request.DATA.get('old_password','')
+		new_password = request.DATA.get('new_password','')
+		if not request.user.check_password(old_password):
+			raise ParamError
+		request.user.set_password(new_password)
+		request.user.save()
+		return Response("OK")
 	
 	@action(methods=['GET', 'PATCH'])
 	def profile(self, *args, **kwargs):

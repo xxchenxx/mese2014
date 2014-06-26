@@ -6,13 +6,13 @@ from rest_framework.response import Response
 import models, serializers
 from common.exceptions import *
 from decimal import Decimal
-from common.permissions import IsSubClass
+from permissions import *
 
 class ShareAPIViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
 	
 	model = models.Share
 	serializer_class = serializers.ShareSerializer
-	permission_classes = [IsSubClass('HasFundMixin')]
+	permission_classes = [HasFund]
 	
 	def get_queryset(self):
 		fund_pk = self.kwargs.get('fund_pk', None)
@@ -27,7 +27,16 @@ class FundAPIViewSet(ModelViewSet):
 	model = models.Fund
 	serializer_class = serializers.FundSerializer
 	
-	@action(methods = ['POST'], permission_classes = [IsSubClass('HasFundMixin')])
+	@action(methods = ['POST'], permission_classes = [HasFund])
+	def ransom(self, request, *args, **kwargs):
+		money = request.DATA.get('money', None)
+		if money is None:
+			raise ParamError("The field money must be set.")
+		account = request.user.profile.info
+		account.ransom_fund_share(self.get_object(), money)
+		return Response('OK', status = status.HTTP_200_OK)
+	
+	@action(methods = ['POST'], permission_classes = [HasFund])
 	def buy(self, request, *args, **kwargs):
 		money = request.DATA.get('money', None)
 		if money is None:

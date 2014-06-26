@@ -1,6 +1,5 @@
 {% extends "index.html" %}
 {% block main_content %}
-<script src="/static/js/passages.js"></script>
 <div class="container">
   <div class="col-md-8 hidden-xs hidden-sm">
     <div id="bcon"><ol class="breadcrumb breadcrumb-mese2014">
@@ -10,33 +9,43 @@
       {% endblock %}
     </ol></div>
     <div id="ncon"><div class="nav nav-tabs nav-mese2014">
-      <li><a href="?type="><i class="fa fa-circle fa-fw"></i>所有新闻</a></li>
-      <li><a href="?type=GOV"><i class="fa fa-bank fa-fw"></i>政府&会务</a></li>
-      <li><a href="?type=MED"><i class="fa fa-rss fa-fw"></i>媒体信息</a></li>
+      <li><a href="/webboard/passages/?type="><i class="fa fa-circle fa-fw"></i>所有新闻</a></li>
+      <li><a href="/webboard/passages/?type=GOV"><i class="fa fa-bank fa-fw"></i>政府&会务</a></li>
+      <li><a href="/webboard/passages/?type=MED"><i class="fa fa-rss fa-fw"></i>媒体信息</a></li>
       {%if perms.webboard.publish_passage %}
-      <li class="pull-right"><a href="write"><i class="fa fa-pencil fa-fw"></i> 发布新信息</li></a>
+      <li class="pull-right"><a href="write"><i class="fa fa-pencil fa-fw"></i> 发布新信息</a></li>
       {% endif %}
       </div>
     </div>
     {% block passage_main %}
     <div class="list-group" id="feeds-container">
     </div>
+    <div class="pager">
+			<button class="btn btn-link pull-left" id="prevBtn">上一页</button>
+			<button class="btn btn-link pull-right" id="nextBtn">下一页</button>
+		</div>
+		<script>
+		  $(function(){
+		  	var utype=$.getUrlParam("type")||'', icons = {
+		    	'MED': 'fa-rss',
+		    	'GOV': 'fa-bank',
+		    	'CON': 'fa-bank'
+		    };
+		  	API.list({
+		  		prev: 'prevBtn',
+		  		next: 'nextBtn',
+		  		apiUrl: API.url('passages').param('type', utype),
+		  		container: 'feeds-container',
+		  		processData: function (data) {
+		  				data.icon = "<i class='fa {icon}'></i>".render({icon:icons[data.type]});
+		  			},
+		  		template: "<div class='feeds'><div class='feeds-title'>{icon}<a href='{id}/'>{title}</a><em class='pull-right feeds-info'><a href='{author.url}'>{author.profile.display_name}</a> @ {created_time}</em></div></div>"
+		  	});
+		  })
+		</script>
+		{% endblock %}
   </div>
   <div class="col-md-4 hidden-xs hidden-sm">
   </div>
-  <script>
-    $(document).ready(function(){
-      var passage = new MESEIO();
-      utype=$.getUrlParam("type");
-      //feedid=$.getUrlParam("id");
-      //console.log(utype+","+feedid);
-      /*if(!feedid){ passage.loadfeeds(utype)}
-      else {
-        passage.loadfdetails(feedid)
-      }*/
-      passage.loadfeeds(utype);
-    })
-  </script>
-  {% endblock %}
 </div>
 {% endblock %}

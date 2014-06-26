@@ -1,14 +1,44 @@
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework import mixins
-from rest_framework.decorators import action
+from rest_framework import mixins, renderers
+from rest_framework.decorators import action, api_view, renderer_classes
 import models, serializers
 from accounts.models import filter_accounts, account_classes_map
-from common.permissions import IsAdminUser
 from .exceptions import ParamError
 from decimal import Decimal
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from common.permissions import IsSubClass
+from .permissions import HasStock
+
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
+def change_application(request):
+	application_id = request.REQUEST.get('uid', '0')
+	application_object = get_object_or_404(models.Application, pk = application_id)
+	serializer = serializers.StockSerializer(application_object.stock)
+	try:
+		share = request.user.profile.info.stock_shares.get(stock = stock_object)
+	except:
+		share = None
+	return Response({'share': share, 'object': serializer.data, 'uid': application_id, 'application':application_object}, template_name = 'securities/stocks/change_app.html')
+	
+@api_view(['GET'])
+@renderer_classes([renderers.TemplateHTMLRenderer])
+def detail(request):
+	stock_id = request.REQUEST.get('uid', '0')
+	stock_object = get_object_or_404(models.Stock, pk = stock_id)
+	serializer = serializers.StockSerializer(stock_object)
+	application_objects = models.Application.objects.filter(stock = stock_object, shares__gt = Decimal(0))
+	applications = serializers.ApplicationSerializer(application_objects, exclude = ['stock'], many = True) 
+	my_applications = serializers.ApplicationSerializer(
+		request.user.profile.info.stock_applications.filter(stock = stock_object),
+		exclude = ['stock'],
+		many = True
+	)
+	try:
+		share = request.user.profile.info.stock_shares.get(stock = stock_object)
+	except:
+		share = None
+	return Response({'share': share, 'mys': my_applications.data, 'object': serializer.data, 'uid': stock_id, 'applications':applications.data}, template_name = 'securities/stocks/detail.html')
 
 class LogAPIViewSet(GenericViewSet, mixins.ListModelMixin):
 	
@@ -24,7 +54,7 @@ class ShareAPIViewSet(GenericViewSet, mixins.ListModelMixin):
 	
 	model = models.Share
 	serializer_class = serializers.ShareSerializer
-	permission_classes = [IsSubClass('HasStockMixin')]
+	permission_classes = [HasStock]
 	
 	def get_queryset(self):
 		stock_pk = self.kwargs.get('stock_pk', None)
@@ -37,7 +67,7 @@ class ApplicationAPIViewSet(GenericViewSet, mixins.ListModelMixin, mixins.Retrie
 	
 	model = models.Application
 	serializer_class = serializers.ApplicationSerializer
-	permission_classes = [IsSubClass('HasStockMixin')]
+	permission_classes = [HasStock]
 	
 	def get_queryset(self):
 		stock_pk = self.kwargs.get('stock_pk', None)
@@ -51,7 +81,6 @@ class StockAPIViewSet(ModelViewSet):
 	
 	serializer_class = serializers.StockSerializer
 	model = models.Stock
-	#permission_classes = (IsAdminUser,)
 	
 	def create(self, request, *args, **kwargs):
 		owner = request.DATA.pop('owner', None)
@@ -77,10 +106,10 @@ class StockAPIViewSet(ModelViewSet):
 			
 		return Response(serializers.ApplicationSerializer(res).data)		
 		
-	@action(methods = ['POST'],permission_classes = [IsSubClass('HasStockMixin')])
+	@action(methods = ['POST'],permission_classes = [HasStock])
 	def buy(self, request, *args, **kwargs):
 		return self.apply(request, models.Application.BUY, *args, **kwargs)
 		
-	@action(methods = ['POST'],permission_classes = [IsSubClass('HasStockMixin')])
+	@action(methods = ['POST'],permission_classes = [HasStock])
 	def sell(self, request, *args, **kwargs):
 		return self.apply(request, models.Application.SELL, *args, **kwargs)

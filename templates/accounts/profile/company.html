@@ -1,0 +1,129 @@
+{% extends "accounts/profile/base-profile.html" %}
+{% block sidebar %}
+<div class="panel panel-default utinfo">
+  <div class="panel-body">
+    公司名：{{info.display_name}}<br>
+    简介：{{info.description}}<br>
+    所属版块：{{info.section}}<br>
+    行业：{{info.industry}}<br>
+    联系方式：{{info.contact}}<br>
+  </div>
+</div>
+<ul id="menu" class="nav nav-pills nav-stacked nav-utinfo">
+  <li><a href="#mb" data-toggle="pill"><i class="fa fa-2x fa-users"></i> 成员名单</a></li>
+  {{block.super}}
+	{% if is_self %}
+  <li><a href="/webboard/passages/write/" ><i class="fa fa-2x fa-pencil"></i>&nbsp;&nbsp;发布新闻</a></li>
+	{% endif %}
+	{% if not is_self and info.account_type == 'bank' and user.profile.info.account_type != 'media' %}
+	<li><a href="#atm" data-toggle="pill"><i class="fa fa-2x fa-bank"></i>ATM机</a></li>
+	{% endif %}
+</ul>
+{% endblock %}
+
+{% block config_form %}
+<div class="form-group">
+	<input type="text" placeholder="版块" name="section" class="form-control">
+</div>
+<div class="form-group">
+	<input type="text" placeholder="行业" name="industry" class="form-control">
+</div>
+<div class="form-group">
+	<input type="text" placeholder="联系方式" name="contact" class="form-control">
+</div>
+<div class="form-group">
+	<textarea type="text" placeholder="简介" cols="3" rows="5" name="description" class="form-control"></textarea>
+</div>
+{% endblock %}
+
+{% block tabs %}
+{% if not is_self and info.account_type == 'bank' and user.profile.info.account_type != 'media' %}
+<div class="tab-pane fade" id="atm">
+	<main class="login" role="main">
+		<div class="container">
+			<form id="atmForm" role="form" class="form-horizontal">
+				<div class="form-group">
+					<label for="atmMoney" class="form-label col-sm-2">资金</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control form-login col-sm-10" name="money">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="atmInputCaptcha" class="form-label col-sm-2">验证码</label>
+					<div class="col-sm-5">
+						<input type="text" name="captcha" class="form-control">
+					</div>
+					<div class="col-md-5">
+						<img name="captcha" class="pull-right"/>
+					</div>	
+				</div>	
+				<div class="form-group">
+					<div class="col-sm-6">
+						<input type="submit" value="存款" name="store" class="btn btn-login">
+					</div>
+					<div class="col-sm-6">
+						<input type="submit" value="取款" name="remove" class="btn btn-login">
+					</div>
+				</div>
+			</form>
+		</div>
+	</main>
+</div>
+{% endif %}
+
+<div class="tab-pane fade" id="mb">
+	<table class="table">
+		<thead>
+			<th>用户名</th>
+			<th>职位</th>
+		</thead>
+		<tbody>
+		{% for person in info.members %}
+		<tr>
+			<th>
+			{% if person.gender == "M" %}
+			<i class="fa fa-1x fa-male"></i>
+			{% else %}
+			<i class="fa fa-1x fa-female"></i>
+			{% endif %}	
+			<a href="{{person.url}}">{{person.display_name}}</a>
+			</th>
+			<th>
+				{{person.position}}
+			</th>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</div>
+{{block.super}}
+{% endblock %}
+
+{% block extra_script %}
+{% if not is_self and info.account_type == 'bank' and user.profile.info.account_type != 'media' %}
+<script type="text/javascript">
+$('a[href="#atm"]').one('show.bs.tab', function(){
+	var $form = $("#atmForm"), $captchaImg = $form.find("img[name='captcha']"), $captchaInput = $form.find("input[name='captcha']");
+	$captchaImg.captcha();
+	$form
+	.submit(function(e){
+		e.preventDefault();
+		return false;
+	})
+	.find("input[type='submit']").click(function(){
+		var $name = $(this).attr('name'), apiUrl = API.url("banks").id(window.data.profile.id).url($name);
+		apiUrl.post()
+		.captchaError(function(){
+			$captchaInput.error();
+		}).paramError(function(){
+			$form.find("[name='money']").error();
+		})
+		.ok(function(){
+			window.location.href="/accounts/profile/#as";
+		});
+	});
+});
+</script>
+{% endif %}
+{{block.super}}
+{% endblock %}

@@ -12,14 +12,18 @@ from django.shortcuts import get_object_or_404
 from functools import partial
 
 from decimal import Decimal
+from captcha.decorators import check_captcha
 
 @api_view(['POST'])
 @permission_classes([IsSubClass('CanTransferMixin')])
+@check_captcha()
 def transfer(request, *args, **kwargs):
 	data = serializers.TransferSerializer(data = request.DATA)
 	if data.is_valid():
 		data = data.object
 		return Response(serializers.TransferLogSerializer(request.user.profile.info.transfer_money(data['to'], data['money'])).data)
+	else:
+		return Response(data.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class BankAPIViewSet(ReadOnlyModelViewSet):
 

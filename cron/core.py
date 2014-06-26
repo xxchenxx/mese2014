@@ -54,7 +54,7 @@ class AppCache(object):
 				self.load_app(app_name, True)
 			if not self.nesting_level:
 				for app_name in self.postponed:
-					print app_name
+					print '1',app_name
 					self.load_app(app_name)
 				self.loaded = True
 		finally:

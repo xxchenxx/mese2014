@@ -8,6 +8,8 @@ __all__ = ['CanStoreMixin', 'CanTransferMixin']
 
 class CanStoreMixin(models.Model):
 	
+	permission = 'can_store'
+	
 	deposits = generic.GenericRelation(
 			'transfer.Deposit',
 			content_type_field = 'owner_content_type',
@@ -44,6 +46,8 @@ class CanStoreMixin(models.Model):
 		abstract = True
 		
 class CanTransferMixin(models.Model):
+	
+	permission = 'can_transfer'
 	
 	def transfer_money(self, transfer_to, money):
 		money = Decimal(money)

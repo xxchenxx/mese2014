@@ -39,22 +39,37 @@ class PassageRetrieveViewSet(BasePassageViewSet, mixins.ListModelMixin, mixins.R
 		
 	def retrieve(self, *args, **kwargs):
 		super(PassageRetrieveViewSet, self).retrieve(*args, **kwargs)
-		response = Response({'object':self.object})
+		response = Response({'object':serializers.PassageSerializer(self.object).data})
 		response.template_name = 'wb/detail.html'
 		return response
+		
+	@action(methods = ['GET'])
+	def change(self, *args, **kwargs):
+		response = Response({'object':serializers.PassageSerializer(self.get_object()).data})
+		response.template_name = 'wb/change.html'
+		return response		
 	
 class PassageAPIViewSet(BasePassageViewSet, viewsets.ModelViewSet):
 	
 	permission_classes = (CanWrite,)
+	filter_fields = ('type', "author")
+
+	def get_queryset(self):
+		queryset = models.Passage.objects.all()
+		if self.request.QUERY_PARAMS.get('type','') == 'all':
+			queryset = queryset.exclude(type = 'ENT')
+		return queryset
 
 	def create(self, request, *args, **kwargs):
-		print request.POST, request.DATA
 		super(PassageAPIViewSet, self).create(request, author = request.user.id, *args, **kwargs)	
-		obj = self.object
-		return response.Response({'url': '/webboard/passages/?id=%d' % obj.id})
+		return response.Response({'url': '/webboard/passages/%d/' % self.object.id})
+		
+	def update(self, request, *args, **kwargs):
+		super(PassageAPIViewSet, self).update(request, author = request.user.id, *args, **kwargs)	
+		return response.Response({'url': '/webboard/passages/%d/' % self.object.id})
 		
 	def list(self, request, *args, **kwargs):
-		self.serializer_options = {'exclude':['content']}
+		#self.serializer_options = {'exclude':['content']}
 		return super(PassageAPIViewSet,self).list(self,request,*args,**kwargs)
 	
 class CommentAPIViewSet(viewsets.ModelViewSet):
