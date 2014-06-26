@@ -78,7 +78,7 @@ $.fn.error = function () {
 	var $this = $(this);
 	$this
 	.addClass('blank')
-	.one('keypress onblur', function () {
+	.one('keypress blur', function () {
 		$(this).removeClass('blank');
 	})
 	.focus();
@@ -112,11 +112,22 @@ $.fn.clearForm = function() {
 
 $.fn.formAjaxSubmit = function(config) {
 	var $form = $(this), 
-		apiUrl = config.apiUrl, verifyFunc = config.verfiy||function(){return true}, callback = config.callback||function(){};
+		apiUrl = config.apiUrl, verifyFunc = config.verfiy||function(){return true}, callback = config.callback||function(){},
+	captcha = $form.find('img[name="captcha"]'), captchaInput;
+	if (captcha.length) {
+		captcha.captcha();
+		captchaInput = $form.find('input[name="captcha"]');
+	}
 	$form.submit(function(e){
 		e.preventDefault();
 		if (!verifyFunc()) return false;
-		callback(apiUrl.post($form.serializeObject()));
+		var deferred = apiUrl.post($form.serializeObject());
+		deferred.captchaError(function(){
+			if (captchaInput) captchaInput.error();
+		}).done(function(){
+			if (captcha) captcha.captcha();
+		});
+		callback(deferred);
 		return false;
 	});
 };
@@ -241,3 +252,10 @@ $.fn.formAjaxSubmit = function(config) {
 		}
 	};
 })();
+
+$.validator.setDefaults({
+	debug: true,
+	onfocusout: false,
+	onkeyup: false,
+	onclick: false
+});

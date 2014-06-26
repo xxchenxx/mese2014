@@ -134,7 +134,7 @@ class Application(get_inc_dec_mixin(['shares', 'price'])):
 		return u'股票 %s 的%s申请' % (self.stock.display_name, action) 
 	
 	class Meta:
-		ordering = ['created_time', 'price']
+		ordering = ['-created_time', 'price']
 		
 	objects = ApplicationManager()
 		

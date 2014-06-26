@@ -13,12 +13,16 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
 
 	account_type = serializers.CharField(read_only = True)
 	url = serializers.SerializerMethodField('get_url')
+	id = serializers.IntegerField(read_only = True)
 	
 	safe_exclude = ['assets']
 	
 	def get_url(self, obj):
 		return '%s?uid=%d' % (reverse('accounts.profile'), obj.profile.user.id)
 		
+	class Meta:
+		model = models.Account
+	
 class MediaSerializer(AccountSerializer):
 	
 	class Meta:
